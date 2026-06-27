@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="bn" data-lang="bn">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aura Unity ERP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <!-- Firebase SDK — served via Apps Script UrlFetchApp -->
+  <?!= firebaseSdkScripts(); ?>
+  <style>
+:root{
+  --navy:#080F1E; --navy2:#0F1F3D; --navy3:#1A3260;
+  --gold:#D4A017; --gold-lt:#F2C94C; --gold-bg:#FDF8EC;
+  --em:#1A7A4A; --em-lt:#E6F7EE;
+  --cream:#F6F4EF; --white:#FFFFFF; --border:#E2E8F4;
+  --text:#0B1629; --muted:#647188;
+  --danger:#C0392B; --danger-lt:#FDECEA;
+  --info:#1558B0; --info-lt:#E8F0FE;
+  --purple:#6B21A8; --purple-lt:#F3E8FF;
+  --r:10px; --r-lg:16px; --r-xl:20px;
+  --shadow:0 2px 12px rgba(8,15,30,.07);
+  --shadow-md:0 6px 28px rgba(8,15,30,.11);
+  --shadow-lg:0 16px 48px rgba(8,15,30,.16);
+  --sw:268px; --th:64px; --tr:.2s cubic-bezier(.4,0,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter','Noto Sans Bengali',system-ui,sans-serif;background:var(--cream);color:var(--text);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+input,select,textarea,button{font-family:inherit;outline:none}
+.hidden{display:none!important}
+.shell{display:flex;min-height:100vh}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;margin-left:var(--sw)}
+/* SIDEBAR */
+.sidebar{width:var(--sw);background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:200;border-right:1px solid rgba(255,255,255,.04);box-shadow:inset -1px 0 0 rgba(212,160,23,.12),4px 0 24px rgba(0,0,0,.18);overflow-y:auto}
+.sidebar::after{content:'';position:absolute;top:0;right:0;bottom:0;width:2px;background:linear-gradient(180deg,transparent 0%,var(--gold) 35%,var(--em) 65%,transparent 100%);opacity:.3}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.sb-logo{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,var(--gold),#B8860B);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:17px;color:var(--navy);overflow:hidden;background-size:cover;background-position:center;flex-shrink:0;box-shadow:0 4px 12px rgba(212,160,23,.3)}
+.sb-name{font-size:14px;font-weight:700;color:#fff;line-height:1.25}
+.sb-sub{font-size:10.5px;color:#5C7A9E;margin-top:2px}
+.sb-user{margin:10px 14px;padding:10px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);flex-shrink:0}
+.sb-role{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gold-lt);margin-bottom:2px}
+.sb-uname{font-size:13px;font-weight:600;color:#D8E4F0}
+.lang-toggle{display:flex;margin:6px 14px 4px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px;overflow:hidden;flex-shrink:0}
+.lang-btn{flex:1;padding:6px 4px;font-size:11px;font-weight:600;color:#5C7A9E;background:transparent;border:none;cursor:pointer;transition:var(--tr)}
+.lang-btn.active{background:var(--gold);color:var(--navy)}
+.nav-label{padding:10px 18px 4px;font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#2E4A6A}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 18px;color:#7A96B2;cursor:pointer;font-size:13px;font-weight:500;border-left:2.5px solid transparent;transition:var(--tr);user-select:none}
+.nav-item:hover{background:rgba(255,255,255,.04);color:#C8D8E8;border-left-color:rgba(212,160,23,.3)}
+.nav-item.active{background:linear-gradient(90deg,rgba(212,160,23,.12),transparent);color:var(--gold-lt);border-left-color:var(--gold);font-weight:600}
+.nav-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.sb-footer{margin-top:auto;padding:14px 16px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.btn-logout{width:100%;padding:9px;background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.22);border-radius:var(--r);color:#E57373;font-size:12.5px;font-weight:600;cursor:pointer;transition:var(--tr)}
+.btn-logout:hover{background:rgba(192,57,43,.2);color:#fff}
+.sb-powered{margin-top:10px;text-align:center;font-size:10.5px;color:#2A4060;line-height:1.8}
+.sb-powered span{color:#3D6B9A;font-weight:600}
+/* TOPBAR */
+.topbar{height:var(--th);background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 var(--border),0 4px 16px rgba(8,15,30,.04)}
+.topbar-l h2{font-size:16px;font-weight:700}
+.topbar-l p{font-size:11.5px;color:var(--muted);margin-top:1px}
+.topbar-r{display:flex;gap:8px;align-items:center}
+/* CONTENT */
+.content{padding:24px 28px;flex:1}
+.module{display:none}.module.active{display:block}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:var(--tr);white-space:nowrap;flex-shrink:0}
+.btn-primary{background:var(--navy2);color:#fff;box-shadow:0 2px 8px rgba(8,15,30,.2)}
+.btn-primary:hover{background:var(--navy3);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#B8860B);color:var(--navy);box-shadow:0 2px 10px rgba(212,160,23,.3)}
+.btn-gold:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+.btn-ghost:hover{border-color:var(--navy2);color:var(--navy2);background:var(--info-lt)}
+.btn-success{background:var(--em);color:#fff}
+.btn-success:hover{background:#155d38;transform:translateY(-1px)}
+.btn-danger{background:var(--danger-lt);border:1px solid rgba(192,57,43,.18);color:var(--danger)}
+.btn-sm{padding:6px 13px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+/* CARDS */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}
+.card:last-child{margin-bottom:0}
+.card-header{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.card-title{font-size:14.5px;font-weight:700}
+.card-sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.card-body{padding:22px}
+.card-body.np{padding:0}
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:22px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px 22px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:var(--tr)}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r-lg) var(--r-lg) 0 0}
+.sc-gold::before{background:linear-gradient(90deg,var(--gold),var(--gold-lt))}
+.sc-em::before{background:linear-gradient(90deg,var(--em),#2ECC71)}
+.sc-navy::before{background:linear-gradient(90deg,var(--navy2),var(--navy3))}
+.sc-info::before{background:linear-gradient(90deg,var(--info),#4A90D9)}
+.sc-pur::before{background:linear-gradient(90deg,var(--purple),#9333EA)}
+.stat-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.stat-value{font-size:27px;font-weight:800;margin:8px 0 4px;letter-spacing:-.5px}
+.stat-note{font-size:11.5px;color:var(--muted)}
+/* FORMS */
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:11.5px;font-weight:700;color:var(--navy2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.form-control{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--r);font-size:14px;color:var(--text);background:#fff;transition:var(--tr)}
+.form-control:focus{border-color:var(--navy2);box-shadow:0 0 0 3px rgba(15,31,61,.08)}
+.form-control[readonly]{background:var(--cream);color:var(--muted);cursor:default}
+textarea.form-control{resize:vertical;min-height:80px;line-height:1.6}
+select.form-control{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23647188' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:36px}
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:16px}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.col-full{grid-column:1/-1}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.03em}
+.bg-gold{background:var(--gold-bg);color:#7A5500;border:1px solid rgba(212,160,23,.25)}
+.bg-green{background:var(--em-lt);color:#135A36;border:1px solid rgba(26,122,74,.2)}
+.bg-navy{background:var(--info-lt);color:var(--info);border:1px solid rgba(21,88,176,.2)}
+.bg-danger{background:var(--danger-lt);color:var(--danger);border:1px solid rgba(192,57,43,.2)}
+.bg-purple{background:var(--purple-lt);color:var(--purple);border:1px solid rgba(107,33,168,.2)}
+/* TABLE */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--cream);padding:10px 16px;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody td{padding:12px 16px;border-bottom:1px solid rgba(226,232,244,.6);font-size:13.5px;color:var(--text);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr{transition:background var(--tr)}
+tbody tr:hover td{background:rgba(246,244,239,.8)}
+.td-g{color:var(--em);font-weight:600}
+.td-r{color:var(--danger);font-weight:600}
+.td-m{color:var(--muted)}
+/* ALERTS */
+.alert{padding:12px 16px;border-radius:var(--r);font-size:13.5px;line-height:1.5}
+.alert-info{background:var(--info-lt);color:var(--info);border:1px solid rgba(21,88,176,.15)}
+.alert-success{background:var(--em-lt);color:#135A36;border:1px solid rgba(26,122,74,.2)}
+.alert-warning{background:var(--gold-bg);color:#7A5500;border:1px solid rgba(212,160,23,.2)}
+.alert-danger{background:var(--danger-lt);color:var(--danger);border:1px solid rgba(192,57,43,.2)}
+/* QUICK ACTIONS */
+.quick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+.quick-item{padding:18px 12px;text-align:center;border:1.5px solid var(--border);border-radius:var(--r-lg);cursor:pointer;background:#fff;transition:var(--tr)}
+.quick-item:hover{border-color:var(--gold);background:var(--gold-bg);transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.quick-icon{font-size:24px;margin-bottom:8px;display:block}
+.quick-label{font-size:12px;font-weight:600}
+/* LOGIN */
+.login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,var(--navy) 0%,#0A1F45 60%,#071428 100%);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px}
+.login-overlay::before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(212,160,23,.07) 1px,transparent 1px);background-size:32px 32px}
+.login-box{width:min(100%,400px);background:rgba(255,255,255,.98);border-radius:24px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.1);position:relative;z-index:1;animation:lPop .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes lPop{from{opacity:0;transform:scale(.94) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.login-header{background:linear-gradient(135deg,var(--navy2),var(--navy3));padding:28px 28px 22px;text-align:center;position:relative;overflow:hidden}
+.login-header::after{content:'';position:absolute;bottom:-30px;right:-20px;width:120px;height:120px;border-radius:50%;background:rgba(212,160,23,.08)}
+.login-logo{width:60px;height:60px;margin:0 auto 14px;background:linear-gradient(135deg,var(--gold),#B8860B);border-radius:16px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:26px;color:var(--navy);box-shadow:0 8px 24px rgba(212,160,23,.4);overflow:hidden;background-size:cover;background-position:center}
+.login-title{font-size:20px;font-weight:800;color:#fff}
+.login-sub{font-size:12px;color:#7A95B8;margin-top:4px}
+.login-body{padding:26px 28px 20px}
+.login-footer{padding:14px 28px 18px;border-top:1px solid var(--border);font-size:11.5px;color:var(--muted);text-align:center}
+.login-footer .powered{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:11px}
+.login-footer .powered strong{color:var(--navy2)}
+/* RECEIPT */
+.receipt-wrap{max-width:500px;margin:0 auto;border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;background:#fff;box-shadow:var(--shadow-md)}
+.receipt-top{background:linear-gradient(135deg,var(--navy2),var(--navy3));padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.rcp-logo{width:50px;height:50px;border-radius:12px;background:linear-gradient(135deg,var(--gold),#B8860B);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:21px;color:var(--navy);overflow:hidden;background-size:cover;flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.rcp-oname{font-size:15px;font-weight:700;color:#fff}
+.rcp-osub{font-size:10.5px;color:#7A95B8;margin-top:2px}
+.rcp-tag{text-align:right}
+.rcp-tag-t{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--gold-lt)}
+.rcp-no{font-size:17px;font-weight:800;color:#fff;margin-top:2px}
+.receipt-body{padding:22px 24px}
+.rcp-abox{background:linear-gradient(135deg,var(--gold-bg),#FFF8E1);border:1.5px solid rgba(212,160,23,.3);border-radius:var(--r);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.rcp-alabel{font-size:11px;font-weight:800;color:#7A5500;text-transform:uppercase;letter-spacing:.06em}
+.rcp-avalue{font-size:26px;font-weight:900;color:var(--navy);letter-spacing:-.5px}
+.rcp-row{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid rgba(226,232,244,.6);gap:16px}
+.rcp-row:last-of-type{border-bottom:none}
+.rcp-key{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;flex-shrink:0;padding-top:1px}
+.rcp-val{font-size:13.5px;font-weight:600;text-align:right}
+.rcp-sigs{display:flex;justify-content:space-between;align-items:flex-end;padding-top:22px;margin-top:14px;border-top:1.5px dashed var(--border)}
+.rcp-sig{width:130px;border-top:1.5px solid var(--text);padding-top:6px;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;text-align:center}
+.rcp-stamp{font-size:10.5px;color:var(--muted);text-align:center;margin-top:14px}
+/* DOUBLE-ENTRY */
+.entry-lines{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:16px}
+.entry-line{display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 36px;border-bottom:1px solid var(--border)}
+.entry-line:last-child{border-bottom:none}
+.entry-line > *{padding:10px 12px;border-right:1px solid var(--border)}
+.entry-line > *:last-child{border-right:none}
+.entry-line-hdr{background:var(--cream)}
+.entry-line-hdr > *{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.ecell input,.ecell select{border:none;background:transparent;width:100%;font-size:13.5px;color:var(--text);padding:0}
+.ecell input:focus,.ecell select:focus{outline:none}
+.entry-totals{display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 36px;border-top:2px solid var(--border);background:var(--cream)}
+.entry-totals > *{padding:10px 12px;font-size:13px;font-weight:700}
+.btn-add-line{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r);background:var(--info-lt);border:1px solid rgba(21,88,176,.2);color:var(--info);font-size:12px;font-weight:600;cursor:pointer;transition:var(--tr)}
+.btn-add-line:hover{background:#D0E4FF}
+.btn-rm{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:16px;transition:var(--tr);padding:0;line-height:1}
+.btn-rm:hover{color:var(--danger)}
+/* TOAST */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:9998;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 18px;border-radius:12px;display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:500;box-shadow:var(--shadow-lg);animation:tIn .3s ease;max-width:340px;background:#fff}
+@keyframes tIn{from{opacity:0;transform:translateY(12px) translateX(10px)}to{opacity:1;transform:translateY(0) translateX(0)}}
+.t-success{border-left:4px solid var(--em)}
+.t-error{border-left:4px solid var(--danger)}
+.t-info{border-left:4px solid var(--info)}
+.t-warning{border-left:4px solid var(--gold)}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(8,15,30,.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:3000;padding:16px}
+.modal-box{width:min(100%,520px);background:#fff;border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-lg);animation:mIn .28s cubic-bezier(.34,1.56,.64,1)}
+@keyframes mIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.modal-header{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:15px;font-weight:700}
+.modal-close{background:none;border:none;font-size:20px;color:var(--muted);cursor:pointer;line-height:1}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:22px}
+.modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+/* LEDGER */
+.ledger-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.ledger-box{padding:14px 16px;border-radius:var(--r);border:1px solid var(--border);text-align:center}
+.ledger-box-lbl{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.ledger-box-val{font-size:20px;font-weight:800;margin-top:5px}
+/* RECEIPT DUAL COPY */
+.receipt-sheet{width:148mm;margin:0 auto;background:#fff}
+.receipt-copy{border:1px solid #E2E8F4;border-radius:8px;overflow:hidden;margin-bottom:0;page-break-inside:avoid}
+.receipt-copy-label{background:#0F1F3D;color:#D4A017;text-align:center;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;padding:4px}
+.receipt-divider{border:none;border-top:2px dashed #CBD5E0;margin:6px 0;position:relative}
+.receipt-divider::after{content:'✂';position:absolute;left:50%;top:-10px;transform:translateX(-50%);background:#fff;padding:0 4px;font-size:14px;color:#94A3B8}
+.qr-section{display:flex;align-items:center;gap:12px;padding:10px 16px;background:#F8FAFC;border-top:1px dashed #E2E8F4;margin-top:8px}
+.qr-canvas{width:56px!important;height:56px!important;flex-shrink:0}
+.qr-info{font-size:9.5px;color:#647188;line-height:1.6}
+.qr-info strong{color:#0F1F3D;font-size:10px}
+.sig-pad-wrap{margin-top:8px;padding:10px 16px}
+.sig-pad-label{font-size:9.5px;font-weight:700;color:#647188;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.sig-pad{border:1.5px dashed #CBD5E0;border-radius:6px;background:#FAFAFA;cursor:crosshair;display:block}
+.sig-controls{display:flex;gap:6px;margin-top:4px}
+.sig-btn{padding:3px 10px;font-size:10px;font-weight:600;border-radius:4px;cursor:pointer;border:1px solid #E2E8F4;background:#fff;color:#647188}
+.sig-btn.primary{background:#0F1F3D;color:#fff;border-color:#0F1F3D}
+/* PRINT */
+#printArea{display:none}
+@media print{
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body > *{display:none!important}
+  #printArea{
+    display:block!important;
+    position:fixed;inset:0;background:#fff;z-index:99999;
+    padding:8mm 12mm;
+  }
+  .receipt-sheet{width:190mm;margin:0 auto}
+  .receipt-copy{border:1px solid #E2E8F4;border-radius:6px;overflow:hidden;margin-bottom:0;page-break-inside:avoid}
+  .receipt-copy-label{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .receipt-top{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .rcp-abox{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .qr-section{background:#F8FAFC!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sig-pad-wrap{display:none}
+  .card-header .btn{display:none}
+}
+/* SCROLLBAR */
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:4px}
+/* RESPONSIVE */
+@media(max-width:900px){
+  :root{--sw:0px}
+  .sidebar{display:none}
+  .main{margin-left:0}
+  .topbar{padding:0 16px}
+  .content{padding:16px}
+  .form-row-2,.form-row-3{grid-template-columns:1fr}
+  .entry-line,.entry-totals{grid-template-columns:1fr 1fr 80px 80px 36px}
+}
+  </style>
+</head>
+<body>
+<div id="printArea"></div>
+<div id="toastWrap" class="toast-wrap"></div>
+
+<!-- LOGIN -->
+<div id="loginModal" class="login-overlay">
+  <div class="login-box">
+    <div class="login-header">
+      <div id="loginLogo" class="login-logo">A</div>
+      <div class="login-title">Aura Unity</div>
+      <div class="login-sub">Accounting Management System</div>
+    </div>
+    <div class="login-body">
+      <div class="form-group">
+        <label class="form-label" data-bn="ইউজারনেম" data-en="Username">ইউজারনেম</label>
+        <input id="loginUser" class="form-control" value="">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-bn="পাসওয়ার্ড" data-en="Password">পাসওয়ার্ড</label>
+        <input id="loginPass" type="password" class="form-control" value="">
+      </div>
+      <div id="loginErr" class="alert alert-danger hidden" style="margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px;margin-top:18px">
+        <button id="loginBtn" class="btn btn-primary" style="flex:1;justify-content:center" onclick="login()">
+          <span data-bn="লগইন করুন" data-en="Sign In">লগইন করুন</span>
+        </button>
+        <button class="btn btn-ghost" onclick="fillGuest()">
+          <span data-bn="গেস্ট" data-en="Guest">গেস্ট</span>
+        </button>
+      </div>
+    </div>
+    <div class="login-footer">      
+      <div class="powered">© 2026 Aura Stay &nbsp;·&nbsp; <strong>Powered by Aura Stay</strong></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div id="app" class="shell hidden">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div style="display:flex;align-items:center;gap:11px">
+        <div id="sbLogo" class="sb-logo">A</div>
+        <div><div id="sbName" class="sb-name">Challengers of 90's</div><div id="sbSub" class="sb-sub">ERP System</div></div>
+      </div>
+    </div>
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="langBn" onclick="setLang('bn')">বাংলা</button>
+      <button class="lang-btn" id="langEn" onclick="setLang('en')">English</button>
+    </div>
+    <div class="sb-user">
+      <div id="sbRole" class="sb-role">Super User</div>
+      <div id="sbUname" class="sb-uname">admin</div>
+    </div>
+    <div class="nav-label" data-bn="মূল মডিউল" data-en="Main Modules">মূল মডিউল</div>
+    <div class="nav-item active" data-module="dashboard"><span class="nav-icon">⊞</span><span data-bn="ড্যাশবোর্ড" data-en="Dashboard">ড্যাশবোর্ড</span></div>
+    <div class="nav-item" data-module="collection"><span class="nav-icon">৳</span><span data-bn="মাসিক কালেকশন" data-en="Collections">মাসিক কালেকশন</span></div>
+    <div class="nav-item" data-module="voucher"><span class="nav-icon">◈</span><span data-bn="ভাউচার এন্ট্রি" data-en="Voucher Entry">ভাউচার এন্ট্রি</span></div>
+    <div class="nav-item" data-module="receipt"><span class="nav-icon">◻</span><span data-bn="মানি রিসিট" data-en="Money Receipt">মানি রিসিট</span></div>
+    <div class="nav-item" data-module="reports"><span class="nav-icon">▤</span><span data-bn="রিপোর্টস" data-en="Reports">রিপোর্টস</span></div>
+    <div class="nav-label" data-bn="অ্যাকাউন্টিং" data-en="Accounting">অ্যাকাউন্টিং</div>
+    <div class="nav-item" data-module="journal"><span class="nav-icon">⇄</span><span data-bn="জার্নাল এন্ট্রি" data-en="Journal Entry">জার্নাল এন্ট্রি</span></div>
+    <div class="nav-item" data-module="ledger"><span class="nav-icon">◫</span><span data-bn="লেজার বুক" data-en="Ledger Book">লেজার বুক</span></div>
+    <div class="nav-item" data-module="daybook"><span class="nav-icon">▦</span><span data-bn="ডে বুক" data-en="Day Book">ডে বুক</span></div>
+    <div class="nav-item" data-module="cashbank"><span class="nav-icon">◑</span><span data-bn="ক্যাশ ও ব্যাংক" data-en="Cash &amp; Bank">ক্যাশ ও ব্যাংক</span></div>
+    <div class="nav-item" data-module="trialbalance"><span class="nav-icon">⇌</span><span data-bn="ট্রায়াল ব্যালেন্স" data-en="Trial Balance">ট্রায়াল ব্যালেন্স</span></div>
+    <div class="nav-item" data-module="balancesheet"><span class="nav-icon">◧</span><span data-bn="ব্যালেন্স শীট" data-en="Balance Sheet">ব্যালেন্স শীট</span></div>
+    <div class="nav-label" data-bn="সেটআপ" data-en="Setup">সেটআপ</div>
+    <div class="nav-item" data-module="coa"><span class="nav-icon">≡</span><span data-bn="চার্ট অব অ্যাকাউন্টস" data-en="Chart of Accounts">চার্ট অব অ্যাকাউন্টস</span></div>
+    <div class="nav-item" data-module="company"><span class="nav-icon">⚙</span><span data-bn="কোম্পানি তথ্য" data-en="Company Info">কোম্পানি তথ্য</span></div>
+    <div class="nav-item" data-module="users"><span class="nav-icon">◉</span><span data-bn="ইউজার ম্যানেজমেন্ট" data-en="Users">ইউজার ম্যানেজমেন্ট</span></div>
+    <div class="sb-footer">
+      <button class="btn-logout" onclick="logout()"><span data-bn="লগআউট" data-en="Logout">লগআউট</span></button>
+      <div class="sb-powered">© 2026 Aura Stay<br><span>Powered by Aura Stay</span></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-l">
+        <h2 id="topTitle">ড্যাশবোর্ড</h2>
+        <p id="topSub">সার্বিক আর্থিক অবস্থান</p>
+      </div>
+      <div class="topbar-r">
+        <button class="btn btn-ghost btn-sm" onclick="openModule('company')"><span data-bn="সেটিং" data-en="Settings">সেটিং</span></button>
+        <button class="btn btn-gold btn-sm" onclick="openModule('collection')"><span data-bn="+ কালেকশন" data-en="+ Collection">+ কালেকশন</span></button>
+        <button class="btn btn-ghost btn-sm" onclick="openModule('journal')"><span data-bn="+ জার্নাল" data-en="+ Journal">+ জার্নাল</span></button>
+        <button class="btn btn-ghost btn-sm" id="exportBtn" onclick="exportPDF()">PDF</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- DASHBOARD -->
+      <div id="dashboard" class="module active">
+        <div class="stats-grid">
+          <div class="stat-card sc-gold"><div class="stat-label" data-bn="মোট কালেকশন" data-en="Total Collections">মোট কালেকশন</div><div class="stat-value" id="statCollection">৳ 0</div><div class="stat-note" data-bn="চলতি হিসাব বছর" data-en="Current fiscal year">চলতি হিসাব বছর</div></div>
+          <div class="stat-card sc-em"><div class="stat-label" data-bn="ক্যাশ ব্যালেন্স" data-en="Cash Balance">ক্যাশ ব্যালেন্স</div><div class="stat-value" id="statCash">৳ 0</div><div class="stat-note" data-bn="আজকের অবস্থা" data-en="Current position">আজকের অবস্থা</div></div>
+          <div class="stat-card sc-navy"><div class="stat-label" data-bn="ব্যাংক ব্যালেন্স" data-en="Bank Balance">ব্যাংক ব্যালেন্স</div><div class="stat-value" id="statBank">৳ 0</div><div class="stat-note" data-bn="সর্বশেষ স্টেটমেন্ট" data-en="Last statement">সর্বশেষ স্টেটমেন্ট</div></div>
+          <div class="stat-card sc-info"><div class="stat-label" data-bn="মোট ভাউচার" data-en="Total Vouchers">মোট ভাউচার</div><div class="stat-value" id="statVoucher">0</div><div class="stat-note" data-bn="এন্ট্রি সংখ্যা" data-en="Entry count">এন্ট্রি সংখ্যা</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title" data-bn="দ্রুত কাজ করুন" data-en="Quick Actions">দ্রুত কাজ করুন</div></div>
+          <div class="card-body">
+            <div class="quick-grid">
+              <div class="quick-item" onclick="openModule('collection')"><span class="quick-icon">৳</span><span class="quick-label" data-bn="কালেকশন" data-en="Collection">কালেকশন</span></div>
+              <div class="quick-item" onclick="openModule('journal')"><span class="quick-icon">⇄</span><span class="quick-label" data-bn="জার্নাল" data-en="Journal">জার্নাল</span></div>
+              <div class="quick-item" onclick="openModule('voucher')"><span class="quick-icon">◈</span><span class="quick-label" data-bn="ভাউচার" data-en="Voucher">ভাউচার</span></div>
+              <div class="quick-item" onclick="openModule('receipt')"><span class="quick-icon">◻</span><span class="quick-label" data-bn="রিসিট" data-en="Receipt">রিসিট</span></div>
+              <div class="quick-item" onclick="openModule('ledger')"><span class="quick-icon">◫</span><span class="quick-label" data-bn="লেজার" data-en="Ledger">লেজার</span></div>
+              <div class="quick-item" onclick="openModule('reports')"><span class="quick-icon">▤</span><span class="quick-label" data-bn="রিপোর্টস" data-en="Reports">রিপোর্টস</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card"><div class="card-header"><div class="card-title" data-bn="আয় ও ব্যয় চার্ট" data-en="Income &amp; Expense Chart">আয় ও ব্যয় চার্ট</div></div><div class="card-body"><canvas id="dashChart" height="90"></canvas></div></div>
+      </div>
+
+      <!-- COLLECTION -->
+      <div id="collection" class="module">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title" data-bn="মাসিক কালেকশন এন্ট্রি" data-en="Monthly Collection Entry">মাসিক কালেকশন এন্ট্রি</div><div class="card-sub" data-bn="সেভ হলে মানি রিসিট অটো তৈরি হবে" data-en="Receipt auto-generated on save">সেভ হলে মানি রিসিট অটো তৈরি হবে</div></div>
+            <span class="badge bg-gold">Money Receipt</span>
+          </div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label" data-bn="তারিখ" data-en="Date">তারিখ</label><input type="date" id="colDate" class="form-control"></div>
+              <div class="form-group"><label class="form-label" data-bn="রিসিট নং (অটো)" data-en="Receipt No (Auto)">রিসিট নং (অটো)</label><input type="text" id="colRno" class="form-control" readonly placeholder="Auto"></div>
+              <div class="form-group"><label class="form-label" data-bn="সদস্য / দাতার নাম" data-en="Member / Donor Name">সদস্য / দাতার নাম</label><input type="text" id="colName" class="form-control" placeholder="নাম লিখুন"></div>
+              <div class="form-group"><label class="form-label" data-bn="পরিমাণ (টাকা)" data-en="Amount (BDT)">পরিমাণ (টাকা)</label><input type="number" id="colAmt" class="form-control" placeholder="0.00" min="0"></div>
+            </div>
+            <div class="form-group"><label class="form-label" data-bn="বিবরণ" data-en="Description">বিবরণ</label><textarea id="colDesc" class="form-control" placeholder="কালেকশনের কারণ..."></textarea></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-gold" onclick="saveCollection()"><span data-bn="সেভ ও রিসিট তৈরি" data-en="Save &amp; Generate Receipt">সেভ ও রিসিট তৈরি</span></button>
+              <button class="btn btn-ghost" onclick="openModule('receipt')"><span data-bn="রিসিট প্রিভিউ" data-en="Receipt Preview">রিসিট প্রিভিউ</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VOUCHER -->
+      <div id="voucher" class="module">
+        <div class="card">
+          <div class="card-header"><div class="card-title" data-bn="ভাউচার এন্ট্রি" data-en="Voucher Entry">ভাউচার এন্ট্রি</div></div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label" data-bn="ভাউচার টাইপ" data-en="Voucher Type">ভাউচার টাইপ</label><select id="vchType" class="form-control"><option>পেমেন্ট</option><option>রিসিট</option><option>জার্নাল</option><option>কনট্রা</option></select></div>
+              <div class="form-group"><label class="form-label" data-bn="তারিখ" data-en="Date">তারিখ</label><input type="date" id="vchDate" class="form-control"></div>
+              <div class="form-group"><label class="form-label" data-bn="অ্যাকাউন্ট" data-en="Account">অ্যাকাউন্ট</label><select id="vchAcc" class="form-control"><option>Cash in Hand</option><option>Sonali Bank A/C</option><option>Donation Income</option><option>Office Expense</option></select></div>
+              <div class="form-group"><label class="form-label" data-bn="পরিমাণ" data-en="Amount">পরিমাণ</label><input type="number" id="vchAmt" class="form-control" placeholder="0.00" min="0"></div>
+            </div>
+            <div class="form-group"><label class="form-label" data-bn="বিবরণ" data-en="Description">বিবরণ</label><textarea id="vchDesc" class="form-control" placeholder="ভাউচারের বিস্তারিত..."></textarea></div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-primary" onclick="saveVoucher()"><span data-bn="ভাউচার সেভ" data-en="Save Voucher">ভাউচার সেভ</span></button>
+              <button class="btn btn-ghost" onclick="window.print()"><span data-bn="প্রিন্ট" data-en="Print">প্রিন্ট</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECEIPT -->
+      <div id="receipt" class="module">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title" data-bn="মানি রিসিট" data-en="Money Receipt">মানি রিসিট</div>
+              <div class="card-sub" data-bn="QR সহ দুই কপি — Donor & Office" data-en="Dual copy with QR — Donor & Office">QR সহ দুই কপি — Donor & Office</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" onclick="genReceiptPreview()">🔄 <span data-bn="রিফ্রেশ" data-en="Refresh">রিফ্রেশ</span></button>
+              <button class="btn btn-ghost btn-sm" onclick="clearSignature()">✏️ <span data-bn="সই মুছুন" data-en="Clear Sig">সই মুছুন</span></button>
+              <button class="btn btn-success btn-sm" onclick="printReceipt()">🖨️ <span data-bn="প্রিন্ট" data-en="Print">প্রিন্ট</span></button>
+            </div>
+          </div>
+          <div class="card-body">
+
+            <!-- DIGITAL SIGNATURE PAD -->
+            <div class="card" style="margin-bottom:16px;border:1.5px solid var(--gold);background:var(--gold-bg)">
+              <div class="card-body" style="padding:14px 18px">
+                <div style="font-size:12px;font-weight:700;color:#7A5500;margin-bottom:8px">✍️ <span data-bn="ডিজিটাল স্বাক্ষর (অনুমোদনকারী)" data-en="Digital Signature (Authorized)">ডিজিটাল স্বাক্ষর (অনুমোদনকারী)</span></div>
+                <canvas id="sigCanvas" class="sig-pad" width="460" height="80"></canvas>
+                <div class="sig-controls">
+                  <button class="sig-btn" onclick="clearSignature()">Clear</button>
+                  <button class="sig-btn primary" onclick="genReceiptPreview()">Apply to Receipt</button>
+                  <span style="margin-left:auto;font-size:11px;color:var(--muted);align-self:center" data-bn="মাউস বা আঙুল দিয়ে সই করুন" data-en="Sign with mouse or finger">মাউস বা আঙুল দিয়ে সই করুন</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- DUAL RECEIPT PREVIEW -->
+            <div id="receiptPreview" class="receipt-sheet">
+
+              <!-- COPY 1: DONOR COPY -->
+              <div class="receipt-copy">
+                <div class="receipt-copy-label">🌿 Donor Copy</div>
+                <div class="receipt-top">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <div id="rcpLogo" class="rcp-logo" style="width:42px;height:42px;font-size:17px">A</div>
+                    <div>
+                      <div id="rcpName" class="rcp-oname" style="font-size:13px">Challengers of 90's</div>
+                      <div id="rcpAddr" class="rcp-osub" style="font-size:10px">Organization Address</div>
+                    </div>
+                  </div>
+                  <div class="rcp-tag">
+                    <div class="rcp-tag-t" style="font-size:9px">Money Receipt</div>
+                    <div id="rcpNo" class="rcp-no" style="font-size:14px">MR-0001</div>
+                  </div>
+                </div>
+                <div class="receipt-body" style="padding:12px 16px">
+                  <div class="rcp-abox" style="padding:10px 14px;margin-bottom:10px">
+                    <div class="rcp-alabel" style="font-size:10px" data-bn="প্রাপ্ত পরিমাণ" data-en="Amount Received">প্রাপ্ত পরিমাণ</div>
+                    <div id="rcpAmt" class="rcp-avalue" style="font-size:20px">৳ 0</div>
+                  </div>
+                  <div class="rcp-row" style="padding:6px 0"><div class="rcp-key">Received From</div><div id="rcpPayer" class="rcp-val">---</div></div>
+                  <div class="rcp-row" style="padding:6px 0"><div class="rcp-key">Date</div><div id="rcpDate" class="rcp-val">--</div></div>
+                  <div class="rcp-row" style="padding:6px 0;border-bottom:none"><div class="rcp-key">Particulars</div><div id="rcpDesc" class="rcp-val">---</div></div>
+
+                  <!-- QR + Signatures -->
+                  <div class="qr-section">
+                    <div>
+                      <canvas id="qrCanvas1" class="qr-canvas"></canvas>
+                      <div style="font-size:8px;color:#94A3B8;text-align:center;margin-top:2px">Scan to verify</div>
+                    </div>
+                    <div style="flex:1">
+                      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:16px">
+                        <div style="text-align:center">
+                          <div id="sigImg1" style="height:36px;display:flex;align-items:flex-end;justify-content:center;border-bottom:1.5px solid #0F1F3D;width:100px;margin-bottom:4px"></div>
+                          <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase">Donor Signature</div>
+                        </div>
+                        <div style="text-align:center">
+                          <div id="sigImg1Auth" style="height:36px;display:flex;align-items:flex-end;justify-content:center;border-bottom:1.5px solid #0F1F3D;width:100px;margin-bottom:4px"></div>
+                          <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase">Authorized Sig.</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="rcp-stamp" style="font-size:9px;margin-top:8px">Aura Stay ERP — © 2026 Aura Stay</div>
+                </div>
+              </div>
+
+              <!-- DIVIDER -->
+              <div style="position:relative;margin:4px 0;text-align:center">
+                <div style="border-top:2px dashed #CBD5E0;margin:6px 0"></div>
+                <span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#fff;padding:0 8px;font-size:13px;color:#94A3B8">✂</span>
+              </div>
+
+              <!-- COPY 2: OFFICE COPY -->
+              <div class="receipt-copy">
+                <div class="receipt-copy-label" style="background:#1A3260">🏢 Office Copy</div>
+                <div class="receipt-top" style="background:linear-gradient(135deg,#1A3260,#243B55)">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <div class="rcp-logo" style="width:42px;height:42px;font-size:17px" id="rcpLogo2">A</div>
+                    <div>
+                      <div id="rcpName2" class="rcp-oname" style="font-size:13px">Challengers of 90's</div>
+                      <div id="rcpAddr2" class="rcp-osub" style="font-size:10px">Organization Address</div>
+                    </div>
+                  </div>
+                  <div class="rcp-tag">
+                    <div class="rcp-tag-t" style="font-size:9px">Office Copy</div>
+                    <div id="rcpNo2" class="rcp-no" style="font-size:14px">MR-0001</div>
+                  </div>
+                </div>
+                <div class="receipt-body" style="padding:12px 16px">
+                  <div class="rcp-abox" style="padding:10px 14px;margin-bottom:10px">
+                    <div class="rcp-alabel" style="font-size:10px">Amount Received</div>
+                    <div id="rcpAmt2" class="rcp-avalue" style="font-size:20px">৳ 0</div>
+                  </div>
+                  <div class="rcp-row" style="padding:6px 0"><div class="rcp-key">Received From</div><div id="rcpPayer2" class="rcp-val">---</div></div>
+                  <div class="rcp-row" style="padding:6px 0"><div class="rcp-key">Date</div><div id="rcpDate2" class="rcp-val">--</div></div>
+                  <div class="rcp-row" style="padding:6px 0;border-bottom:none"><div class="rcp-key">Particulars</div><div id="rcpDesc2" class="rcp-val">---</div></div>
+
+                  <div class="qr-section">
+                    <div>
+                      <canvas id="qrCanvas2" class="qr-canvas"></canvas>
+                      <div style="font-size:8px;color:#94A3B8;text-align:center;margin-top:2px">Scan to verify</div>
+                    </div>
+                    <div style="flex:1">
+                      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:16px">
+                        <div style="text-align:center">
+                          <div id="sigImg2" style="height:36px;display:flex;align-items:flex-end;justify-content:center;border-bottom:1.5px solid #0F1F3D;width:100px;margin-bottom:4px"></div>
+                          <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase">Donor Signature</div>
+                        </div>
+                        <div style="text-align:center">
+                          <div id="sigImg2Auth" style="height:36px;display:flex;align-items:flex-end;justify-content:center;border-bottom:1.5px solid #0F1F3D;width:100px;margin-bottom:4px"></div>
+                          <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase">Authorized Sig.</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="rcp-stamp" style="font-size:9px;margin-top:8px">Aura Stay ERP — © 2026 Aura Stay</div>
+                </div>
+              </div>
+
+            </div><!-- /receiptPreview -->
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORTS -->
+      <div id="reports" class="module">
+        <div class="card">
+          <div class="card-header"><div class="card-title" data-bn="আর্থিক রিপোর্টস" data-en="Financial Reports">আর্থিক রিপোর্টস</div></div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:20px">
+              <button class="btn btn-ghost" style="justify-content:center" onclick="loadReport('Receipt & Payment Statement')">Receipt &amp; Payment</button>
+              <button class="btn btn-ghost" style="justify-content:center" onclick="loadReport('Profit & Loss Statement')">Profit &amp; Loss</button>
+              <button class="btn btn-ghost" style="justify-content:center" onclick="loadReport('Trial Balance')">Trial Balance</button>
+              <button class="btn btn-ghost" style="justify-content:center" onclick="loadReport('Balance Sheet')">Balance Sheet</button>
+              <button class="btn btn-ghost" style="justify-content:center" onclick="loadReport('Day Book')">Day Book</button>
+              <button class="btn btn-ghost" style="justify-content:center" onclick="loadReport('Monthly Collection Report')">Monthly Collection</button>
+              <button class="btn btn-ghost" style="justify-content:center" onclick="loadReport('Cash & Bank Book')">Cash &amp; Bank Book</button>
+              <button class="btn btn-gold" style="justify-content:center" onclick="exportPDF()">⬇ PDF Export</button>
+            </div>
+            <div id="reportResult" class="alert alert-info">রিপোর্ট নির্বাচন করুন।</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- JOURNAL ENTRY (Double-Entry) -->
+      <div id="journal" class="module">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title" data-bn="জার্নাল এন্ট্রি — ডাবল এন্ট্রি" data-en="Journal Entry — Double Entry">জার্নাল এন্ট্রি — ডাবল এন্ট্রি</div><div class="card-sub" data-bn="ডেবিট = ক্রেডিট হতে হবে" data-en="Debit must equal Credit">ডেবিট = ক্রেডিট হতে হবে</div></div>
+            <span id="jBalBadge" class="badge bg-navy">Balanced</span>
+          </div>
+          <div class="card-body">
+            <div class="form-row-2" style="margin-bottom:16px">
+              <div class="form-group"><label class="form-label" data-bn="তারিখ" data-en="Date">তারিখ</label><input type="date" id="jDate" class="form-control"></div>
+              <div class="form-group"><label class="form-label" data-bn="রেফ নং (অটো)" data-en="Ref No (Auto)">রেফ নং (অটো)</label><input type="text" id="jRef" class="form-control" readonly></div>
+            </div>
+            <div class="form-group"><label class="form-label" data-bn="নারেশন / বিবরণ" data-en="Narration / Description">নারেশন / বিবরণ</label><textarea id="jNar" class="form-control" rows="2" placeholder="লেনদেনের বিবরণ..."></textarea></div>
+            <div class="entry-lines" id="jLines">
+              <div class="entry-line entry-line-hdr">
+                <div data-bn="অ্যাকাউন্ট" data-en="Account">অ্যাকাউন্ট</div>
+                <div data-bn="বিবরণ" data-en="Particulars">বিবরণ</div>
+                <div data-bn="ডেবিট" data-en="Debit">ডেবিট</div>
+                <div data-bn="ক্রেডিট" data-en="Credit">ক্রেডিট</div>
+                <div></div>
+              </div>
+            </div>
+            <div class="entry-totals">
+              <div><strong data-bn="মোট" data-en="Total">মোট</strong></div><div></div>
+              <div id="jTDr" class="td-g">0.00</div>
+              <div id="jTCr" class="td-r">0.00</div>
+              <div></div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap">
+              <button class="btn-add-line" onclick="addJLine()">+ <span data-bn="লাইন যোগ করুন" data-en="Add Line">লাইন যোগ করুন</span></button>
+              <div style="flex:1"></div>
+              <div id="jBalMsg" class="alert alert-success" style="padding:7px 14px;margin:0;font-size:12.5px">✓ <span data-bn="ব্যালেন্সড" data-en="Balanced">ব্যালেন্সড</span></div>
+              <button class="btn btn-gold" onclick="saveJournal()"><span data-bn="জার্নাল সেভ করুন" data-en="Save Journal">জার্নাল সেভ করুন</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LEDGER -->
+      <div id="ledger" class="module">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title" data-bn="লেজার বুক" data-en="Ledger Book">লেজার বুক</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select id="ledAcc" class="form-control" style="width:auto;min-width:180px" onchange="loadLedger()"><option>Cash in Hand</option><option>Sonali Bank A/C</option><option>Donation Income</option><option>Office Expense</option></select>
+              <button class="btn btn-ghost btn-sm" onclick="loadLedger()"><span data-bn="লোড" data-en="Load">লোড</span></button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="ledger-grid">
+              <div class="ledger-box"><div class="ledger-box-lbl" data-bn="মোট ডেবিট" data-en="Total Debit">মোট ডেবিট</div><div id="ledDr" class="ledger-box-val td-g">৳ 0</div></div>
+              <div class="ledger-box"><div class="ledger-box-lbl" data-bn="মোট ক্রেডিট" data-en="Total Credit">মোট ক্রেডিট</div><div id="ledCr" class="ledger-box-val td-r">৳ 0</div></div>
+              <div class="ledger-box"><div class="ledger-box-lbl" data-bn="ব্যালেন্স" data-en="Balance">ব্যালেন্স</div><div id="ledBal" class="ledger-box-val">৳ 0</div></div>
+            </div>
+            <div class="table-wrap"><table>
+              <thead><tr><th data-bn="তারিখ" data-en="Date">তারিখ</th><th data-bn="বিবরণ" data-en="Particulars">বিবরণ</th><th data-bn="রেফ" data-en="Ref">রেফ</th><th data-bn="ডেবিট" data-en="Debit">ডেবিট</th><th data-bn="ক্রেডিট" data-en="Credit">ক্রেডিট</th><th data-bn="ব্যালেন্স" data-en="Balance">ব্যালেন্স</th></tr></thead>
+              <tbody id="ledBody"><tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">অ্যাকাউন্ট নির্বাচন করুন</td></tr></tbody>
+            </table></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DAYBOOK -->
+      <div id="daybook" class="module">
+        <div class="card">
+          <div class="card-header"><div class="card-title" data-bn="ডে বুক" data-en="Day Book">ডে বুক</div><button class="btn btn-ghost btn-sm" onclick="addDemo()">Demo</button></div>
+          <div class="card-body np"><div class="table-wrap"><table>
+            <thead><tr><th data-bn="তারিখ" data-en="Date">তারিখ</th><th data-bn="বিবরণ" data-en="Particulars">বিবরণ</th><th data-bn="ডেবিট" data-en="Debit">ডেবিট</th><th data-bn="ক্রেডিট" data-en="Credit">ক্রেডিট</th><th data-bn="অ্যাকাউন্ট" data-en="Account">অ্যাকাউন্ট</th></tr></thead>
+            <tbody id="dbBody">
+              <tr><td>2026-06-01</td><td>মাসিক সদস্য ফি কালেকশন</td><td class="td-g">৳ 5,000</td><td class="td-m">—</td><td>Cash in Hand</td></tr>
+              <tr><td>2026-06-02</td><td>অফিস খরচ পরিশোধ</td><td class="td-m">—</td><td class="td-r">৳ 1,200</td><td>Office Expense</td></tr>
+            </tbody>
+          </table></div></div>
+        </div>
+      </div>
+
+      <!-- CASH & BANK -->
+      <div id="cashbank" class="module">
+        <div class="card"><div class="card-header"><div class="card-title" data-bn="ক্যাশ ও ব্যাংক বুক" data-en="Cash &amp; Bank Book">ক্যাশ ও ব্যাংক বুক</div></div><div class="card-body"><canvas id="cbChart" height="100"></canvas></div></div>
+      </div>
+
+      <!-- TRIAL BALANCE -->
+      <div id="trialbalance" class="module">
+        <div class="card">
+          <div class="card-header"><div class="card-title" data-bn="ট্রায়াল ব্যালেন্স" data-en="Trial Balance">ট্রায়াল ব্যালেন্স</div><span class="badge bg-green">✓ Balanced</span></div>
+          <div class="card-body np"><div class="table-wrap"><table>
+            <thead><tr><th data-bn="অ্যাকাউন্ট" data-en="Account">অ্যাকাউন্ট</th><th data-bn="ডেবিট" data-en="Debit">ডেবিট</th><th data-bn="ক্রেডিট" data-en="Credit">ক্রেডিট</th></tr></thead>
+            <tbody id="tbBody">
+              <tr><td>Cash in Hand</td><td class="td-g">৳ 38,500</td><td class="td-m">—</td></tr>
+              <tr><td>Sonali Bank A/C</td><td class="td-m">—</td><td class="td-r">৳ 2,80,000</td></tr>
+              <tr><td>Donation Income</td><td class="td-m">—</td><td class="td-r">৳ 1,25,000</td></tr>
+              <tr><td>Office Expense</td><td class="td-g">৳ 24,500</td><td class="td-m">—</td></tr>
+            </tbody>
+          </table></div></div>
+        </div>
+      </div>
+
+      <!-- BALANCE SHEET -->
+      <div id="balancesheet" class="module">
+        <div class="card"><div class="card-header"><div class="card-title" data-bn="ব্যালেন্স শীট" data-en="Balance Sheet">ব্যালেন্স শীট</div></div>
+        <div class="card-body"><div class="stats-grid" style="margin-bottom:0">
+          <div class="stat-card sc-gold"><div class="stat-label" data-bn="মোট সম্পদ" data-en="Total Assets">মোট সম্পদ</div><div id="bsA" class="stat-value">৳ 0</div></div>
+          <div class="stat-card sc-navy"><div class="stat-label" data-bn="মোট দায়" data-en="Total Liabilities">মোট দায়</div><div id="bsL" class="stat-value">৳ 0</div></div>
+          <div class="stat-card sc-em"><div class="stat-label" data-bn="নিট তহবিল" data-en="Net Fund">নিট তহবিল</div><div id="bsF" class="stat-value">৳ 0</div></div>
+        </div></div></div>
+      </div>
+
+      <!-- CHART OF ACCOUNTS -->
+      <div id="coa" class="module">
+        <div class="card">
+          <div class="card-header"><div class="card-title" data-bn="চার্ট অব অ্যাকাউন্টস" data-en="Chart of Accounts">চার্ট অব অ্যাকাউন্টস</div><button class="btn btn-gold btn-sm" onclick="showAccModal()">+ <span data-bn="অ্যাকাউন্ট যোগ" data-en="Add Account">অ্যাকাউন্ট যোগ</span></button></div>
+          <div class="card-body np"><div class="table-wrap"><table>
+            <thead><tr><th data-bn="কোড" data-en="Code">কোড</th><th data-bn="নাম" data-en="Name">নাম</th><th data-bn="গ্রুপ" data-en="Group">গ্রুপ</th><th data-bn="টাইপ" data-en="Type">টাইপ</th><th data-bn="ওপেনিং ব্যালেন্স" data-en="Opening Bal">ওপেনিং ব্যালেন্স</th></tr></thead>
+            <tbody id="coaBody">
+              <tr><td>1110</td><td>Cash in Hand</td><td>Asset</td><td><span class="badge bg-gold">Ledger</span></td><td class="td-g">৳ 0</td></tr>
+              <tr><td>1120</td><td>Bank Accounts</td><td>Asset</td><td><span class="badge bg-gold">Ledger</span></td><td class="td-g">৳ 0</td></tr>
+              <tr><td>4100</td><td>Donation Income</td><td>Income</td><td><span class="badge bg-green">Ledger</span></td><td>৳ 0</td></tr>
+              <tr><td>5100</td><td>Office Expense</td><td>Expense</td><td><span class="badge bg-navy">Ledger</span></td><td>৳ 0</td></tr>
+            </tbody>
+          </table></div></div>
+        </div>
+      </div>
+
+      <!-- COMPANY -->
+      <div id="company" class="module">
+        <div class="card">
+          <div class="card-header"><div class="card-title" data-bn="কোম্পানি তথ্য সম্পাদনা" data-en="Edit Company Info">কোম্পানি তথ্য সম্পাদনা</div></div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label" data-bn="কোম্পানির নাম" data-en="Company Name">কোম্পানির নাম</label><input id="coName" class="form-control" value="Challengers of 90's"></div>
+              <div class="form-group"><label class="form-label" data-bn="সাব টাইটেল" data-en="Sub Title">সাব টাইটেল</label><input id="coSub" class="form-control" value="Non Profit Krira Songothon ERP"></div>
+              <div class="form-group"><label class="form-label" data-bn="ফোন" data-en="Phone">ফোন</label><input id="coPhone" class="form-control" value="01XXXXXXXXX"></div>
+            </div>
+            <div class="form-group"><label class="form-label" data-bn="ঠিকানা" data-en="Address">ঠিকানা</label><textarea id="coAddr" class="form-control">আপনার কোম্পানির ঠিকানা</textarea></div>
+            <div class="form-group">
+              <label class="form-label" data-bn="লোগো আপলোড" data-en="Upload Logo">লোগো আপলোড</label>
+              <input type="file" id="coLogoFile" class="form-control" accept="image/*" onchange="loadLogo(event)">
+              <div style="display:flex;align-items:center;gap:14px;margin-top:12px">
+                <div id="coLogoPreview" style="width:64px;height:64px;border-radius:12px;border:1.5px solid var(--border);background:var(--cream) center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px;color:var(--muted)">A</div>
+                <div style="font-size:12px;color:var(--muted)" data-bn="PNG/JPG, সুপারিশ: 200×200px" data-en="PNG/JPG, recommended: 200×200px">PNG/JPG, সুপারিশ: 200×200px</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-gold" onclick="saveCompany()"><span data-bn="সেভ করুন" data-en="Save">সেভ করুন</span></button>
+              <button class="btn btn-ghost" onclick="applyCompany()"><span data-bn="প্রিভিউ" data-en="Preview">প্রিভিউ</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div id="users" class="module">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title" data-bn="ইউজার ম্যানেজমেন্ট" data-en="User Management">ইউজার ম্যানেজমেন্ট</div><div class="card-sub" data-bn="শুধুমাত্র Super User অ্যাকসেস" data-en="Super User access only">শুধুমাত্র Super User অ্যাকসেস</div></div><span class="badge bg-purple">Admin Only</span></div>
+          <div class="card-body">
+            <div class="form-row-3" style="margin-bottom:14px">
+              <div class="form-group"><label class="form-label" data-bn="ইউজারনেম" data-en="Username">ইউজারনেম</label><input id="nuName" class="form-control" placeholder="username"></div>
+              <div class="form-group"><label class="form-label" data-bn="রোল" data-en="Role">রোল</label><select id="nuRole" class="form-control"><option>ইউজার</option><option>ম্যানেজার</option><option>Super User</option></select></div>
+              <div class="form-group"><label class="form-label" data-bn="পাসওয়ার্ড" data-en="Password">পাসওয়ার্ড</label><input id="nuPass" class="form-control" type="password" placeholder="••••••"></div>
+            </div>
+            <button class="btn btn-primary" onclick="addUser()"><span data-bn="ইউজার যোগ করুন" data-en="Add User">ইউজার যোগ করুন</span></button>
+            <div class="table-wrap" style="margin-top:20px"><table>
+              <thead><tr><th data-bn="ইউজার" data-en="User">ইউজার</th><th data-bn="রোল" data-en="Role">রোল</th><th data-bn="স্ট্যাটাস" data-en="Status">স্ট্যাটাস</th></tr></thead>
+              <tbody id="userTable"><tr><td>admin</td><td><span class="badge bg-gold">Super User</span></td><td><span class="badge bg-green">Active</span></td></tr></tbody>
+            </table></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ADD ACCOUNT MODAL -->
+<div id="accModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title" data-bn="নতুন অ্যাকাউন্ট" data-en="New Account">নতুন অ্যাকাউন্ট</div><button class="modal-close" onclick="closeModal('accModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-row-2">
+        <div class="form-group"><label class="form-label" data-bn="কোড" data-en="Code">কোড</label><input id="accCode" class="form-control" placeholder="1110"></div>
+        <div class="form-group"><label class="form-label" data-bn="নাম" data-en="Name">নাম</label><input id="accName" class="form-control" placeholder="Cash in Hand"></div>
+        <div class="form-group"><label class="form-label" data-bn="গ্রুপ" data-en="Group">গ্রুপ</label><select id="accGrp" class="form-control"><option>Asset</option><option>Liability</option><option>Equity</option><option>Income</option><option>Expense</option></select></div>
+        <div class="form-group"><label class="form-label" data-bn="টাইপ" data-en="Type">টাইপ</label><select id="accTyp" class="form-control"><option>Ledger</option><option>Group</option></select></div>
+        <div class="form-group col-full"><label class="form-label" data-bn="ওপেনিং ব্যালেন্স" data-en="Opening Balance">ওপেনিং ব্যালেন্স</label><input id="accOp" class="form-control" type="number" value="0"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('accModal')"><span data-bn="বাতিল" data-en="Cancel">বাতিল</span></button>
+      <button class="btn btn-gold" onclick="saveAccount()"><span data-bn="সেভ করুন" data-en="Save">সেভ করুন</span></button>
+    </div>
+  </div>
+</div>
+
+<script>
+var S={
+  lang:'bn',user:{name:'admin',role:'Super User'},perms:[],
+  company:{name:"Challengers of 90's",sub:"Non Profit Krira Songothon ERP",address:"আপনার কোম্পানির ঠিকানা",phone:"01XXXXXXXXX",logo:""},
+  coa:['Cash in Hand','Sonali Bank A/C','Donation Income','Office Expense'],
+  jlc:0,fbReady:false
+};
+var TT={
+  bn:{dashboard:'ড্যাশবোর্ড',collection:'মাসিক কালেকশন',voucher:'ভাউচার এন্ট্রি',receipt:'মানি রিসিট',reports:'রিপোর্টস',journal:'জার্নাল এন্ট্রি',ledger:'লেজার বুক',daybook:'ডে বুক',cashbank:'ক্যাশ ও ব্যাংক বুক',trialbalance:'ট্রায়াল ব্যালেন্স',balancesheet:'ব্যালেন্স শীট',coa:'চার্ট অব অ্যাকাউন্টস',company:'কোম্পানি তথ্য',users:'ইউজার ম্যানেজমেন্ট'},
+  en:{dashboard:'Dashboard',collection:'Collections',voucher:'Voucher Entry',receipt:'Money Receipt',reports:'Reports',journal:'Journal Entry',ledger:'Ledger Book',daybook:'Day Book',cashbank:'Cash & Bank Book',trialbalance:'Trial Balance',balancesheet:'Balance Sheet',coa:'Chart of Accounts',company:'Company Info',users:'User Management'}
+};
+window.addEventListener('firebase-ready', function() {
+  S.fbReady = true;
+  console.log('🔥 Firebase event received — dual-save active');
+});
+// Also check if already ready (race condition guard)
+if (window._fbReady) S.fbReady = true;
+/* TOAST */
+function toast(msg,type){
+  type=type||'success';
+  var icons={success:'✅',error:'❌',info:'ℹ️',warning:'⚠️'};
+  var t=document.createElement('div');
+  t.className='toast t-'+type;
+  t.innerHTML='<span style="font-size:17px">'+icons[type]+'</span><span>'+msg+'</span>';
+  document.getElementById('toastWrap').appendChild(t);
+  setTimeout(function(){t.style.opacity='0';t.style.transition='.3s';setTimeout(function(){t.remove();},300);},3200);
+}
+/* LANGUAGE */
+function setLang(lang){
+  S.lang=lang;
+  document.documentElement.setAttribute('data-lang',lang);
+  document.getElementById('langBn').classList.toggle('active',lang==='bn');
+  document.getElementById('langEn').classList.toggle('active',lang==='en');
+  document.querySelectorAll('[data-bn][data-en]').forEach(function(el){
+    // Skip inputs and elements that should not change text
+    if(el.tagName==='INPUT'||el.tagName==='SELECT'||el.tagName==='TEXTAREA') return;
+    var val=el.getAttribute('data-'+lang);
+    if(val) el.textContent=val;
+  });
+  var an=document.querySelector('.nav-item.active');
+  if(an){ var m=an.getAttribute('data-module'); if(m&&TT[lang][m]) document.getElementById('topTitle').textContent=TT[lang][m]; }
+  // Login hint — always show both languages
+  var hint=document.getElementById('loginHint');
+  if(hint) hint.innerHTML=lang==='bn'
+    ? 'ডিফল্ট: admin / admin123'
+    : 'Default: admin / admin123';
+}
+/* NAVIGATION */
+document.querySelectorAll('.nav-item').forEach(function(el){ el.addEventListener('click',function(){ openModule(el.getAttribute('data-module')); }); });
+function openModule(id){
+  if(S.perms.length>0&&!S.perms.includes(id)){ toast(S.lang==='bn'?'অ্যাকসেস নেই।':'Access denied.','error'); return; }
+  document.querySelectorAll('.module').forEach(function(m){ m.classList.remove('active'); });
+  var t=document.getElementById(id); if(t) t.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(function(a){ a.classList.toggle('active',a.getAttribute('data-module')===id); });
+  document.getElementById('topTitle').textContent=TT[S.lang][id]||id;
+  document.getElementById('topSub').textContent='';
+  if(id==='cashbank') initCBChart();
+  if(id==='journal'&&S.jlc===0){ addJLine(); addJLine(); }
+  if(id==='ledger') loadLedger();
+  if(id==='receipt'){ genReceiptPreview(); setTimeout(initSignaturePad, 200); }
+}
+function applyRoleAccess(p){ document.querySelectorAll('.nav-item').forEach(function(el){ var m=el.getAttribute('data-module'); if(m) el.style.display=p.includes(m)?'':'none'; }); }
+/* LOGIN */
+function fillGuest(){ document.getElementById('loginUser').value='guest'; document.getElementById('loginPass').value='guest'; }
+function login(){
+  var user=document.getElementById('loginUser').value.trim();
+  var pass=document.getElementById('loginPass').value.trim();
+  var err=document.getElementById('loginErr');
+  if(!user||!pass){ err.textContent='ইউজার ও পাসওয়ার্ড দিন।'; err.classList.remove('hidden'); return; }
+  err.classList.add('hidden');
+  var btn=document.getElementById('loginBtn'); btn.disabled=true; btn.textContent='...';
+  google.script.run
+    .withSuccessHandler(function(res){
+      btn.disabled=false; btn.innerHTML='<span data-bn="লগইন করুন" data-en="Sign In">লগইন করুন</span>';
+      if(res&&res.ok&&res.user){
+        S.user=res.user; S.perms=res.permissions||[];
+        document.getElementById('loginModal').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        document.getElementById('sbRole').textContent=res.user.role;
+        document.getElementById('sbUname').textContent=res.user.name;
+        if(S.perms.length) applyRoleAccess(S.perms);
+        initApp();
+        toast((S.lang==='bn'?'স্বাগতম, ':'Welcome, ')+res.user.name+'!','success');
+      } else { err.textContent=(res&&res.message)?res.message:'লগইন ব্যর্থ।'; err.classList.remove('hidden'); }
+    })
+    .withFailureHandler(function(e){ btn.disabled=false; btn.innerHTML='<span>লগইন করুন</span>'; err.textContent='সার্ভার এরর: '+(e.message||e); err.classList.remove('hidden'); })
+    .loginUser({user:user,pass:pass});
+}
+function logout(){ S.user={}; S.perms=[]; document.getElementById('app').classList.add('hidden'); document.getElementById('loginModal').classList.remove('hidden'); }
+/* FIREBASE SAVE */
+async function fbSave(col, data) {
+  // Wait up to 5s for Firebase SDK to load
+  if (!window._fbReady) {
+    await new Promise(function(resolve) {
+      var waited = 0;
+      var check = setInterval(function() {
+        waited += 200;
+        if (window._fbReady || waited >= 5000) {
+          clearInterval(check); resolve();
+        }
+      }, 200);
+    });
+  }
+  if (!window._fb || !window._fb.db) {
+    console.warn('Firebase not available — skipping cloud save');
+    return null;
+  }
+  try {
+    var payload = Object.assign({}, data, {
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      savedAt:   new Date().toISOString()
+    });
+    var ref = await window._fb.db.collection(col).add(payload);
+    console.log('✅ Firebase saved ->', col, '->', ref.id);
+    return ref.id;
+  } catch(e) {
+    console.warn('⚠️ Firebase save failed:', e.message);
+    return null;
+  }
+}
+/* RECEIPT */
+function genRno(){ return 'MR-'+String(Math.floor(1000+Math.random()*9000)); }
+
+/* ═══════════════════════════════════════════
+   SIGNATURE PAD
+═══════════════════════════════════════════ */
+var sigState = { drawing: false, dataUrl: null };
+
+function initSignaturePad() {
+  var canvas = document.getElementById('sigCanvas');
+  if (!canvas || canvas._sigInit) return;
+  canvas._sigInit = true;
+  var ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#0F1F3D';
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  function getPos(e) {
+    var r = canvas.getBoundingClientRect();
+    var src = e.touches ? e.touches[0] : e;
+    return { x: (src.clientX - r.left) * (canvas.width / r.width), y: (src.clientY - r.top) * (canvas.height / r.height) };
+  }
+  function start(e) { e.preventDefault(); sigState.drawing = true; var p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }
+  function draw(e)  { e.preventDefault(); if (!sigState.drawing) return; var p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); }
+  function stop(e)  { sigState.drawing = false; sigState.dataUrl = canvas.toDataURL(); }
+
+  canvas.addEventListener('mousedown',  start);
+  canvas.addEventListener('mousemove',  draw);
+  canvas.addEventListener('mouseup',    stop);
+  canvas.addEventListener('mouseleave', stop);
+  canvas.addEventListener('touchstart', start, { passive: false });
+  canvas.addEventListener('touchmove',  draw,  { passive: false });
+  canvas.addEventListener('touchend',   stop);
+}
+
+function clearSignature() {
+  var canvas = document.getElementById('sigCanvas');
+  if (!canvas) return;
+  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  sigState.dataUrl = null;
+  // Clear from receipt
+  ['sigImg1Auth','sigImg2Auth'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = '';
+  });
+}
+
+function applySignatureToReceipt() {
+  if (!sigState.dataUrl) return;
+  ['sigImg1Auth','sigImg2Auth'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.innerHTML = '<img src="'+sigState.dataUrl+'" style="height:34px;max-width:100px;object-fit:contain">';
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════
+   QR CODE GENERATION
+═══════════════════════════════════════════ */
+function generateQR(canvasId, text) {
+  var canvas = document.getElementById(canvasId);
+  if (!canvas || typeof QRCode === 'undefined') return;
+  QRCode.toCanvas(canvas, text, {
+    width: 56, margin: 1,
+    color: { dark: '#0F1F3D', light: '#ffffff' }
+  }, function(err) {
+    if (err) console.warn('QR error:', err);
+  });
+}
+
+/* ═══════════════════════════════════════════
+   RECEIPT PREVIEW — DUAL COPY
+═══════════════════════════════════════════ */
+function genReceiptPreview() {
+  var rno   = document.getElementById('colRno').value || genRno();
+  var date  = document.getElementById('colDate').value || new Date().toISOString().slice(0,10);
+  var name  = document.getElementById('colName').value || '---';
+  var amt   = '৳ ' + Number(document.getElementById('colAmt').value || 0).toLocaleString();
+  var desc  = document.getElementById('colDesc').value || '---';
+  var org   = S.company.name || "Challengers of 90's";
+  var addr  = S.company.address || S.company.phone || 'Organization Address';
+
+  // Build QR data — receipt verification info
+  var qrText = [
+    'Receipt: ' + rno,
+    'Date: '    + date,
+    'From: '    + name,
+    'Amount: '  + amt,
+    'Org: '     + org
+  ].join('\n');
+
+  // Copy 1 (Donor)
+  function set(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
+  set('rcpNo',    rno);   set('rcpNo2',    rno);
+  set('rcpDate',  date);  set('rcpDate2',  date);
+  set('rcpPayer', name);  set('rcpPayer2', name);
+  set('rcpAmt',   amt);   set('rcpAmt2',   amt);
+  set('rcpDesc',  desc);  set('rcpDesc2',  desc);
+  set('rcpName',  org);   set('rcpName2',  org);
+  set('rcpAddr',  addr);  set('rcpAddr2',  addr);
+
+  // Logo
+  if (S.company.logo) {
+    ['rcpLogo','rcpLogo2'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.backgroundImage = 'url('+S.company.logo+')'; el.style.backgroundSize = 'cover'; el.textContent = ''; }
+    });
+  }
+
+  // Generate QR codes
+  setTimeout(function() {
+    generateQR('qrCanvas1', qrText);
+    generateQR('qrCanvas2', qrText);
+  }, 100);
+
+  // Apply signature if exists
+  if (sigState.dataUrl) applySignatureToReceipt();
+
+  // Init sig pad
+  initSignaturePad();
+}
+
+/* ═══════════════════════════════════════════
+   PRINT — DUAL COPY (A4, 2 receipts per page)
+═══════════════════════════════════════════ */
+function printReceipt() {
+  genReceiptPreview();
+  setTimeout(function() {
+    var pa = document.getElementById('printArea');
+    pa.innerHTML = document.getElementById('receiptPreview').outerHTML;
+    pa.style.display = 'block';
+    window.print();
+    pa.style.display = 'none';
+    pa.innerHTML = '';
+  }, 300); // wait for QR to render
+}
+/* COLLECTION SAVE */
+async function saveCollection(){
+  var date=document.getElementById('colDate').value;
+  var name=document.getElementById('colName').value.trim();
+  var amt=document.getElementById('colAmt').value;
+  var desc=document.getElementById('colDesc').value.trim();
+  if(!name||!amt){ toast(S.lang==='bn'?'নাম ও পরিমাণ দিন।':'Enter name and amount.','warning'); return; }
+  var rno=genRno(); document.getElementById('colRno').value=rno;
+  var p={type:'collection',date:date,name:name,amount:Number(amt),desc:desc,receiptNo:rno};
+  await fbSave('collections',p);
+  google.script.run
+    .withSuccessHandler(function(res){
+      if(res&&res.ok){
+        toast(S.lang==='bn'?'কালেকশন সেভ হয়েছে।':'Collection saved.','success');
+        addDBRow(date,desc||'Collection',Number(amt),null,'Cash in Hand');
+        document.getElementById('colName').value=''; document.getElementById('colAmt').value=''; document.getElementById('colDesc').value='';
+        genReceiptPreview();
+        google.script.run.withSuccessHandler(function(id){ if(id) document.getElementById('colRno').value=id; }).getNextReceiptNo();
+      } else toast('❌ '+(res&&res.message?res.message:'ব্যর্থ'),'error');
+    })
+    .withFailureHandler(function(e){ toast('এরর: '+(e.message||e),'error'); })
+    .saveERPEntry(p);
+}
+/* VOUCHER SAVE */
+async function saveVoucher(){
+  var type=document.getElementById('vchType').value;
+  var date=document.getElementById('vchDate').value;
+  var acc=document.getElementById('vchAcc').value;
+  var amt=document.getElementById('vchAmt').value;
+  var desc=document.getElementById('vchDesc').value.trim();
+  if(!amt){ toast(S.lang==='bn'?'পরিমাণ দিন।':'Enter amount.','warning'); return; }
+  var p={type:type,date:date,account:acc,amount:Number(amt),desc:desc};
+  await fbSave('vouchers',p);
+  google.script.run
+    .withSuccessHandler(function(res){
+      if(res&&res.ok){ toast(S.lang==='bn'?'ভাউচার সেভ হয়েছে।':'Voucher saved.','success'); addDBRow(date,desc||type,null,Number(amt),acc); document.getElementById('vchAmt').value=''; document.getElementById('vchDesc').value=''; }
+      else toast('❌ '+(res&&res.message||'ব্যর্থ'),'error');
+    })
+    .withFailureHandler(function(e){ toast('এরর: '+(e.message||e),'error'); })
+    .saveERPEntry(p);
+}
+/* JOURNAL - DOUBLE ENTRY */
+function buildAccOpts(){ return S.coa.map(function(a){ return '<option value="'+a+'">'+a+'</option>'; }).join(''); }
+function addJLine(){
+  S.jlc++;
+  var i=S.jlc; var o=buildAccOpts();
+  var d=document.createElement('div'); d.className='entry-line'; d.id='jl-'+i;
+  d.innerHTML='<div class="ecell"><select class="form-control" style="border:none;background:transparent" onchange="updateJTotals()">'+o+'</select></div>'+
+    '<div class="ecell"><input class="form-control" style="border:none;background:transparent" placeholder="Narration"></div>'+
+    '<div class="ecell"><input type="number" class="jDr form-control" style="border:none;background:transparent;color:var(--em)" placeholder="0.00" min="0" oninput="updateJTotals()"></div>'+
+    '<div class="ecell"><input type="number" class="jCr form-control" style="border:none;background:transparent;color:var(--danger)" placeholder="0.00" min="0" oninput="updateJTotals()"></div>'+
+    '<div class="ecell" style="text-align:center"><button class="btn-rm" onclick="rmJLine('+i+')">×</button></div>';
+  document.getElementById('jLines').appendChild(d);
+  updateJTotals();
+}
+function rmJLine(i){ var el=document.getElementById('jl-'+i); if(el){ el.remove(); updateJTotals(); } }
+function updateJTotals(){
+  var dr=0,cr=0;
+  document.querySelectorAll('.jDr').forEach(function(x){ dr+=Number(x.value||0); });
+  document.querySelectorAll('.jCr').forEach(function(x){ cr+=Number(x.value||0); });
+  document.getElementById('jTDr').textContent=dr.toFixed(2);
+  document.getElementById('jTCr').textContent=cr.toFixed(2);
+  var ok=Math.abs(dr-cr)<0.01;
+  document.getElementById('jBalBadge').className='badge '+(ok?'bg-green':'bg-danger');
+  document.getElementById('jBalBadge').textContent=ok?'✓ Balanced':'✗ Unbalanced';
+  document.getElementById('jBalMsg').className='alert '+(ok?'alert-success':'alert-danger');
+  document.getElementById('jBalMsg').querySelector('span').textContent=ok?(S.lang==='bn'?'ব্যালেন্সড':'Balanced'):(S.lang==='bn'?'আনব্যালেন্সড':'Unbalanced');
+}
+async function saveJournal(){
+  var dr=0,cr=0;
+  document.querySelectorAll('.jDr').forEach(function(x){ dr+=Number(x.value||0); });
+  document.querySelectorAll('.jCr').forEach(function(x){ cr+=Number(x.value||0); });
+  if(Math.abs(dr-cr)>0.01){ toast(S.lang==='bn'?'ডেবিট ≠ ক্রেডিট!':'Debit ≠ Credit!','error'); return; }
+  var lines=[];
+  document.querySelectorAll('#jLines .entry-line:not(.entry-line-hdr)').forEach(function(row){
+    lines.push({account:row.querySelector('select').value,sub:row.querySelectorAll('input')[0].value,debit:Number(row.querySelector('.jDr').value||0),credit:Number(row.querySelector('.jCr').value||0)});
+  });
+  var p={date:document.getElementById('jDate').value,ref:document.getElementById('jRef').value,narration:document.getElementById('jNar').value,lines:lines,totalDebit:dr,totalCredit:cr};
+  await fbSave('journals',p);
+  google.script.run
+    .withSuccessHandler(function(res){
+      if(res&&res.ok) toast(S.lang==='bn'?'জার্নাল সেভ হয়েছে।':'Journal saved.','success');
+      else toast('❌ '+(res&&res.message||'ব্যর্থ'),'error');
+    })
+    .withFailureHandler(function(e){ toast('এরর: '+(e.message||e),'error'); })
+    .saveERPEntry(Object.assign({type:'journal'},p));
+}
+/* LEDGER */
+function loadLedger(){
+  var acc=document.getElementById('ledAcc').value;
+  var tb=document.getElementById('ledBody');
+  tb.innerHTML='<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
+  google.script.run
+    .withSuccessHandler(function(d){
+      if(!d){ tb.innerHTML='<tr><td colspan="6" class="td-m" style="text-align:center">কোনো ডেটা নেই</td></tr>'; return; }
+      var rows=(d.daybook||[]).slice(1).filter(function(r){ return String(r[4]||'').toLowerCase()===acc.toLowerCase(); });
+      var tDr=0,tCr=0,bal=0,html='';
+      rows.forEach(function(r){
+        var dr=Number(r[2]||0),cr=Number(r[3]||0);
+        tDr+=dr; tCr+=cr; bal=tDr-tCr;
+        html+='<tr><td>'+(r[0]||'')+'</td><td>'+(r[1]||'')+'</td><td>—</td>';
+        html+=dr?'<td class="td-g">৳ '+dr.toLocaleString()+'</td>':'<td class="td-m">—</td>';
+        html+=cr?'<td class="td-r">৳ '+cr.toLocaleString()+'</td>':'<td class="td-m">—</td>';
+        html+='<td style="font-weight:600">৳ '+bal.toLocaleString()+'</td></tr>';
+      });
+      tb.innerHTML=html||'<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">এই অ্যাকাউন্টে কোনো এন্ট্রি নেই</td></tr>';
+      var fmt=function(n){ return '৳ '+Number(n).toLocaleString(); };
+      document.getElementById('ledDr').textContent=fmt(tDr);
+      document.getElementById('ledCr').textContent=fmt(tCr);
+      document.getElementById('ledBal').textContent=fmt(bal);
+    })
+    .withFailureHandler(function(e){ tb.innerHTML='<tr><td colspan="6">এরর: '+(e.message||e)+'</td></tr>'; })
+    .getReportData();
+}
+/* REPORTS */
+function loadReport(name){
+  var el=document.getElementById('reportResult');
+  el.className='alert alert-warning'; el.textContent='⏳ লোড হচ্ছে...'; el.dataset.report=name;
+  google.script.run
+    .withSuccessHandler(function(html){ el.className=''; el.style.marginTop='0'; el.innerHTML=html||'<em>কোনো ডেটা নেই।</em>'; })
+    .withFailureHandler(function(e){ el.className='alert alert-danger'; el.textContent='❌ এরর: '+(e.message||e); })
+    .getReportHtml(name);
+}
+function exportPDF(){
+  var name=(document.getElementById('reportResult').dataset.report)||'Receipt & Payment Statement';
+  var btn=document.getElementById('exportBtn'); btn.disabled=true; btn.textContent='⏳';
+  google.script.run
+    .withSuccessHandler(function(res){
+      btn.disabled=false; btn.textContent='PDF';
+      if(res&&res.ok&&res.url){ window.open(res.url,'_blank'); toast('PDF তৈরি হয়েছে।','success'); }
+      else toast('PDF export ব্যর্থ।','error');
+    })
+    .withFailureHandler(function(e){ btn.disabled=false; btn.textContent='PDF'; toast('এরর: '+(e.message||e),'error'); })
+    .exportPdf(name);
+}
+/* COMPANY */
+function saveCompany(){
+  var c=S.company;
+  c.name=document.getElementById('coName').value.trim();
+  c.sub=document.getElementById('coSub').value.trim();
+  c.phone=document.getElementById('coPhone').value.trim();
+  c.address=document.getElementById('coAddr').value.trim();
+  if(!c.name){ toast(S.lang==='bn'?'কোম্পানির নাম দিন।':'Enter company name.','warning'); return; }
+  google.script.run
+    .withSuccessHandler(function(res){
+      if(res&&res.ok){ applyCompany(); toast(S.lang==='bn'?'কোম্পানি তথ্য সেভ হয়েছে।':'Company info saved.','success'); }
+      else toast('❌ '+(res&&res.message||'ব্যর্থ'),'error');
+    })
+    .withFailureHandler(function(e){ toast('এরর: '+(e.message||e),'error'); })
+    .saveCompanyInfo({name:c.name,sub:c.sub,address:c.address,phone:c.phone,logo:c.logo||''});
+}
+function applyCompany(){
+  var c=S.company;
+  document.getElementById('sbName').textContent=c.name;
+  document.getElementById('sbSub').textContent=c.sub;
+  document.getElementById('rcpName').textContent=c.name;
+  document.getElementById('rcpAddr').textContent=c.address||c.phone;
+  if(c.logo){
+    ['sbLogo','rcpLogo','coLogoPreview'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el){ el.style.backgroundImage='url('+c.logo+')'; el.style.backgroundSize='cover'; el.textContent=''; }
+    });
+  }
+}
+function loadLogo(ev){
+  var f=ev.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(e){ S.company.logo=e.target.result; var p=document.getElementById('coLogoPreview'); p.style.backgroundImage='url('+S.company.logo+')'; p.style.backgroundSize='cover'; p.textContent=''; };
+  r.readAsDataURL(f);
+}
+/* USERS */
+function addUser(){
+  if(S.user.role!=='Super User'){ toast(S.lang==='bn'?'শুধু Super User ইউজার যোগ করতে পারবেন।':'Super User only.','error'); return; }
+  var name=document.getElementById('nuName').value.trim();
+  var role=document.getElementById('nuRole').value;
+  var pass=document.getElementById('nuPass').value.trim();
+  if(!name||!pass){ toast(S.lang==='bn'?'সব তথ্য দিন।':'Fill all fields.','warning'); return; }
+  google.script.run
+    .withSuccessHandler(function(res){
+      if(res&&res.ok){
+        var tr=document.createElement('tr');
+        tr.innerHTML='<td>'+name+'</td><td><span class="badge bg-navy">'+role+'</span></td><td><span class="badge bg-green">Active</span></td>';
+        document.getElementById('userTable').appendChild(tr);
+        document.getElementById('nuName').value=''; document.getElementById('nuPass').value='';
+        toast(S.lang==='bn'?'ইউজার যোগ হয়েছে।':'User added.','success');
+      } else toast('❌ '+(res&&res.message||'এরর'),'error');
+    })
+    .withFailureHandler(function(e){ toast('এরর: '+(e.message||e),'error'); })
+    .saveUser({name:name,role:role,pass:pass});
+}
+/* COA MODAL */
+function showAccModal(){ document.getElementById('accModal').classList.remove('hidden'); }
+function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
+function saveAccount(){
+  var code=document.getElementById('accCode').value.trim();
+  var name=document.getElementById('accName').value.trim();
+  var grp=document.getElementById('accGrp').value;
+  var typ=document.getElementById('accTyp').value;
+  var op=document.getElementById('accOp').value||'0';
+  if(!code||!name){ toast(S.lang==='bn'?'কোড ও নাম দিন।':'Enter code and name.','warning'); return; }
+  var tr=document.createElement('tr');
+  tr.innerHTML='<td>'+code+'</td><td>'+name+'</td><td>'+grp+'</td><td><span class="badge bg-gold">'+typ+'</span></td><td class="td-g">৳ '+Number(op).toLocaleString()+'</td>';
+  document.getElementById('coaBody').appendChild(tr);
+  S.coa.push(name);
+  closeModal('accModal');
+  toast(S.lang==='bn'?'অ্যাকাউন্ট যোগ হয়েছে।':'Account added.','success');
+}
+/* DAYBOOK */
+function addDBRow(date,desc,dr,cr,acc){
+  var tr=document.createElement('tr');
+  var d=dr?'<td class="td-g">৳ '+Number(dr).toLocaleString()+'</td>':'<td class="td-m">—</td>';
+  var c=cr?'<td class="td-r">৳ '+Number(cr).toLocaleString()+'</td>':'<td class="td-m">—</td>';
+  tr.innerHTML='<td>'+(date||'')+'</td><td>'+(desc||'')+'</td>'+d+c+'<td>'+(acc||'')+'</td>';
+  document.getElementById('dbBody').prepend(tr);
+}
+function addDemo(){ addDBRow(new Date().toISOString().slice(0,10),'ডেমো এন্ট্রি',1000,null,'Cash in Hand'); toast('ডেমো এন্ট্রি যোগ হয়েছে।','info'); }
+/* CHARTS */
+var charts={};
+function initDashChart(){
+  var ctx=document.getElementById('dashChart'); if(!ctx) return;
+  if(charts.d) charts.d.destroy();
+  charts.d=new Chart(ctx,{type:'bar',data:{labels:['ক্যাশ','ব্যাংক','আয়','ব্যয়'],datasets:[{data:[38500,280000,125000,24500],backgroundColor:['rgba(212,160,23,.85)','rgba(26,122,74,.85)','rgba(21,88,176,.85)','rgba(192,57,43,.75)'],borderRadius:8,borderSkipped:false}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){ return '৳'+Number(v).toLocaleString(); }},grid:{color:'rgba(0,0,0,.04)'}},x:{grid:{display:false}}}}});
+}
+function initCBChart(){
+  var ctx=document.getElementById('cbChart'); if(!ctx) return;
+  if(charts.cb) charts.cb.destroy();
+  charts.cb=new Chart(ctx,{type:'line',data:{labels:['জানু','ফেব্রু','মার্চ','এপ্রিল','মে','জুন'],datasets:[{label:'ক্যাশ',data:[30000,35000,28000,42000,38000,38500],borderColor:'rgba(212,160,23,1)',backgroundColor:'rgba(212,160,23,.07)',tension:.4,fill:true,pointRadius:4,pointBackgroundColor:'rgba(212,160,23,1)'},{label:'ব্যাংক',data:[200000,220000,240000,260000,270000,280000],borderColor:'rgba(26,122,74,1)',backgroundColor:'rgba(26,122,74,.05)',tension:.4,fill:true,pointRadius:4,pointBackgroundColor:'rgba(26,122,74,1)'}]},options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{y:{ticks:{callback:function(v){ return '৳'+Number(v).toLocaleString(); }},grid:{color:'rgba(0,0,0,.04)'}},x:{grid:{display:false}}}}});
+}
+/* INIT */
+function initApp(){
+  var today=new Date().toISOString().slice(0,10);
+  ['colDate','vchDate','jDate'].forEach(function(id){ var el=document.getElementById(id); if(el&&!el.value) el.value=today; });
+  applyCompany(); genReceiptPreview(); initDashChart();
+  document.getElementById('coName').value=S.company.name;
+  document.getElementById('coSub').value=S.company.sub;
+  document.getElementById('coPhone').value=S.company.phone;
+  document.getElementById('coAddr').value=S.company.address;
+  document.getElementById('jRef').value='JV-'+new Date().getFullYear()+'-'+String(Math.floor(1000+Math.random()*9000));
+  google.script.run.withSuccessHandler(function(id){ if(id) document.getElementById('colRno').value=id; }).withFailureHandler(function(){ document.getElementById('colRno').value=genRno(); }).getNextReceiptNo();
+  google.script.run
+    .withSuccessHandler(function(d){
+      if(!d) return;
+      var fmt=function(n){ return '৳ '+Number(n||0).toLocaleString(); };
+      if(d.summary){
+        document.getElementById('statCollection').textContent=fmt(d.summary.totalCollection);
+        document.getElementById('statCash').textContent=fmt(d.summary.cashBalance);
+        document.getElementById('statBank').textContent=fmt(d.summary.bankBalance);
+        document.getElementById('statVoucher').textContent=d.summary.pendingVoucher||'0';
+      }
+      if(d.company){ Object.assign(S.company,d.company); applyCompany(); document.getElementById('coName').value=S.company.name; document.getElementById('coSub').value=S.company.sub; document.getElementById('coPhone').value=S.company.phone; document.getElementById('coAddr').value=S.company.address; }
+      if(d.users&&d.users.length){ var tb=document.getElementById('userTable'); tb.innerHTML=''; d.users.forEach(function(u){ var tr=document.createElement('tr'); tr.innerHTML='<td>'+(u.userName||'')+'</td><td><span class="badge bg-navy">'+(u.role||'')+'</span></td><td><span class="badge bg-green">'+(u.status||'Active')+'</span></td>'; tb.appendChild(tr); }); }
+      if(d.reports&&d.reports.balanceSheet){ var bs=d.reports.balanceSheet; if(bs[0]) document.getElementById('bsA').textContent=fmt(bs[0][1]); if(bs[1]) document.getElementById('bsL').textContent=fmt(bs[1][1]); if(bs[2]) document.getElementById('bsF').textContent=fmt(bs[2][1]); }
+    })
+    .withFailureHandler(function(e){ console.warn('getAppData:',e.message); })
+    .getAppData();
+}
+document.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('colRno').value=genRno();
+  genReceiptPreview();
+});
+</script>
+</body>
+</html>
