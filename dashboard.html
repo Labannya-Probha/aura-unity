@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aura Unity - Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 0 12px;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 16px;
+    }
+    button { padding: 10px 14px; }
+    .error { color: #c62828; }
+  </style>
+</head>
+<body>
+  <h2>Dashboard</h2>
+
+  <div class="card">
+    <p id="welcome">Loading...</p>
+    <p id="profileInfo"></p>
+    <button id="logoutBtn">Logout</button>
+    <p id="err" class="error"></p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://ltcjgbhjkfvlzzvvulhz.supabase.co";
+    const SUPABASE_ANON_KEY = "PASTE_YOUR_NEW_ANON_KEY_HERE"; // same key as app.js
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const welcome = document.getElementById("welcome");
+    const profileInfo = document.getElementById("profileInfo");
+    const err = document.getElementById("err");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    async function init() {
+      const { data: { session }, error } = await supabaseClient.auth.getSession();
+
+      if (error || !session?.user) {
+        window.location.href = "./index.html";
+        return;
+      }
+
+      const user = session.user;
+      welcome.textContent = `Welcome, ${user.email}`;
+
+      const { data: profile, error: pErr } = await supabaseClient
+        .from("profiles")
+        .select("id, full_name, created_at")
+        .eq("id", user.id)
+        .single();
+
+      if (pErr) {
+        console.error(pErr);
+        err.textContent = "Profile fetch failed. Check RLS policy / schema.";
+        return;
+      }
+
+      profileInfo.textContent =
+        `Profile Name: ${profile.full_name ?? "(not set)"} | Created: ${profile.created_at}`;
+    }
+
+    logoutBtn.addEventListener("click", async () => {
+      await supabaseClient.auth.signOut();
+      window.location.href = "./index.html";
+    });
+
+    init();
+  </script>
+</body>
+</html>
