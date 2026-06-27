@@ -244,8 +244,8 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
     </div>
     <div class="login-body">
       <div class="form-group">
-        <label class="form-label" data-bn="ইউজারনেম / ইমেইল" data-en="Username / Email">ইউজারনেম / ইমেইল</label>
-        <input id="loginUser" class="form-control" placeholder="">
+        <label class="form-label" data-bn="ইউজারনেম" data-en="Username">ইউজারনেম</label>
+        <input id="loginUser" class="form-control" placeholder="superuser" autocomplete="">
       </div>
       <div class="form-group">
         <label class="form-label" data-bn="পাসওয়ার্ড" data-en="Password">পাসওয়ার্ড</label>
@@ -472,18 +472,54 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 
       <!-- REPORTS -->
       <div id="reports" class="module">
-        <div class="card">
-          <div class="card-header"><div class="card-title">আর্থিক রিপোর্টস</div></div>
-          <div class="card-body">
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:20px">
-              <button class="btn btn-ghost" style="justify-content:center" onclick="loadReport('trial')">Trial Balance</button>
-              <button class="btn btn-ghost" style="justify-content:center" onclick="loadReport('pl')">Profit &amp; Loss</button>
-              <button class="btn btn-ghost" style="justify-content:center" onclick="loadReport('bs')">Balance Sheet</button>
-              <button class="btn btn-ghost" style="justify-content:center" onclick="loadReport('cashbank')">Cash &amp; Bank</button>
-              <button class="btn btn-ghost" style="justify-content:center" onclick="loadReport('daybook')">Day Book</button>
-              <button class="btn btn-ghost" style="justify-content:center" onclick="loadReport('collection')">Collections</button>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">
+            <div><div class="card-title">আর্থিক রিপোর্টস</div><div class="card-sub">Challengers of 90's Cricket Academy</div></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap" id="rptActions" class="hidden">
+              <button class="btn btn-ghost btn-sm" onclick="printReport()">🖨️ Print</button>
+              <button class="btn btn-primary btn-sm" onclick="exportPDF()">⬇ PDF</button>
+              <button class="btn btn-success btn-sm" onclick="exportExcel()">⬇ Excel</button>
             </div>
-            <div id="reportResult" class="alert alert-info">রিপোর্ট নির্বাচন করুন।</div>
+          </div>
+          <div class="card-body">
+            <!-- Report Buttons -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:0">
+              <button class="btn btn-ghost rpt-btn" style="justify-content:center" onclick="loadReport('collection')">
+                <span>৳</span>&nbsp;মাসিক কালেকশন
+              </button>
+              <button class="btn btn-ghost rpt-btn" style="justify-content:center" onclick="loadReport('daybook')">
+                ▦&nbsp;ডে বুক
+              </button>
+              <button class="btn btn-ghost rpt-btn" style="justify-content:center" onclick="loadReport('trial')">
+                ⇌&nbsp;ট্রায়াল ব্যালেন্স
+              </button>
+              <button class="btn btn-ghost rpt-btn" style="justify-content:center" onclick="loadReport('pl')">
+                📊&nbsp;P&amp;L Statement
+              </button>
+              <button class="btn btn-ghost rpt-btn" style="justify-content:center" onclick="loadReport('bs')">
+                ◧&nbsp;ব্যালেন্স শীট
+              </button>
+              <button class="btn btn-ghost rpt-btn" style="justify-content:center" onclick="loadReport('cashbank')">
+                ◑&nbsp;ক্যাশ ও ব্যাংক
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Report Output -->
+        <div class="card hidden" id="reportCard">
+          <div class="card-header">
+            <div>
+              <div class="card-title" id="rptTitle">রিপোর্ট</div>
+              <div class="card-sub" id="rptSubtitle"></div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" onclick="printReport()">🖨️ Print</button>
+              <button class="btn btn-primary btn-sm" onclick="exportPDF()">⬇ PDF</button>
+              <button class="btn btn-success btn-sm" onclick="exportExcel()">⬇ Excel</button>
+            </div>
+          </div>
+          <div class="card-body np">
+            <div id="reportResult" style="padding:22px"></div>
           </div>
         </div>
       </div>
@@ -615,13 +651,61 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 
       <!-- USERS -->
       <div id="users" class="module">
+        <!-- Add User -->
         <div class="card">
-          <div class="card-header"><div class="card-title">ইউজার ম্যানেজমেন্ট</div><span class="badge bg-purple">Supabase Auth</span></div>
+          <div class="card-header">
+            <div>
+              <div class="card-title" data-bn="নতুন ইউজার যোগ করুন" data-en="Add New User">নতুন ইউজার যোগ করুন</div>
+              <div class="card-sub" data-bn="Super User শুধুমাত্র" data-en="Super User only">Super User শুধুমাত্র</div>
+            </div>
+            <span class="badge bg-purple">Supabase Auth</span>
+          </div>
           <div class="card-body">
-            <div class="alert alert-info" style="margin-bottom:16px">নতুন ইউজার যোগ করতে Supabase Dashboard → Authentication → Users এ যান।</div>
+            <div class="form-row-3">
+              <div class="form-group">
+                <label class="form-label">ইউজারনেম</label>
+                <input id="nuName" class="form-control" placeholder="username (ছোট হাতে, space ছাড়া)" autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label class="form-label">রোল</label>
+                <select id="nuRole" class="form-control">
+                  <option value="ইউজার">ইউজার</option>
+                  <option value="ম্যানেজার">ম্যানেজার</option>
+                  <option value="Super User">Super User</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">পাসওয়ার্ড</label>
+                <div style="position:relative">
+                  <input id="nuPass" class="form-control" type="password" placeholder="min 8 characters" style="padding-right:42px" oninput="checkPassStrength(this.value)">
+                  <button onclick="togglePassVis()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:15px" id="passToggle">👁</button>
+                </div>
+              </div>
+            </div>
+            <!-- Strength bar -->
+            <div style="margin-bottom:14px">
+              <div style="height:4px;background:var(--border);border-radius:4px;overflow:hidden">
+                <div id="passStrengthBar" style="height:100%;width:0%;border-radius:4px;transition:.3s"></div>
+              </div>
+              <div id="passStrengthLabel" style="font-size:11px;color:var(--muted);margin-top:4px"></div>
+            </div>
+            <div id="userAddErr" class="alert alert-danger hidden" style="margin-bottom:12px"></div>
+            <div id="userAddOk"  class="alert alert-success hidden" style="margin-bottom:12px"></div>
+            <button id="addUserBtn" class="btn btn-gold" onclick="addUser()">
+              ＋ <span data-bn="ইউজার যোগ করুন" data-en="Add User">ইউজার যোগ করুন</span>
+            </button>
+          </div>
+        </div>
+        <!-- User List -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title" data-bn="বর্তমান ইউজার তালিকা" data-en="Current Users">বর্তমান ইউজার তালিকা</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadUsers()">🔄 রিফ্রেশ</button>
+          </div>
+          <div class="card-body np">
             <div class="table-wrap"><table>
-              <thead><tr><th>ইউজার</th><th>রোল</th><th>স্ট্যাটাস</th></tr></thead>
-              <tbody id="userTable"><tr><td>superuser@app.local</td><td><span class="badge bg-gold">Super User</span></td><td><span class="badge bg-green">Active</span></td></tr></tbody>
+              <thead><tr><th>ইউজারনেম</th><th>ইমেইল (অটো)</th><th>রোল</th><th>যোগের তারিখ</th><th>স্ট্যাটাস</th></tr></thead>
+              <tbody id="userTable"><tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr></tbody>
             </table></div>
           </div>
         </div>
@@ -727,54 +811,78 @@ function openModule(id) {
   if (id==='ledger')     loadCOASelect();
   if (id==='receipt')    { genReceiptPreview(); setTimeout(initSignaturePad, 200); }
   if (id==='dashboard')  loadDashboard();
+  if (id==='users')      loadUsers();
 }
 
 // ══════════════════════════════════════════
 // LOGIN — Supabase Auth
 // ══════════════════════════════════════════
 function fillGuest() {
-  document.getElementById('loginUser').value = 'superuser@app.local';
-  document.getElementById('loginPass').value = 'Superuser@2026';
+  document.getElementById('loginUser').value = 'superuser';
+  document.getElementById('loginPass').value = 'superuser123';
 }
 
 async function login() {
-  const raw  = document.getElementById('loginUser').value.trim();
-  const pass = document.getElementById('loginPass').value.trim();
-  const err  = document.getElementById('loginErr');
-  const btn  = document.getElementById('loginBtn');
+  const username = document.getElementById('loginUser').value.trim();
+  const password = document.getElementById('loginPass').value.trim();
+  const err = document.getElementById('loginErr');
+  const btn = document.getElementById('loginBtn');
 
-  if (!raw || !pass) { err.textContent='ইউজার ও পাসওয়ার্ড দিন।'; err.classList.remove('hidden'); return; }
-  err.classList.add('hidden');
-  btn.disabled = true; btn.textContent = '...';
-
-  // username হলে @app.local যোগ করো
-  const email = raw.includes('@') ? raw : raw + '@app.local';
-
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-
-  btn.disabled = false;
-  btn.innerHTML = '<span>লগইন করুন</span>';
-
-  if (error || !data.user) {
-    err.textContent = 'ইউজারনেম বা পাসওয়ার্ড ভুল।';
+  if (!username || !password) {
+    err.textContent = 'ইউজারনেম ও পাসওয়ার্ড দিন।';
     err.classList.remove('hidden');
     return;
   }
+  err.classList.add('hidden');
+  btn.disabled = true; btn.textContent = '...';
 
-  S.user    = data.user;
-  S.session = data.session;
+  try {
+    // Edge Function দিয়ে username → email → Supabase Auth
+    const res = await fetch(`${SUPA_URL}/functions/v1/login-verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPA_ANON,
+        'Authorization': `Bearer ${SUPA_ANON}`,
+      },
+      body: JSON.stringify({ username, password }),
+    });
 
-  // public.users থেকে username নাও
-  const { data: pub } = await sb.from('users').select('username').eq('email', email).single();
-  const name = pub?.username || email.split('@')[0];
+    const data = await res.json();
 
-  document.getElementById('loginModal').classList.add('hidden');
-  document.getElementById('app').classList.remove('hidden');
-  document.getElementById('sbRole').textContent = 'Super User';
-  document.getElementById('sbUname').textContent = name;
+    btn.disabled = false;
+    btn.innerHTML = '<span data-bn="লগইন করুন" data-en="Sign In">লগইন করুন</span>';
 
-  await initApp();
-  toast(`স্বাগতম, ${name}!`, 'success');
+    if (!data.ok) {
+      err.textContent = data.message || 'ইউজারনেম বা পাসওয়ার্ড ভুল।';
+      err.classList.remove('hidden');
+      return;
+    }
+
+    // Supabase client এ session set করো
+    if (data.access_token) {
+      await sb.auth.setSession({
+        access_token:  data.access_token,
+        refresh_token: data.refresh_token || '',
+      });
+    }
+
+    S.user = data.user;
+
+    document.getElementById('loginModal').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    document.getElementById('sbRole').textContent  = data.user.role  || 'Super User';
+    document.getElementById('sbUname').textContent = data.user.name  || username;
+
+    await initApp();
+    toast(`স্বাগতম, ${data.user.name || username}!`, 'success');
+
+  } catch (e) {
+    btn.disabled = false;
+    btn.innerHTML = '<span>লগইন করুন</span>';
+    err.textContent = 'সংযোগ ব্যর্থ: ' + e.message;
+    err.classList.remove('hidden');
+  }
 }
 
 async function logout() {
@@ -1196,14 +1304,244 @@ async function loadBalanceSheet() {
 // ══════════════════════════════════════════
 // REPORTS (basic)
 // ══════════════════════════════════════════
+
+
+// ══════════════════════════════════════════
+// REPORTS ENGINE
+// ══════════════════════════════════════════
+var currentReportName  = '';
+var currentReportTitle = '';
+
+const RPT_TITLES = {
+  collection:'মাসিক কালেকশন রিপোর্ট',
+  daybook:'ডে বুক (General Ledger)',
+  trial:'ট্রায়াল ব্যালেন্স',
+  pl:'Income & Expenditure Statement',
+  bs:'Statement of Financial Position',
+  cashbank:'ক্যাশ ও ব্যাংক বুক',
+};
+
+function setActiveRptBtn(name) {
+  document.querySelectorAll('.rpt-btn').forEach(b=>{ b.classList.remove('btn-primary'); b.classList.add('btn-ghost'); });
+  const map={collection:0,daybook:1,trial:2,pl:3,bs:4,cashbank:5};
+  if (map[name]!==undefined) {
+    const btns=document.querySelectorAll('.rpt-btn');
+    btns[map[name]].classList.remove('btn-ghost');
+    btns[map[name]].classList.add('btn-primary');
+  }
+}
+
 async function loadReport(name) {
-  const el = document.getElementById('reportResult');
-  el.className = 'alert alert-warning'; el.textContent = '⏳ লোড হচ্ছে...';
-  if (name==='trial')      { await loadTrialBalance(); el.textContent='Trial Balance লোড হয়েছে — বাম মেনু থেকে দেখুন।'; el.className='alert alert-success'; }
-  else if (name==='bs')    { await loadBalanceSheet(); el.textContent='Balance Sheet লোড হয়েছে।'; el.className='alert alert-success'; }
-  else if (name==='daybook'){ await loadDaybook(); openModule('daybook'); el.className='alert alert-success'; el.textContent='Day Book দেখুন।'; }
-  else if (name==='collection'){ await loadCollections(); openModule('collection'); el.className='alert alert-success'; el.textContent='Collections দেখুন।'; }
-  else { el.className='alert alert-info'; el.textContent='এই রিপোর্টটি শীঘ্রই আসছে।'; }
+  currentReportName  = name;
+  currentReportTitle = RPT_TITLES[name]||name;
+  const resultEl  = document.getElementById('reportResult');
+  const card      = document.getElementById('reportCard');
+  const titleEl   = document.getElementById('rptTitle');
+  const subEl     = document.getElementById('rptSubtitle');
+  resultEl.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">⏳ লোড হচ্ছে...</div>';
+  card.classList.remove('hidden');
+  titleEl.textContent = currentReportTitle;
+  subEl.textContent   = (S.company?.name||"Challengers of 90's") + ' | ' + new Date().toLocaleDateString('bn-BD');
+  setActiveRptBtn(name);
+  let html='';
+  if      (name==='collection') html=await buildCollectionReport();
+  else if (name==='daybook')    html=await buildDaybookReport();
+  else if (name==='trial')      html=await buildTrialReport();
+  else if (name==='pl')         html=await buildPLReport();
+  else if (name==='bs')         html=await buildBSReport();
+  else if (name==='cashbank')   html=await buildCashBankReport();
+  resultEl.innerHTML = html||'<div class="alert alert-warning">কোনো ডেটা নেই।</div>';
+  card.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function rptTable(headers, rows, totals) {
+  let th=headers.map((h,i)=>`<th style="background:#0F1F3D;color:#fff;padding:9px 14px;text-align:${i===0?'left':'right'};font-size:11px;font-weight:700;white-space:nowrap">${h}</th>`).join('');
+  let tbody=rows.map((r,ri)=>{
+    const bg=r._section?'#E8F0FE':(ri%2===0?'#fff':'#FAFAF8');
+    const fw=r._bold?'700':'400';
+    const cells=r.cells.map((c,ci)=>{
+      const align=ci===0?'left':'right';
+      const color=c.color||'#0B1629';
+      const val=c.val!==undefined?c.val:c;
+      const indent=(ci===0&&r._indent)?`padding-left:${14+r._indent*18}px`:'';
+      return `<td style="padding:9px 14px;${indent};border-bottom:1px solid #E2E8F4;text-align:${align};font-weight:${fw};color:${color};font-size:13px">${val}</td>`;
+    }).join('');
+    return `<tr style="background:${bg}">${cells}</tr>`;
+  }).join('');
+  let tfoot='';
+  if(totals){
+    const tc=totals.map((c,i)=>`<td style="padding:10px 14px;text-align:${i===0?'left':'right'};font-weight:800;color:#fff;font-size:13px">${c||''}</td>`).join('');
+    tfoot=`<tr style="background:#0F1F3D">${tc}</tr>`;
+  }
+  return `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr>${th}</tr></thead><tbody>${tbody}${tfoot}</tbody></table></div>`;
+}
+
+function rptFmt(n) { return '৳ '+Number(n||0).toLocaleString('en-IN'); }
+function rptDash() { return '<span style="color:#BCC5D4">—</span>'; }
+function rptHdr(label,sub='') {
+  return `<div style="background:#0F1F3D;color:#fff;padding:8px 16px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:0">${label}${sub?` <span style="font-weight:400;color:#7A95B8;font-size:10px">(${sub})</span>`:''}</div>`;
+}
+
+async function buildCollectionReport() {
+  const {data,error}=await sb.from('collections').select('receipt_no,collection_date,payer_name,amount,description').order('collection_date',{ascending:false});
+  if(error||!data?.length) return '<div class="alert alert-warning">কোনো কালেকশন ডেটা নেই।</div>';
+  const monthly={};
+  let grand=0;
+  data.forEach(r=>{ const m=(r.collection_date||'').slice(0,7); if(!monthly[m])monthly[m]=[]; monthly[m].push(r); grand+=Number(r.amount||0); });
+  let rows=[];
+  Object.keys(monthly).sort().reverse().forEach(m=>{
+    const mT=monthly[m].reduce((s,r)=>s+Number(r.amount||0),0);
+    rows.push({cells:[{val:m,color:'#0F1F3D'},{val:''},{val:''},{val:rptFmt(mT),color:'#1A7A4A'},{val:''}],_section:true,_bold:true});
+    monthly[m].forEach(r=>rows.push({cells:[{val:r.collection_date||''},{val:`<span style="background:#FDF8EC;border:1px solid rgba(212,160,23,.3);padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;color:#7A5500">${r.receipt_no||'—'}</span>`},{val:r.payer_name||''},{val:rptFmt(r.amount),color:'#1A7A4A'},{val:r.description||''}],_indent:1}));
+  });
+  return rptHdr('মাসিক কালেকশন','Monthly Collection Summary')+
+    rptTable(['তারিখ','রিসিট নং','দাতার নাম','পরিমাণ (BDT)','বিবরণ'],rows,['মোট',`${data.length} টি`,'',rptFmt(grand),'']);
+}
+
+async function buildDaybookReport() {
+  const [colRes,vchRes,jRes]=await Promise.all([
+    sb.from('collections').select('collection_date,description,amount,receipt_no').order('collection_date'),
+    sb.from('vouchers').select('vch_date,description,amount,vch_type,account_code').order('vch_date'),
+    sb.from('journals').select('journal_date,narration,ref_no,total_debit,total_credit').order('journal_date'),
+  ]);
+  const all=[];
+  (colRes.data||[]).forEach(r=>all.push({date:r.collection_date,desc:'Collection: '+(r.description||r.receipt_no||''),dr:Number(r.amount||0),cr:0,acc:'Cash in Hand',ref:r.receipt_no}));
+  (vchRes.data||[]).forEach(r=>{ const ip=String(r.vch_type||'').includes('পেমেন্ট')||String(r.vch_type||'').toLowerCase().includes('payment'); all.push({date:r.vch_date,desc:(r.vch_type||'')+': '+(r.description||''),dr:ip?0:Number(r.amount||0),cr:ip?Number(r.amount||0):0,acc:r.account_code||'',ref:''}); });
+  (jRes.data||[]).forEach(r=>all.push({date:r.journal_date,desc:r.narration||'Journal',dr:Number(r.total_debit||0),cr:Number(r.total_credit||0),acc:'Journal',ref:r.ref_no}));
+  all.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  if(!all.length) return '<div class="alert alert-warning">কোনো এন্ট্রি নেই।</div>';
+  let tDr=0,tCr=0;
+  const rows=all.map(r=>{ tDr+=r.dr; tCr+=r.cr; return {cells:[{val:r.date||''},{val:r.ref||'',color:'#647188'},{val:r.desc||''},{val:r.acc||'',color:'#647188'},{val:r.dr?rptFmt(r.dr):rptDash(),color:r.dr?'#1A7A4A':'#BCC5D4'},{val:r.cr?rptFmt(r.cr):rptDash(),color:r.cr?'#C0392B':'#BCC5D4'}]}; });
+  return rptHdr('ডে বুক','General Ledger — All Transactions')+
+    rptTable(['তারিখ','রেফ','বিবরণ','অ্যাকাউন্ট','ডেবিট (BDT)','ক্রেডিট (BDT)'],rows,['','','মোট','',rptFmt(tDr),rptFmt(tCr)]);
+}
+
+async function buildTrialReport() {
+  const {data}=await sb.from('journal_items').select('account_code,debit,credit,coa(account_name,account_group)');
+  const accs={};
+  (data||[]).forEach(r=>{ if(!accs[r.account_code])accs[r.account_code]={name:r.coa?.account_name||r.account_code,group:r.coa?.account_group||'',dr:0,cr:0}; accs[r.account_code].dr+=Number(r.debit||0); accs[r.account_code].cr+=Number(r.credit||0); });
+  let tDr=0,tCr=0;
+  const rows=Object.keys(accs).map(code=>{ const a=accs[code]; const dr=a.dr>a.cr?a.dr-a.cr:0,cr=a.cr>a.dr?a.cr-a.dr:0; tDr+=dr; tCr+=cr; return {cells:[{val:code,color:'#647188'},{val:a.name},{val:a.group,color:'#647188'},{val:dr?rptFmt(dr):rptDash(),color:dr?'#1A7A4A':'#BCC5D4'},{val:cr?rptFmt(cr):rptDash(),color:cr?'#C0392B':'#BCC5D4'}]}; });
+  if(!rows.length) return '<div class="alert alert-warning">কোনো জার্নাল এন্ট্রি নেই।</div>';
+  const bal=Math.abs(tDr-tCr)<1;
+  const check=`<div style="margin-top:12px;padding:10px 16px;border-radius:8px;background:${bal?'#E6F7EE':'#FDECEA'};color:${bal?'#135A36':'#C0392B'};font-weight:600;font-size:13px">${bal?'✓ Trial Balance agrees — Debit = Credit':'✗ Trial Balance does NOT agree — please review'}</div>`;
+  return rptHdr('ট্রায়াল ব্যালেন্স','As at '+new Date().toLocaleDateString('en-GB'))+
+    rptTable(['কোড','অ্যাকাউন্ট','গ্রুপ','ডেবিট (BDT)','ক্রেডিট (BDT)'],rows,['','মোট','',rptFmt(tDr),rptFmt(tCr)])+check;
+}
+
+async function buildPLReport() {
+  const {data}=await sb.from('journal_items').select('account_code,debit,credit,coa(account_name,account_group)');
+  const inc={},exp={};
+  (data||[]).forEach(r=>{ const g=r.coa?.account_group||''; const net=Number(r.debit||0)-Number(r.credit||0); if(g==='Income')inc[r.coa?.account_name||r.account_code]=(inc[r.coa?.account_name||r.account_code]||0)+(-net); if(g==='Expense')exp[r.coa?.account_name||r.account_code]=(exp[r.coa?.account_name||r.account_code]||0)+net; });
+  const tI=Object.values(inc).reduce((s,v)=>s+v,0), tE=Object.values(exp).reduce((s,v)=>s+v,0), sur=tI-tE;
+  const rows=[];
+  rows.push({cells:[{val:'আয় (INCOME)',color:'#0F1F3D'},{val:''}],_section:true,_bold:true});
+  Object.keys(inc).forEach(k=>rows.push({cells:[{val:k},{val:rptFmt(inc[k]),color:'#1A7A4A'}],_indent:1}));
+  if(!Object.keys(inc).length) rows.push({cells:[{val:'Subscription / Donation',color:'#BCC5D4'},{val:rptDash()}],_indent:1});
+  rows.push({cells:[{val:'মোট আয়',color:'#1A7A4A'},{val:rptFmt(tI),color:'#1A7A4A'}],_bold:true});
+  rows.push({cells:[{val:''},{val:''}]});
+  rows.push({cells:[{val:'ব্যয় (EXPENDITURE)',color:'#0F1F3D'},{val:''}],_section:true,_bold:true});
+  Object.keys(exp).forEach(k=>rows.push({cells:[{val:k},{val:rptFmt(exp[k]),color:'#C0392B'}],_indent:1}));
+  if(!Object.keys(exp).length) rows.push({cells:[{val:'Administrative expenses',color:'#BCC5D4'},{val:rptDash()}],_indent:1});
+  rows.push({cells:[{val:'মোট ব্যয়',color:'#C0392B'},{val:rptFmt(tE),color:'#C0392B'}],_bold:true});
+  rows.push({cells:[{val:''},{val:''}]});
+  rows.push({cells:[{val:sur>=0?'নিট উদ্বৃত্ত (NET SURPLUS)':'নিট ঘাটতি (NET DEFICIT)',color:sur>=0?'#1A7A4A':'#C0392B'},{val:rptFmt(Math.abs(sur)),color:sur>=0?'#1A7A4A':'#C0392B'}],_bold:true});
+  return rptHdr('Income & Expenditure','For the year ended 30 June 2026')+rptTable(['বিবরণ','পরিমাণ (BDT)'],rows,null);
+}
+
+async function buildBSReport() {
+  const {data}=await sb.from('journal_items').select('account_code,debit,credit,coa(account_name,account_group)');
+  const grps={Asset:{},Liability:{},Equity:{},Income:{},Expense:{}};
+  (data||[]).forEach(r=>{ const g=r.coa?.account_group||'Other'; const net=Number(r.debit||0)-Number(r.credit||0); if(grps[g])grps[g][r.coa?.account_name||r.account_code]=(grps[g][r.coa?.account_name||r.account_code]||0)+net; });
+  const sg=g=>Object.values(grps[g]||{}).reduce((s,v)=>s+v,0);
+  const tA=sg('Asset'),tL=sg('Liability'),tE=sg('Equity'),sur=sg('Income')-sg('Expense');
+  const rows=[];
+  rows.push({cells:[{val:'সম্পদ (ASSETS)',color:'#0F1F3D'},{val:''}],_section:true,_bold:true});
+  Object.keys(grps.Asset).forEach(k=>rows.push({cells:[{val:k},{val:rptFmt(grps.Asset[k]),color:'#1A7A4A'}],_indent:1}));
+  if(!Object.keys(grps.Asset).length) rows.push({cells:[{val:'Cash and equivalents',color:'#BCC5D4'},{val:rptDash()}],_indent:1});
+  rows.push({cells:[{val:'মোট সম্পদ',color:'#1558B0'},{val:rptFmt(tA),color:'#1558B0'}],_bold:true});
+  rows.push({cells:[{val:''},{val:''}]});
+  rows.push({cells:[{val:'দায় (LIABILITIES)',color:'#0F1F3D'},{val:''}],_section:true,_bold:true});
+  Object.keys(grps.Liability).forEach(k=>rows.push({cells:[{val:k},{val:rptFmt(grps.Liability[k]),color:'#C0392B'}],_indent:1}));
+  if(!Object.keys(grps.Liability).length) rows.push({cells:[{val:'Accounts payable',color:'#BCC5D4'},{val:rptDash()}],_indent:1});
+  rows.push({cells:[{val:'মোট দায়',color:'#C0392B'},{val:rptFmt(tL),color:'#C0392B'}],_bold:true});
+  rows.push({cells:[{val:''},{val:''}]});
+  rows.push({cells:[{val:'তহবিল (FUND/EQUITY)',color:'#0F1F3D'},{val:''}],_section:true,_bold:true});
+  Object.keys(grps.Equity).forEach(k=>rows.push({cells:[{val:k},{val:rptFmt(grps.Equity[k]),color:'#1A7A4A'}],_indent:1}));
+  rows.push({cells:[{val:'চলতি বছরের উদ্বৃত্ত',color:'#1A7A4A'},{val:rptFmt(sur),color:'#1A7A4A'}],_indent:1});
+  rows.push({cells:[{val:'মোট তহবিল',color:'#1A7A4A'},{val:rptFmt(tE+sur),color:'#1A7A4A'}],_bold:true});
+  const bal=Math.abs(tA-(tL+tE+sur))<1;
+  const check=`<div style="margin-top:12px;padding:10px 16px;border-radius:8px;background:${bal?'#E6F7EE':'#FDECEA'};color:${bal?'#135A36':'#C0392B'};font-weight:600;font-size:13px">${bal?'✓ Balance Sheet balances':'✗ Does NOT balance — please review'}</div>`;
+  return rptHdr('Statement of Financial Position','As at 30 June 2026 | IAS 1')+rptTable(['বিবরণ','পরিমাণ (BDT)'],rows,null)+check;
+}
+
+async function buildCashBankReport() {
+  const [colRes,jRes]=await Promise.all([
+    sb.from('collections').select('collection_date,receipt_no,description,amount').order('collection_date'),
+    sb.from('journal_items').select('debit,credit,journals(journal_date,ref_no,narration),coa(account_name)').in('account_code',['1110','1120']),
+  ]);
+  const all=[];
+  (colRes.data||[]).forEach(r=>all.push({date:r.collection_date,ref:r.receipt_no||'',desc:r.description||'Collection',acc:'Cash in Hand',dr:Number(r.amount||0),cr:0}));
+  (jRes.data||[]).forEach(r=>{ const j=r.journals||{}; all.push({date:j.journal_date,ref:j.ref_no||'',desc:j.narration||'',acc:r.coa?.account_name||'',dr:Number(r.debit||0),cr:Number(r.credit||0)}); });
+  all.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  if(!all.length) return '<div class="alert alert-warning">কোনো ক্যাশ/ব্যাংক এন্ট্রি নেই।</div>';
+  let runBal=0;
+  const rows=all.map(r=>{ runBal+=r.dr-r.cr; return {cells:[{val:r.date||''},{val:r.ref||'',color:'#647188'},{val:r.desc||''},{val:r.acc||'',color:'#647188'},{val:r.dr?rptFmt(r.dr):rptDash(),color:r.dr?'#1A7A4A':'#BCC5D4'},{val:r.cr?rptFmt(r.cr):rptDash(),color:r.cr?'#C0392B':'#BCC5D4'},{val:rptFmt(runBal),color:runBal>=0?'#1558B0':'#C0392B'}]}; });
+  const closing=`<div style="margin-top:12px;padding:12px 18px;background:#E8F0FE;border-radius:8px;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700;color:#1558B0">Closing Balance</span><span style="font-weight:900;font-size:16px;color:${runBal>=0?'#1A7A4A':'#C0392B'}">${rptFmt(runBal)}</span></div>`;
+  return rptHdr('ক্যাশ ও ব্যাংক বুক','Cash & Bank Book | IAS 7')+
+    rptTable(['তারিখ','রেফ','বিবরণ','অ্যাকাউন্ট','প্রাপ্তি (BDT)','প্রদান (BDT)','ব্যালেন্স'],rows,null)+closing;
+}
+
+function printReport() {
+  const org=S.company?.name||"Challengers of 90's";
+  const title=currentReportTitle||'রিপোর্ট';
+  const today=new Date().toLocaleDateString('bn-BD');
+  const body=document.getElementById('reportResult').innerHTML;
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
+    <style>body{font-family:Arial,sans-serif;padding:15mm;color:#0B1629;font-size:12px}
+    h1{color:#0F1F3D;font-size:18px;margin:0}h2{color:#647188;font-size:13px;font-weight:normal;margin:4px 0 16px}
+    table{width:100%;border-collapse:collapse}th{background:#0F1F3D;color:#fff;padding:8px 12px;font-size:11px;text-align:left}
+    td{padding:8px 12px;border-bottom:1px solid #E2E8F4;font-size:12px}
+    .footer{margin-top:24px;padding-top:10px;border-top:1px solid #E2E8F4;font-size:10px;color:#647188;text-align:center}
+    @media print{body{padding:10mm}}</style>
+  </head><body>
+  <h1>${org}</h1><h2>${title} &nbsp;|&nbsp; ${today}</h2>
+  ${body}
+  <div class="footer">Generated by Aura Unity ERP &nbsp;|&nbsp; © 2026 Aura Stay</div>
+  <script>window.onload=()=>window.print();<\/script></body></html>`);
+  win.document.close();
+}
+
+function exportPDF() {
+  toast('প্রিন্ট ডায়ালগ থেকে "Save as PDF" নির্বাচন করুন।','info');
+  setTimeout(printReport, 400);
+}
+
+function exportExcel() {
+  const title=currentReportTitle||'report';
+  const body=document.getElementById('reportResult');
+  const tables=body.querySelectorAll('table');
+  if(!tables.length){ toast('রিপোর্ট আগে লোড করুন।','warning'); return; }
+  const org=S.company?.name||"Challengers of 90's";
+  const today=new Date().toISOString().slice(0,10);
+  let csv='\uFEFF';
+  csv+=`"${org}"\n"${title}"\n"Date: ${today}"\n\n`;
+  tables.forEach(tbl=>{
+    const ths=tbl.querySelectorAll('thead th');
+    if(ths.length) csv+=[...ths].map(th=>`"${th.textContent.trim()}"`).join(',')+'\n';
+    tbl.querySelectorAll('tbody tr').forEach(tr=>{
+      const tds=tr.querySelectorAll('td');
+      if(tds.length) csv+=[...tds].map(td=>`"${td.textContent.trim().replace(/"/g,'""')}"`).join(',')+'\n';
+    });
+    csv+='\n';
+  });
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`${title.replace(/\s+/g,'_')}_${today}.csv`; a.click();
+  URL.revokeObjectURL(url);
+  toast('Excel (CSV) ডাউনলোড শুরু হয়েছে। ✅','success');
 }
 
 // ══════════════════════════════════════════
@@ -1300,6 +1638,136 @@ function initDashChart() {
 function fmt(n) { return '৳ '+Number(n||0).toLocaleString('en-IN'); }
 
 // ══════════════════════════════════════════
+// USER MANAGEMENT
+// ══════════════════════════════════════════
+
+// Password visibility toggle
+function togglePassVis() {
+  const inp = document.getElementById('nuPass');
+  const btn = document.getElementById('passToggle');
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁'; }
+}
+
+// Password strength checker
+function checkPassStrength(val) {
+  const bar   = document.getElementById('passStrengthBar');
+  const label = document.getElementById('passStrengthLabel');
+  if (!val) { bar.style.width='0%'; label.textContent=''; return; }
+  let score = 0;
+  if (val.length >= 8)  score++;
+  if (val.length >= 12) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  const levels = [
+    { pct:'20%', color:'#C0392B', text:'খুব দুর্বল' },
+    { pct:'40%', color:'#E67E22', text:'দুর্বল' },
+    { pct:'60%', color:'#F1C40F', text:'মাঝারি' },
+    { pct:'80%', color:'#27AE60', text:'শক্তিশালী' },
+    { pct:'100%',color:'#1A7A4A', text:'খুব শক্তিশালী ✅' },
+  ];
+  const l = levels[Math.min(score, 4)];
+  bar.style.width  = l.pct;
+  bar.style.background = l.color;
+  label.style.color    = l.color;
+  label.textContent    = l.text;
+}
+
+// Add user via Edge Function
+async function addUser() {
+  const username = document.getElementById('nuName').value.trim().toLowerCase().replace(/\s+/g, '');
+  const role     = document.getElementById('nuRole').value;
+  const password = document.getElementById('nuPass').value;
+  const errEl    = document.getElementById('userAddErr');
+  const okEl     = document.getElementById('userAddOk');
+  const btn      = document.getElementById('addUserBtn');
+
+  errEl.classList.add('hidden'); okEl.classList.add('hidden');
+
+  if (!username) { errEl.textContent='ইউজারনেম দিন।'; errEl.classList.remove('hidden'); return; }
+  if (password.length < 8) { errEl.textContent='পাসওয়ার্ড কমপক্ষে ৮ অক্ষর হতে হবে।'; errEl.classList.remove('hidden'); return; }
+
+  btn.disabled = true; btn.textContent = '⏳ যোগ হচ্ছে...';
+
+  try {
+    // Get current session token
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token || SUPA_ANON;
+
+    const res = await fetch(`${SUPA_URL}/functions/v1/create-user`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPA_ANON,
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ username, password, role }),
+    });
+
+    const data = await res.json();
+    btn.disabled = false;
+    btn.innerHTML = '＋ <span>ইউজার যোগ করুন</span>';
+
+    if (!data.ok) {
+      errEl.textContent = data.message || 'ইউজার যোগ ব্যর্থ।';
+      errEl.classList.remove('hidden');
+      return;
+    }
+
+    okEl.textContent = `✅ "${username}" সফলভাবে যোগ হয়েছে! Email: ${data.user.email}`;
+    okEl.classList.remove('hidden');
+
+    // Reset form
+    document.getElementById('nuName').value = '';
+    document.getElementById('nuPass').value = '';
+    document.getElementById('nuRole').value = 'ইউজার';
+    document.getElementById('passStrengthBar').style.width = '0%';
+    document.getElementById('passStrengthLabel').textContent = '';
+
+    toast(`ইউজার "${username}" যোগ হয়েছে।`, 'success');
+    await loadUsers();
+
+  } catch (e) {
+    btn.disabled = false;
+    btn.innerHTML = '＋ <span>ইউজার যোগ করুন</span>';
+    errEl.textContent = 'সংযোগ ব্যর্থ: ' + e.message;
+    errEl.classList.remove('hidden');
+  }
+}
+
+// Load user list from public.users
+async function loadUsers() {
+  const tb = document.getElementById('userTable');
+  tb.innerHTML = '<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
+
+  const { data, error } = await sb
+    .from('users')
+    .select('id, username, email, created_at')
+    .order('created_at', { ascending: false });
+
+  if (error || !data?.length) {
+    tb.innerHTML = '<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">কোনো ইউজার নেই</td></tr>';
+    return;
+  }
+
+  const roleMap = { 'superuser': 'Super User' };
+  tb.innerHTML = data.map(u => {
+    const uname = u.username || u.email?.split('@')[0] || '—';
+    const role  = roleMap[uname.toLowerCase()] || 'ইউজার';
+    const badgeCls = role === 'Super User' ? 'bg-gold' : role === 'ম্যানেজার' ? 'bg-navy' : 'bg-green';
+    const date  = u.created_at ? u.created_at.slice(0,10) : '—';
+    return `<tr>
+      <td><strong>${uname}</strong></td>
+      <td class="td-m">${u.email || '—'}</td>
+      <td><span class="badge ${badgeCls}">${role}</span></td>
+      <td class="td-m">${date}</td>
+      <td><span class="badge bg-green">Active</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
 // AUTH STATE CHANGE — auto-restore session
 // ══════════════════════════════════════════
 sb.auth.onAuthStateChange(async (event, session) => {
@@ -1317,12 +1785,15 @@ document.addEventListener('DOMContentLoaded', () => {
   genReceiptPreview();
 
   // Check existing session
-  sb.auth.getSession().then(({ data:{ session } }) => {
+  sb.auth.getSession().then(async ({ data:{ session } }) => {
     if (session) {
-      S.user=session.user; S.session=session;
+      S.user = session.user; S.session = session;
       document.getElementById('loginModal').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
-      document.getElementById('sbUname').textContent = session.user.email?.split('@')[0] || 'user';
+      // username lookup
+      const { data: pub } = await sb.from('users').select('username').eq('email', session.user.email).single();
+      document.getElementById('sbUname').textContent = pub?.username || session.user.email?.split('@')[0] || 'user';
+      document.getElementById('sbRole').textContent  = 'Super User';
       initApp();
     }
   });
