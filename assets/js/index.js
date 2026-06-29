@@ -56,6 +56,7 @@ var S = {
   editJournalId: null,
   tenantId: null,
   tenantResolved: false,
+  activeMemberRole: null,
   tenantColumnSupport: {}
 };
 
@@ -65,6 +66,10 @@ var TT = {
 };
 
 const LOCAL_STATE_KEY = 'aura-unity-local-state-v2';
+
+// Maps tenant_members.role values to display labels (Bengali/English)
+const MEMBER_ROLE_LABELS = { owner: 'Owner', superuser: 'Super User', manager: 'ম্যানেজার', user: 'ইউজার' };
+const MEMBER_ROLE_BADGES = { owner: 'bg-danger', superuser: 'bg-gold', manager: 'bg-navy', user: 'bg-green' };
 
 function safeJsonParse(value, fallback) {
   try { return value ? JSON.parse(value) : fallback; }
@@ -95,6 +100,7 @@ function getCurrentRole() {
 }
 
 function isSuperUser() {
+  if (S.activeMemberRole === 'owner' || S.activeMemberRole === 'superuser') return true;
   return /super\s*user/i.test(getCurrentRole());
 }
 
@@ -264,6 +270,7 @@ function getReceiptDraft() {
 }
 
 function canEditVoucher() {
+  if (S.activeMemberRole === 'owner' || S.activeMemberRole === 'superuser' || S.activeMemberRole === 'manager') return true;
   return isSuperUser() || /admin|manager|ম্যানেজার/i.test(getCurrentRole());
 }
 
@@ -600,6 +607,7 @@ async function login() {
     S.user = data.user;
     S.tenantId = null;
     S.tenantResolved = false;
+    S.activeMemberRole = null;
 
     document.getElementById('loginModal').classList.add('hidden');
     document.getElementById('app').classList.remove('hidden');
@@ -623,7 +631,7 @@ async function login() {
 
 async function logout() {
   await sb.auth.signOut();
-  S.user = null; S.session = null; S.tenantId = null; S.tenantResolved = false;
+  S.user = null; S.session = null; S.tenantId = null; S.tenantResolved = false; S.activeMemberRole = null;
   document.getElementById('app').classList.add('hidden');
   document.getElementById('mobBottomNav').classList.add('hidden');
   document.getElementById('loginModal').classList.remove('hidden');
@@ -643,6 +651,10 @@ async function initApp() {
   refreshVoucherRef();
 
   await getTenantId();
+  // Reflect the resolved tenant member role in the sidebar
+  if (S.activeMemberRole) {
+    document.getElementById('sbRole').textContent = MEMBER_ROLE_LABELS[S.activeMemberRole] || S.activeMemberRole;
+  }
   await loadVoucherSummary();
   await loadCompany();
   await loadCOA();
@@ -788,22 +800,29 @@ function firstUUID(...values) {
   return values.find(isUUID) || null;
 }
 
+async function resolveTenantFromMembership(userId) {
+  if (!isUUID(userId)) return false;
+  try {
+    const { data, error } = await sb
+      .from('tenant_members')
+      .select('tenant_id, role')
+      .eq('user_id', userId)
+      .eq('is_active', true)
+      .eq('status', 'active')
+      .limit(1)
+      .maybeSingle();
+    if (!error && data?.tenant_id) {
+      S.tenantId = data.tenant_id;
+      S.activeMemberRole = data.role || (() => { console.warn('[tenant] tenant_members role missing for user', userId); return 'user'; })();
+      S.tenantResolved = true;
+      return true;
+    }
+  } catch (_) {}
+  return false;
+}
+
 async function getTenantId() {
   if (S.tenantResolved) return S.tenantId;
-
-  const directId = firstUUID(
-    S.user?.tenant_id,
-    S.user?.tenantId,
-    S.user?.app_metadata?.tenant_id,
-    S.user?.user_metadata?.tenant_id,
-    S.session?.user?.app_metadata?.tenant_id,
-    S.session?.user?.user_metadata?.tenant_id
-  );
-  if (directId) {
-    S.tenantId = directId;
-    S.tenantResolved = true;
-    return S.tenantId;
-  }
 
   const { data: { session } } = await sb.auth.getSession();
   if (session?.user) {
@@ -811,43 +830,40 @@ async function getTenantId() {
     if (!S.user) S.user = session.user;
   }
 
-  const sessionTenant = firstUUID(
+  const userId = S.user?.id || session?.user?.id;
+
+  // Primary: resolve from tenant_members (proper multi-tenant model)
+  if (await resolveTenantFromMembership(userId)) {
+    return S.tenantId;
+  }
+
+  // Legacy fallback: check user metadata and users table (transition compatibility)
+  const metaTenant = firstUUID(
+    S.user?.tenant_id,
+    S.user?.app_metadata?.tenant_id,
+    S.user?.user_metadata?.tenant_id,
     session?.user?.app_metadata?.tenant_id,
     session?.user?.user_metadata?.tenant_id
   );
-  if (sessionTenant) {
-    S.tenantId = sessionTenant;
+  if (metaTenant) {
+    S.tenantId = metaTenant;
     S.tenantResolved = true;
     return S.tenantId;
   }
 
   const email = S.user?.email || session?.user?.email;
-  const username = S.user?.username || S.user?.name || document.getElementById('sbUname')?.textContent;
-  const userLookups = [];
   if (email) {
-    userLookups.push(() => sb.from('users').select('id,tenant_id,email,username').eq('email', email).limit(1));
-    userLookups.push(() => sb.from('users').select('id,email,username').eq('email', email).limit(1));
-  }
-  if (username) {
-    userLookups.push(() => sb.from('users').select('id,tenant_id,email,username').eq('username', username).limit(1));
-    userLookups.push(() => sb.from('users').select('id,email,username').eq('username', username).limit(1));
-  }
-
-  for (const lookup of userLookups) {
-    const { data, error } = await lookup();
-    if (error) continue;
-    const row = data?.[0];
-    const rowTenant = firstUUID(row?.tenant_id, row?.id);
-    if (rowTenant) {
-      S.tenantId = rowTenant;
+    const { data: userRow } = await sb.from('users').select('tenant_id').eq('email', email).limit(1).maybeSingle();
+    if (isUUID(userRow?.tenant_id)) {
+      S.tenantId = userRow.tenant_id;
       S.tenantResolved = true;
       return S.tenantId;
     }
   }
 
-  S.tenantId = firstUUID(S.user?.id, session?.user?.id);
+  // Do NOT fall back to auth.users.id as tenant_id per multi-tenant requirements
   S.tenantResolved = true;
-  return S.tenantId;
+  return S.tenantId; // may be null
 }
 
 function hasTenantIdColumnError(error) {
@@ -1910,6 +1926,15 @@ function checkPassStrength(val) {
   label.textContent    = l.text;
 }
 
+// Map UI role labels to tenant_members DB role values
+function mapUiRoleToDbRole(uiRole) {
+  const r = String(uiRole || '').toLowerCase();
+  if (r.includes('owner'))                               return 'owner';
+  if (r.includes('super') || r.includes('admin'))        return 'superuser';
+  if (r.includes('manager') || r.includes('ম্যানেজার')) return 'manager';
+  return 'user';
+}
+
 // Add user via Edge Function
 async function addUser() {
   const username = document.getElementById('nuName').value.trim().toLowerCase().replace(/\s+/g, '');
@@ -1938,7 +1963,7 @@ async function addUser() {
         'apikey': SUPA_ANON,
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ username, password, role }),
+      body: JSON.stringify({ username, password, role, ...(S.tenantId ? { tenant_id: S.tenantId } : {}) }),
     });
 
     const data = await res.json();
@@ -1949,6 +1974,21 @@ async function addUser() {
       errEl.textContent = data.message || 'ইউজার যোগ ব্যর্থ।';
       errEl.classList.remove('hidden');
       return;
+    }
+
+    // Add new user to the current tenant as a member
+    if (data.user?.id && S.tenantId) {
+      const dbRole = mapUiRoleToDbRole(role);
+      const { error: memberErr } = await sb.from('tenant_members').insert({
+        tenant_id: S.tenantId,
+        user_id: data.user.id,
+        role: dbRole,
+        status: 'active',
+        is_active: true
+      });
+      if (memberErr) {
+        console.warn('tenant_members insert failed:', memberErr.message);
+      }
     }
 
     okEl.textContent = `✅ "${username}" সফলভাবে যোগ হয়েছে! Email: ${data.user.email}`;
@@ -1971,12 +2011,42 @@ async function addUser() {
     errEl.classList.remove('hidden');
   }
 }
-
-// Load user list from public.users
+// Load user list — tenant-scoped when tenant is resolved, falls back to public.users
 async function loadUsers() {
   const tb = document.getElementById('userTable');
   tb.innerHTML = '<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
 
+  // When tenant is resolved, show members of the current tenant from tenant_members
+  if (S.tenantId) {
+    const { data, error } = await sb
+      .from('tenant_members')
+      .select('user_id, role, status, created_at, users(username, email)')
+      .eq('tenant_id', S.tenantId)
+      .order('created_at', { ascending: false });
+
+    if (error || !data?.length) {
+      tb.innerHTML = '<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">কোনো ইউজার নেই</td></tr>';
+      return;
+    }
+
+    tb.innerHTML = data.map(m => {
+      const uname     = m.users?.username || m.users?.email?.split('@')[0] || '—';
+      const roleLabel = MEMBER_ROLE_LABELS[m.role] || m.role || 'ইউজার';
+      const badgeCls  = MEMBER_ROLE_BADGES[m.role] || 'bg-green';
+      const statusCls = m.status === 'active' ? 'bg-green' : m.status === 'invited' ? 'bg-gold' : 'bg-danger';
+      const date      = m.created_at ? m.created_at.slice(0,10) : '—';
+      return `<tr>
+        <td><strong>${esc(uname)}</strong></td>
+        <td class="td-m">${esc(m.users?.email || '—')}</td>
+        <td><span class="badge ${badgeCls}">${esc(roleLabel)}</span></td>
+        <td class="td-m">${esc(date)}</td>
+        <td><span class="badge ${statusCls}">${esc(m.status || 'active')}</span></td>
+      </tr>`;
+    }).join('');
+    return;
+  }
+
+  // Pre-migration fallback: load from public.users
   const { data, error } = await sb
     .from('users')
     .select('id, username, email, created_at')
@@ -2008,7 +2078,7 @@ async function loadUsers() {
 // ══════════════════════════════════════════
 sb.auth.onAuthStateChange(async (event, session) => {
   if (event==='SIGNED_IN' && session) {
-    S.user=session.user; S.session=session; S.tenantId=null; S.tenantResolved=false;
+    S.user=session.user; S.session=session; S.tenantId=null; S.tenantResolved=false; S.activeMemberRole=null;
     // Already handled by login()
   }
 });
@@ -2056,17 +2126,9 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('loginModal').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
       document.getElementById('mobBottomNav').classList.remove('hidden');
-      let { data: pub } = await sb.from('users').select('username,tenant_id').eq('email', session.user.email).limit(1).maybeSingle();
-      if (!pub) {
-        const fallback = await sb.from('users').select('username').eq('email', session.user.email).limit(1).maybeSingle();
-        pub = fallback.data;
-      }
-      if (isUUID(pub?.tenant_id)) {
-        S.tenantId = pub.tenant_id;
-        S.tenantResolved = true;
-      }
+      // Username display only — tenant and role are resolved inside initApp via getTenantId
+      const { data: pub } = await sb.from('users').select('username').eq('email', session.user.email).limit(1).maybeSingle();
       document.getElementById('sbUname').textContent = pub?.username || session.user.email?.split('@')[0] || 'user';
-      document.getElementById('sbRole').textContent  = 'Super User';
       _resetIdleTimer();
       await initApp();
       showWelcomePopover(pub?.username || session.user.email?.split('@')[0] || 'user');
