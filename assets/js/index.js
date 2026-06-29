@@ -54,6 +54,8 @@ var S = {
   jlc: 0,
   lastReceipt: null,
   editJournalId: null,
+  tenantId: null,
+  tenantResolved: false,
   tenantColumnSupport: {}
 };
 
@@ -291,9 +293,9 @@ async function fetchStatementSource(range) {
   const assetCodes = assets.map(a => a.account_code);
   const coaMap = getCoaMap();
   const [colRes, vchRes, jRes] = await Promise.all([
-    withDateRange(sb.from('collections').select('collection_date,receipt_no,description,amount').order('collection_date'), 'collection_date'),
-    withDateRange(sb.from('vouchers').select('id,vch_date,description,amount,vch_type,account_code').order('vch_date'), 'vch_date'),
-    sb.from('journal_items').select('account_code,debit,credit,coa(account_name),journals(journal_date,ref_no,narration)').in('account_code', assetCodes)
+    readTenantRows('collections', (from) => withDateRange(from.select('collection_date,receipt_no,description,amount').order('collection_date'), 'collection_date')),
+    readTenantRows('vouchers', (from) => withDateRange(from.select('id,vch_date,description,amount,vch_type,account_code').order('vch_date'), 'vch_date')),
+    readTenantRows('journal_items', (from) => from.select('account_code,debit,credit,coa(account_name),journals(journal_date,ref_no,narration)').in('account_code', assetCodes))
   ]);
   const journals = (jRes.data || []).filter(r => isWithinDateRange(r.journals?.journal_date, range));
   return { assets, assetCodes, coaMap, collections: colRes.data || [], vouchers: vchRes.data || [], journals };
@@ -596,6 +598,8 @@ async function login() {
     }
 
     S.user = data.user;
+    S.tenantId = null;
+    S.tenantResolved = false;
 
     document.getElementById('loginModal').classList.add('hidden');
     document.getElementById('app').classList.remove('hidden');
@@ -619,7 +623,7 @@ async function login() {
 
 async function logout() {
   await sb.auth.signOut();
-  S.user = null; S.session = null;
+  S.user = null; S.session = null; S.tenantId = null; S.tenantResolved = false;
   document.getElementById('app').classList.add('hidden');
   document.getElementById('mobBottomNav').classList.add('hidden');
   document.getElementById('loginModal').classList.remove('hidden');
@@ -637,8 +641,9 @@ async function initApp() {
   document.getElementById('jRef').value = makeVoucherRef('জার্নাল');
   document.getElementById('colRno').value = genRno();
   refreshVoucherRef();
-  loadVoucherSummary();
 
+  await getTenantId();
+  await loadVoucherSummary();
   await loadCompany();
   await loadCOA();
   renderDayControlState();
@@ -651,10 +656,10 @@ async function initApp() {
 // ══════════════════════════════════════════
 async function loadDashboard() {
   const [{ count: colCount }, { count: vchCount }, { count: jCount }, colData] = await Promise.all([
-    sb.from('collections').select('*', { count:'exact', head:true }),
-    sb.from('vouchers').select('*', { count:'exact', head:true }),
-    sb.from('journals').select('*', { count:'exact', head:true }),
-    sb.from('collections').select('amount')
+    readTenantRows('collections', (from) => from.select('*', { count:'exact', head:true })),
+    readTenantRows('vouchers', (from) => from.select('*', { count:'exact', head:true })),
+    readTenantRows('journals', (from) => from.select('*', { count:'exact', head:true })),
+    readTenantRows('collections', (from) => from.select('amount'))
   ]);
   const totalCol = (colData.data || []).reduce((s,r) => s + Number(r.amount||0), 0);
   document.getElementById('statCollection').textContent = fmt(totalCol);
@@ -667,7 +672,7 @@ async function loadDashboard() {
 // COMPANY
 // ══════════════════════════════════════════
 async function loadCompany() {
-  const { data } = await sb.from('company_info').select('setting_key,setting_value');
+  const { data } = await readTenantRows('company_info', (from) => from.select('setting_key,setting_value'));
   if (!data || !data.length) return;
   data.forEach(r => { S.company[r.setting_key] = r.setting_value; });
   applyCompany();
@@ -699,8 +704,11 @@ async function saveCompany() {
   };
   if (!c.name) { toast('কোম্পানির নাম দিন।','warning'); return; }
   Object.assign(S.company, c);
-  const rows = Object.keys(c).map(k => ({ setting_key:k, setting_value:c[k], updated_at: new Date().toISOString() }));
-  const { error } = await sb.from('company_info').upsert(rows, { onConflict:'setting_key' });
+  await getTenantId();
+  const rows = tenantInsertPayload(Object.keys(c).map(k => ({ setting_key:k, setting_value:c[k], updated_at: new Date().toISOString() })));
+  const { error } = await writeWithOptionalTenant('company_info', rows, (finalPayload) =>
+    sb.from('company_info').upsert(finalPayload, { onConflict:'setting_key' })
+  );
   if (error) { toast('সেভ ব্যর্থ: '+error.message,'error'); return; }
   applyCompany();
   toast('কোম্পানি তথ্য সেভ হয়েছে।','success');
@@ -721,7 +729,7 @@ function loadLogo(ev) {
 // COA
 // ══════════════════════════════════════════
 async function loadCOA() {
-  const { data, error } = await sb.from('coa').select('*').order('account_code');
+  const { data, error } = await readTenantRows('coa', (from) => from.select('*').order('account_code'));
   if (error) { toast('COA লোড ব্যর্থ','error'); return; }
   S.coa = data || [];
   renderCOA(S.coa);
@@ -759,7 +767,11 @@ async function saveAccount() {
   const typ  = document.getElementById('accTyp').value;
   const op   = Number(document.getElementById('accOp').value) || 0;
   if (!code || !name) { toast('কোড ও নাম দিন।','warning'); return; }
-  const { error } = await sb.from('coa').upsert({ account_code:code, account_name:name, account_group:grp, account_type:typ, opening_balance:op }, { onConflict:'account_code' });
+  await getTenantId();
+  const payload = tenantInsertPayload({ account_code:code, account_name:name, account_group:grp, account_type:typ, opening_balance:op });
+  const { error } = await writeWithOptionalTenant('coa', payload, (finalPayload) =>
+    sb.from('coa').upsert(finalPayload, { onConflict:'account_code' })
+  );
   if (error) { toast('সেভ ব্যর্থ: '+error.message,'error'); return; }
   closeModal('accModal');
   toast('অ্যাকাউন্ট সেভ হয়েছে।','success');
@@ -772,17 +784,70 @@ function isUUID(v) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v || ''));
 }
 
+function firstUUID(...values) {
+  return values.find(isUUID) || null;
+}
+
 async function getTenantId() {
-  const directId = S.session?.user?.id || S.user?.id;
-  if (isUUID(directId)) return directId;
+  if (S.tenantResolved) return S.tenantId;
+
+  const directId = firstUUID(
+    S.user?.tenant_id,
+    S.user?.tenantId,
+    S.user?.app_metadata?.tenant_id,
+    S.user?.user_metadata?.tenant_id,
+    S.session?.user?.app_metadata?.tenant_id,
+    S.session?.user?.user_metadata?.tenant_id
+  );
+  if (directId) {
+    S.tenantId = directId;
+    S.tenantResolved = true;
+    return S.tenantId;
+  }
+
   const { data: { session } } = await sb.auth.getSession();
-  const sid = session?.user?.id;
-  if (isUUID(sid)) {
+  if (session?.user) {
     S.session = session;
     if (!S.user) S.user = session.user;
-    return sid;
   }
-  return null;
+
+  const sessionTenant = firstUUID(
+    session?.user?.app_metadata?.tenant_id,
+    session?.user?.user_metadata?.tenant_id
+  );
+  if (sessionTenant) {
+    S.tenantId = sessionTenant;
+    S.tenantResolved = true;
+    return S.tenantId;
+  }
+
+  const email = S.user?.email || session?.user?.email;
+  const username = S.user?.username || S.user?.name || document.getElementById('sbUname')?.textContent;
+  const userLookups = [];
+  if (email) {
+    userLookups.push(() => sb.from('users').select('id,tenant_id,email,username').eq('email', email).limit(1));
+    userLookups.push(() => sb.from('users').select('id,email,username').eq('email', email).limit(1));
+  }
+  if (username) {
+    userLookups.push(() => sb.from('users').select('id,tenant_id,email,username').eq('username', username).limit(1));
+    userLookups.push(() => sb.from('users').select('id,email,username').eq('username', username).limit(1));
+  }
+
+  for (const lookup of userLookups) {
+    const { data, error } = await lookup();
+    if (error) continue;
+    const row = data?.[0];
+    const rowTenant = firstUUID(row?.tenant_id, row?.id);
+    if (rowTenant) {
+      S.tenantId = rowTenant;
+      S.tenantResolved = true;
+      return S.tenantId;
+    }
+  }
+
+  S.tenantId = firstUUID(S.user?.id, session?.user?.id);
+  S.tenantResolved = true;
+  return S.tenantId;
 }
 
 function hasTenantIdColumnError(error) {
@@ -815,6 +880,24 @@ async function writeWithOptionalTenant(table, payload, executor) {
     result = await executor(removeTenantId(payload));
   }
   return result;
+}
+
+async function readTenantRows(table, buildQuery) {
+  const tenantId = await getTenantId();
+
+  if (tenantId && S.tenantColumnSupport[table] !== false) {
+    const scoped = await buildQuery(sb.from(table)).eq('tenant_id', tenantId);
+    if (!hasTenantIdColumnError(scoped.error)) return scoped;
+    S.tenantColumnSupport[table] = false;
+  }
+
+  return buildQuery(sb.from(table));
+}
+
+function tenantInsertPayload(payload) {
+  if (!S.tenantId) return payload;
+  if (Array.isArray(payload)) return payload.map((item) => ({ ...item, tenant_id: S.tenantId }));
+  return { ...payload, tenant_id: S.tenantId };
 }
 
 // ══════════════════════════════════════════
@@ -858,7 +941,7 @@ async function saveCollection() {
 async function loadCollections() {
   const tb = document.getElementById('colList');
   tb.innerHTML = '<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
-  const { data, error } = await sb.from('collections').select('*').order('created_at', { ascending:false }).limit(20);
+  const { data, error } = await readTenantRows('collections', (from) => from.select('*').order('created_at', { ascending:false }).limit(20));
   if (error || !data.length) { tb.innerHTML='<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">কোনো কালেকশন নেই</td></tr>'; return; }
   tb.innerHTML = data.map(r => `
     <tr>
@@ -1004,7 +1087,7 @@ async function loadVoucherSummary() {
   const journalBody = document.getElementById('journalSummaryBody');
   if (!journalBody) return;
   journalBody.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
-  const jRes = await sb.from('journals').select('id,journal_date,ref_no,narration,total_debit,total_credit').order('journal_date', { ascending:false }).limit(50);
+  const jRes = await readTenantRows('journals', (from) => from.select('id,journal_date,ref_no,narration,total_debit,total_credit').order('journal_date', { ascending:false }).limit(50));
   const reconciledSet = getReconciledJournals();
   const showReconciledOnly = document.getElementById('showReconciledOnly')?.checked;
   let journals = jRes.data || [];
@@ -1031,9 +1114,10 @@ async function loadVoucherSummary() {
 
 async function editJournal(id) {
   if (!canEditVoucher()) { toast('Admin/Superuser edit করতে পারবে।', 'error'); return; }
-  const { data: journal, error } = await sb.from('journals').select('*').eq('id', id).single();
+  const { data: journalRows, error } = await readTenantRows('journals', (from) => from.select('*').eq('id', id).limit(1));
+  const journal = journalRows?.[0];
   if (error || !journal) { toast('জার্নাল লোড ব্যর্থ।', 'error'); return; }
-  const { data: items, error: iErr } = await sb.from('journal_items').select('*').eq('journal_id', id);
+  const { data: items, error: iErr } = await readTenantRows('journal_items', (from) => from.select('*').eq('journal_id', id));
   if (iErr) { toast('জার্নাল আইটেম লোড ব্যর্থ।', 'error'); return; }
   S.editJournalId = id;
   document.getElementById('jDate').value = journal.journal_date || '';
@@ -1086,9 +1170,10 @@ function toggleReconcile(id) {
 }
 
 async function printJournalVoucher(id) {
-  const { data: journal, error } = await sb.from('journals').select('*').eq('id', id).single();
+  const { data: journalRows, error } = await readTenantRows('journals', (from) => from.select('*').eq('id', id).limit(1));
+  const journal = journalRows?.[0];
   if (error || !journal) { toast('প্রিন্ট ডেটা পাওয়া যায়নি।', 'error'); return; }
-  const { data: items } = await sb.from('journal_items').select('account_code,debit,credit').eq('journal_id', id);
+  const { data: items } = await readTenantRows('journal_items', (from) => from.select('account_code,debit,credit').eq('journal_id', id));
   const coaMap = getCoaMap();
   const co = S.company || {};
   const coName   = co.name    || 'Aura Stay BD';
@@ -1222,9 +1307,9 @@ async function loadDaybook() {
   tb.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
 
   const [colRes, vchRes, jRes] = await Promise.all([
-    sb.from('collections').select('collection_date,description,amount,receipt_no').order('collection_date'),
-    sb.from('vouchers').select('vch_date,description,amount,vch_type,account_code').order('vch_date'),
-    sb.from('journals').select('journal_date,narration,ref_no,total_debit,total_credit').order('journal_date')
+    readTenantRows('collections', (from) => from.select('collection_date,description,amount,receipt_no').order('collection_date')),
+    readTenantRows('vouchers', (from) => from.select('vch_date,description,amount,vch_type,account_code').order('vch_date')),
+    readTenantRows('journals', (from) => from.select('journal_date,narration,ref_no,total_debit,total_credit').order('journal_date'))
   ]);
 
   const rows = [];
@@ -1258,10 +1343,10 @@ async function loadLedger() {
   const tb = document.getElementById('ledBody');
   tb.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
 
-  const { data, error } = await sb.from('journal_items')
+  const { data, error } = await readTenantRows('journal_items', (from) => from
     .select('debit,credit,journals(journal_date,ref_no,narration)')
     .eq('account_code', accCode)
-    .order('journal_id');
+    .order('journal_id'));
 
   if (error || !data.length) { tb.innerHTML='<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">কোনো এন্ট্রি নেই</td></tr>'; return; }
 
@@ -1292,8 +1377,8 @@ async function loadTrialBalance() {
   const tb = document.getElementById('tbBody');
   tb.innerHTML = '<tr><td colspan="4" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
 
-  const { data, error } = await sb.from('journal_items')
-    .select('account_code,debit,credit,coa(account_name,account_group)');
+  const { data, error } = await readTenantRows('journal_items', (from) => from
+    .select('account_code,debit,credit,coa(account_name,account_group)'));
 
   if (error) { tb.innerHTML='<tr><td colspan="4" class="td-m" style="text-align:center">এরর: '+error.message+'</td></tr>'; return; }
 
@@ -1335,7 +1420,7 @@ async function loadTrialBalance() {
 // BALANCE SHEET
 // ══════════════════════════════════════════
 async function loadBalanceSheet() {
-  const { data } = await sb.from('journal_items').select('account_code,debit,credit,coa(account_name,account_group)');
+  const { data } = await readTenantRows('journal_items', (from) => from.select('account_code,debit,credit,coa(account_name,account_group)'));
   const accs = {};
   (data||[]).forEach(r => {
     if (!accs[r.account_code]) accs[r.account_code] = { group:(r.coa?.account_group||''), net:0 };
@@ -1494,10 +1579,10 @@ function wrapReportShell(title, subtitle, content, note='') {
 }
 
 async function buildCollectionReport() {
-  const {data,error}=await withDateRange(
-    sb.from('collections').select('receipt_no,collection_date,payer_name,amount,description').order('collection_date',{ascending:false}),
+  const {data,error}=await readTenantRows('collections', (from) => withDateRange(
+    from.select('receipt_no,collection_date,payer_name,amount,description').order('collection_date',{ascending:false}),
     'collection_date'
-  );
+  ));
   const monthly={};
   let grand=0;
   (data||[]).forEach(r=>{ const m=(r.collection_date||'').slice(0,7) || 'Undated'; if(!monthly[m])monthly[m]=[]; monthly[m].push(r); grand+=Number(r.amount||0); });
@@ -1514,22 +1599,10 @@ async function buildCollectionReport() {
 }
 
 async function buildDaybookReport() {
-  const colQuery = withDateRange(
-    sb.from('collections').select('collection_date,description,amount,receipt_no').order('collection_date'),
-    'collection_date'
-  );
-  const vchQuery = withDateRange(
-    sb.from('vouchers').select('vch_date,description,amount,vch_type,account_code').order('vch_date'),
-    'vch_date'
-  );
-  const jQuery = withDateRange(
-    sb.from('journals').select('journal_date,narration,ref_no,total_debit,total_credit').order('journal_date'),
-    'journal_date'
-  );
   const [colRes,vchRes,jRes]=await Promise.all([
-    colQuery,
-    vchQuery,
-    jQuery,
+    readTenantRows('collections', (from) => withDateRange(from.select('collection_date,description,amount,receipt_no').order('collection_date'), 'collection_date')),
+    readTenantRows('vouchers', (from) => withDateRange(from.select('vch_date,description,amount,vch_type,account_code').order('vch_date'), 'vch_date')),
+    readTenantRows('journals', (from) => withDateRange(from.select('journal_date,narration,ref_no,total_debit,total_credit').order('journal_date'), 'journal_date')),
   ]);
   const all=[];
   (colRes.data||[]).forEach(r=>all.push({date:r.collection_date,desc:'Collection: '+(r.description||r.receipt_no||''),dr:Number(r.amount||0),cr:0,acc:'Cash in Hand',ref:r.receipt_no}));
@@ -1545,7 +1618,7 @@ async function buildDaybookReport() {
 
 async function buildTrialReport() {
   const range = getReportDateRange();
-  const {data}=await sb.from('journal_items').select('account_code,debit,credit,coa(account_name,account_group),journals(journal_date)');
+  const {data}=await readTenantRows('journal_items', (from) => from.select('account_code,debit,credit,coa(account_name,account_group),journals(journal_date)'));
   const accs={};
   (data||[]).filter(r=>isWithinDateRange(r.journals?.journal_date, range)).forEach(r=>{ if(!accs[r.account_code])accs[r.account_code]={name:r.coa?.account_name||r.account_code,group:r.coa?.account_group||'',dr:0,cr:0}; accs[r.account_code].dr+=Number(r.debit||0); accs[r.account_code].cr+=Number(r.credit||0); });
   let tDr=0,tCr=0;
@@ -1560,7 +1633,7 @@ async function buildTrialReport() {
 
 async function buildPLReport() {
   const range = getReportDateRange();
-  const {data}=await sb.from('journal_items').select('account_code,debit,credit,coa(account_name,account_group),journals(journal_date)');
+  const {data}=await readTenantRows('journal_items', (from) => from.select('account_code,debit,credit,coa(account_name,account_group),journals(journal_date)'));
   const inc={},exp={};
   (data||[]).filter(r=>isWithinDateRange(r.journals?.journal_date, range)).forEach(r=>{ const g=r.coa?.account_group||''; const net=Number(r.debit||0)-Number(r.credit||0); if(g==='Income')inc[r.coa?.account_name||r.account_code]=(inc[r.coa?.account_name||r.account_code]||0)+(-net); if(g==='Expense')exp[r.coa?.account_name||r.account_code]=(exp[r.coa?.account_name||r.account_code]||0)+net; });
   const tI=Object.values(inc).reduce((s,v)=>s+v,0), tE=Object.values(exp).reduce((s,v)=>s+v,0), sur=tI-tE;
@@ -1581,7 +1654,7 @@ async function buildPLReport() {
 
 async function buildBSReport() {
   const range = getReportDateRange();
-  const {data}=await sb.from('journal_items').select('account_code,debit,credit,coa(account_name,account_group),journals(journal_date)');
+  const {data}=await readTenantRows('journal_items', (from) => from.select('account_code,debit,credit,coa(account_name,account_group),journals(journal_date)'));
   const grps={Asset:{},Liability:{},Equity:{},Income:{},Expense:{}};
   (data||[]).filter(r=>isWithinDateRange(r.journals?.journal_date, range)).forEach(r=>{ const g=r.coa?.account_group||'Other'; const net=Number(r.debit||0)-Number(r.credit||0); if(grps[g])grps[g][r.coa?.account_name||r.account_code]=(grps[g][r.coa?.account_name||r.account_code]||0)+net; });
   const sg=g=>Object.values(grps[g]||{}).reduce((s,v)=>s+v,0);
@@ -1935,7 +2008,7 @@ async function loadUsers() {
 // ══════════════════════════════════════════
 sb.auth.onAuthStateChange(async (event, session) => {
   if (event==='SIGNED_IN' && session) {
-    S.user=session.user; S.session=session;
+    S.user=session.user; S.session=session; S.tenantId=null; S.tenantResolved=false;
     // Already handled by login()
   }
 });
@@ -1983,12 +2056,19 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('loginModal').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
       document.getElementById('mobBottomNav').classList.remove('hidden');
-      // username lookup
-      const { data: pub } = await sb.from('users').select('username').eq('email', session.user.email).single();
+      let { data: pub } = await sb.from('users').select('username,tenant_id').eq('email', session.user.email).limit(1).maybeSingle();
+      if (!pub) {
+        const fallback = await sb.from('users').select('username').eq('email', session.user.email).limit(1).maybeSingle();
+        pub = fallback.data;
+      }
+      if (isUUID(pub?.tenant_id)) {
+        S.tenantId = pub.tenant_id;
+        S.tenantResolved = true;
+      }
       document.getElementById('sbUname').textContent = pub?.username || session.user.email?.split('@')[0] || 'user';
       document.getElementById('sbRole').textContent  = 'Super User';
       _resetIdleTimer();
-      initApp();
+      await initApp();
       showWelcomePopover(pub?.username || session.user.email?.split('@')[0] || 'user');
     }
   });
