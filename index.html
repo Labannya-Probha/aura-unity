@@ -56,6 +56,7 @@ input,select,textarea,button{font-family:inherit;outline:none}
 .sb-powered span{color:#3D6B9A;font-weight:600}
 /* TOPBAR */
 .topbar{height:var(--th);background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 var(--border),0 4px 16px rgba(8,15,30,.04)}
+.topbar-l{display:flex;align-items:center;gap:10px}
 .topbar-l h2{font-size:16px;font-weight:700}
 .topbar-l p{font-size:11.5px;color:var(--muted);margin-top:1px}
 .topbar-r{display:flex;gap:8px;align-items:center}
@@ -247,7 +248,11 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 .sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:4px}
 @media(max-width:900px){
   :root{--sw:0px}
-  .sidebar{display:none}
+  .sidebar{display:none;position:fixed;top:0;left:0;bottom:0;width:260px;z-index:300}
+  .sidebar.mob-open{display:flex}
+  .mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:299}
+  .mob-overlay.mob-open{display:block}
+  .mob-menu-btn{display:flex!important}
   .main{margin-left:0}
   .topbar{padding:0 16px}
   .content{padding:16px}
@@ -257,6 +262,10 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
   .entry-line,.entry-totals{grid-template-columns:1fr 1fr 80px 80px 36px}
   .receipt-meta-grid{grid-template-columns:1fr}
 }
+.mob-menu-btn{display:none;align-items:center;justify-content:center;width:36px;height:36px;background:transparent;border:none;cursor:pointer;padding:4px;border-radius:var(--r);color:var(--navy2)}
+.mob-menu-btn:hover{background:var(--bg2)}
+.mob-menu-btn svg{display:block}
+.mob-overlay{display:none}
 #printArea{display:none}
 @media print{
   body>*{display:none!important}
@@ -267,6 +276,7 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 </head>
 <body>
 <div id="printArea"></div>
+<div id="mobOverlay" class="mob-overlay" onclick="closeMobSidebar()"></div>
 <div id="welcomePopover" class="welcome-popover hidden" role="status" aria-live="polite" aria-atomic="true" aria-hidden="true">
   <div id="welcomeBadge" class="welcome-badge"></div>
   <div id="welcomeText" class="welcome-text"></div>
@@ -343,7 +353,12 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 
   <div class="main">
     <div class="topbar">
-      <div class="topbar-l"><h2 id="topTitle">ড্যাশবোর্ড</h2><p id="topSub">সার্বিক আর্থিক অবস্থান</p></div>
+      <div class="topbar-l">
+        <button class="mob-menu-btn" onclick="openMobSidebar()" aria-label="Menu">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect y="4" width="22" height="2.2" rx="1.1" fill="currentColor"/><rect y="9.9" width="22" height="2.2" rx="1.1" fill="currentColor"/><rect y="15.8" width="22" height="2.2" rx="1.1" fill="currentColor"/></svg>
+        </button>
+        <h2 id="topTitle">ড্যাশবোর্ড</h2><p id="topSub">সার্বিক আর্থিক অবস্থান</p>
+      </div>
       <div class="topbar-r">
         <button class="btn btn-ghost btn-sm" onclick="openModule('company')">⚙</button>
         <button class="btn btn-gold btn-sm" onclick="openModule('collection')"><span data-bn="+ কালেকশন" data-en="+ Collection">+ কালেকশন</span></button>
@@ -1301,8 +1316,23 @@ function setLang(lang) {
 // ══════════════════════════════════════════
 // NAVIGATION
 // ══════════════════════════════════════════
+// MOBILE SIDEBAR TOGGLE
+// ══════════════════════════════════════════
+function openMobSidebar() {
+  document.querySelector('.sidebar').classList.add('mob-open');
+  document.getElementById('mobOverlay').classList.add('mob-open');
+}
+function closeMobSidebar() {
+  document.querySelector('.sidebar').classList.remove('mob-open');
+  document.getElementById('mobOverlay').classList.remove('mob-open');
+}
+
+// ══════════════════════════════════════════
 document.querySelectorAll('.nav-item').forEach(el => {
-  el.addEventListener('click', () => openModule(el.getAttribute('data-module')));
+  el.addEventListener('click', () => {
+    openModule(el.getAttribute('data-module'));
+    closeMobSidebar();
+  });
 });
 
 function openModule(id) {
