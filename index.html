@@ -929,13 +929,13 @@ function esc(s) {
 }
 
 // Login rate-limiting (client-side, defence-in-depth)
-var _loginAttempts = 0;
-var _loginLockUntil = 0;
+let _loginAttempts = 0;
+let _loginLockUntil = 0;
 const _MAX_ATTEMPTS = 5;
 const _LOCKOUT_MS   = 15 * 60 * 1000; // 15 minutes
 
 // Session idle timeout (30 minutes)
-var _idleTimer;
+let _idleTimer;
 const _IDLE_MS = 30 * 60 * 1000;
 function _resetIdleTimer() {
   clearTimeout(_idleTimer);
@@ -1468,7 +1468,8 @@ async function login() {
       headers: {
         'Content-Type': 'application/json',
         'apikey': SUPA_ANON,
-        'Authorization': `******      },
+        'Authorization': `Bearer ${SUPA_ANON}`,
+      },
       body: JSON.stringify({ username, password }),
     });
 
@@ -2788,7 +2789,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Register PWA service worker
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(() => {/* silent */});
+    navigator.serviceWorker.register('/sw.js').catch((e) => console.debug('[SW] Registration failed:', e));
   }
 
   // Check existing session

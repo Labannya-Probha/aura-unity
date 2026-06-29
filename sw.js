@@ -61,13 +61,15 @@ self.addEventListener('fetch', (event) => {
       caches.match(event.request).then(
         (cached) =>
           cached ||
-          fetch(event.request).then((response) => {
-            if (response && response.status === 200) {
-              const clone = response.clone();
-              caches.open(CACHE_NAME).then((c) => c.put(event.request, clone));
-            }
-            return response;
-          })
+          fetch(event.request)
+            .then((response) => {
+              if (response && response.status === 200) {
+                const clone = response.clone();
+                caches.open(CACHE_NAME).then((c) => c.put(event.request, clone));
+              }
+              return response;
+            })
+            .catch(() => new Response('', { status: 503, statusText: 'Offline' }))
       )
     );
     return;
