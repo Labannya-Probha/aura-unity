@@ -270,8 +270,8 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
   .mob-menu-btn{display:flex!important}
   .main{margin-left:0}
   .topbar{padding:0 16px}
-  .content{padding:16px}
-  .welcome-popover{right:12px;left:12px;max-width:calc(100vw - 24px)}
+  .content{padding:16px;padding-bottom:80px}
+  .welcome-popover{right:12px;left:auto;max-width:min(320px,calc(100vw - 24px))}
   .welcome-text{white-space:normal}
   .form-row-2,.form-row-3,.day-grid,.receipt-grid{grid-template-columns:1fr}
   .entry-line,.entry-totals{grid-template-columns:1fr 1fr 80px 80px 36px}
@@ -279,6 +279,8 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
   .ledger-grid{grid-template-columns:1fr 1fr 1fr}
   .topbar-r .btn:not(.btn-sm){display:none}
   .topbar-r .btn.btn-sm{padding:7px 11px}
+  .mob-bottom-nav{display:flex!important}
+  .mob-install-btn{display:flex!important}
 }
 /* SMALL PHONE (<480px): further collapse */
 @media(max-width:480px){
@@ -306,6 +308,16 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 .mob-menu-btn:hover{background:var(--info-lt)}
 .mob-menu-btn svg{display:block}
 .mob-overlay{display:none}
+/* MOBILE BOTTOM NAVIGATION */
+.mob-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--navy);border-top:1px solid rgba(255,255,255,.1);z-index:250;padding-bottom:env(safe-area-inset-bottom,0px)}
+.mob-bottom-nav-inner{display:flex;align-items:stretch;height:58px}
+.mob-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:transparent;border:none;cursor:pointer;color:#7A96B2;font-size:9.5px;font-weight:600;padding:6px 2px;transition:var(--tr);position:relative}
+.mob-nav-btn.active{color:var(--gold-lt)}
+.mob-nav-btn.active::before{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--gold);border-radius:0 0 2px 2px}
+.mob-nav-btn svg{width:20px;height:20px;flex-shrink:0}
+/* PWA INSTALL BUTTON */
+.mob-install-btn{display:none;align-items:center;justify-content:center;width:38px;height:38px;background:var(--gold-bg);border:1.5px solid var(--gold);border-radius:var(--r);cursor:pointer;color:var(--navy2);flex-shrink:0}
+.mob-install-btn svg{width:18px;height:18px}
 #printArea{display:none}
 /* Safe-area insets for notched / Dynamic-Island phones */
 @supports(padding: max(0px)){
@@ -408,6 +420,9 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
         <h2 id="topTitle">ড্যাশবোর্ড</h2><p id="topSub">সার্বিক আর্থিক অবস্থান</p>
       </div>
       <div class="topbar-r">
+        <button id="pwaInstallBtn" class="mob-install-btn" onclick="triggerPwaInstall()" aria-label="Install App" title="অ্যাপ ইনস্টল করুন">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
         <button class="btn btn-ghost btn-sm" onclick="openModule('company')">⚙</button>
         <button class="btn btn-gold btn-sm" onclick="openModule('collection')"><span data-bn="+ কালেকশন" data-en="+ Collection">+ কালেকশন</span></button>
         <button class="btn btn-ghost btn-sm" onclick="openModule('voucher')"><span data-bn="+ ভাউচার / জার্নাল" data-en="+ Voucher / Journal">+ ভাউচার / জার্নাল</span></button>
@@ -894,6 +909,32 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
     </div>
   </div>
 </div>
+
+<!-- MOBILE BOTTOM NAVIGATION -->
+<nav id="mobBottomNav" class="mob-bottom-nav hidden" aria-label="Mobile navigation">
+  <div class="mob-bottom-nav-inner">
+    <button class="mob-nav-btn active" data-module="dashboard" onclick="openModule('dashboard')" aria-label="Dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span data-bn="হোম" data-en="Home">হোম</span>
+    </button>
+    <button class="mob-nav-btn" data-module="collection" onclick="openModule('collection')" aria-label="Collections">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <span data-bn="কালেকশন" data-en="Collection">কালেকশন</span>
+    </button>
+    <button class="mob-nav-btn" data-module="voucher" onclick="openModule('voucher')" aria-label="Voucher">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span data-bn="ভাউচার" data-en="Voucher">ভাউচার</span>
+    </button>
+    <button class="mob-nav-btn" data-module="reports" onclick="openModule('reports')" aria-label="Reports">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span data-bn="রিপোর্ট" data-en="Reports">রিপোর্ট</span>
+    </button>
+    <button class="mob-nav-btn" data-module="menu" onclick="openMobSidebar()" aria-label="More">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      <span data-bn="মেনু" data-en="Menu">মেনু</span>
+    </button>
+  </div>
+</nav>
 
 <!-- COA MODAL -->
 <div id="accModal" class="modal-overlay hidden">
@@ -1421,6 +1462,7 @@ function openModule(id) {
   const t = document.getElementById(id);
   if (t) t.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(a => a.classList.toggle('active', a.getAttribute('data-module')===id));
+  document.querySelectorAll('.mob-nav-btn[data-module]').forEach(b => b.classList.toggle('active', b.getAttribute('data-module')===id));
   document.getElementById('topTitle').textContent = TT[S.lang][id] || id;
   document.getElementById('topSub').textContent = '';
   if (id==='collection') loadCollections();
@@ -1506,6 +1548,7 @@ async function login() {
 
     document.getElementById('loginModal').classList.add('hidden');
     document.getElementById('app').classList.remove('hidden');
+    document.getElementById('mobBottomNav').classList.remove('hidden');
     document.getElementById('sbRole').textContent  = data.user.role  || 'Super User';
     document.getElementById('sbUname').textContent = data.user.name  || username;
 
@@ -1527,6 +1570,7 @@ async function logout() {
   await sb.auth.signOut();
   S.user = null; S.session = null;
   document.getElementById('app').classList.add('hidden');
+  document.getElementById('mobBottomNav').classList.add('hidden');
   document.getElementById('loginModal').classList.remove('hidden');
 }
 
@@ -2781,6 +2825,27 @@ sb.auth.onAuthStateChange(async (event, session) => {
 });
 
 // ══════════════════════════════════════════
+// PWA INSTALL PROMPT
+// ══════════════════════════════════════════
+let _pwaInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  _pwaInstallPrompt = e;
+  const btn = document.getElementById('pwaInstallBtn');
+  if (btn) btn.style.display = 'flex';
+});
+window.addEventListener('appinstalled', () => {
+  _pwaInstallPrompt = null;
+  const btn = document.getElementById('pwaInstallBtn');
+  if (btn) btn.style.display = 'none';
+});
+function triggerPwaInstall() {
+  if (!_pwaInstallPrompt) return;
+  _pwaInstallPrompt.prompt();
+  _pwaInstallPrompt.userChoice.then(() => { _pwaInstallPrompt = null; });
+}
+
+// ══════════════════════════════════════════
 // DOM READY
 // ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
@@ -2798,6 +2863,7 @@ document.addEventListener('DOMContentLoaded', () => {
       S.user = session.user; S.session = session;
       document.getElementById('loginModal').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
+      document.getElementById('mobBottomNav').classList.remove('hidden');
       // username lookup
       const { data: pub } = await sb.from('users').select('username').eq('email', session.user.email).single();
       document.getElementById('sbUname').textContent = pub?.username || session.user.email?.split('@')[0] || 'user';
