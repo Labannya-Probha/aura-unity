@@ -240,7 +240,7 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 <body>
 <div id="printArea"></div>
 <div id="welcomePopover" class="welcome-popover hidden">
-  <div class="welcome-badge">A</div>
+  <div id="welcomeBadge" class="welcome-badge">A</div>
   <div id="welcomeText" class="welcome-text">স্বাগতম!</div>
 </div>
 <div id="toastWrap" class="toast-wrap"></div>
@@ -780,16 +780,20 @@ function toast(msg, type='success') {
 }
 
 function showWelcomePopover(name = '') {
+  const POPOVER_TRANSITION_MS = 260;
+  const POPOVER_DISPLAY_MS = 3200;
   const pop = document.getElementById('welcomePopover');
+  const badge = document.getElementById('welcomeBadge');
   const text = document.getElementById('welcomeText');
-  const safeName = (name || '').toString().trim();
+  const safeName = (name || '').trim();
+  badge.textContent = safeName ? safeName.charAt(0).toUpperCase() : 'A';
   text.textContent = safeName ? `স্বাগতম, ${safeName}!` : 'স্বাগতম!';
   pop.classList.remove('hidden');
   requestAnimationFrame(() => pop.classList.add('show'));
   setTimeout(() => {
     pop.classList.remove('show');
-    setTimeout(() => pop.classList.add('hidden'), 260);
-  }, 3200);
+    setTimeout(() => pop.classList.add('hidden'), POPOVER_TRANSITION_MS);
+  }, POPOVER_DISPLAY_MS);
 }
 
 // ══════════════════════════════════════════
