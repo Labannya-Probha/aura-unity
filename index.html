@@ -779,8 +779,11 @@ function toast(msg, type='success') {
   setTimeout(() => { t.style.opacity='0'; t.style.transition='.3s'; setTimeout(()=>t.remove(),300); }, 3200);
 }
 
-function getWelcomeText(name = '') {
-  const safeName = (name || '').trim();
+function normalizeWelcomeName(name = '') {
+  return (name || '').trim();
+}
+
+function getWelcomeText(safeName = '') {
   return safeName ? `স্বাগতম, ${safeName}!` : 'স্বাগতম!';
 }
 
@@ -791,8 +794,8 @@ function showWelcomePopover(name = '') {
   const pop = document.getElementById('welcomePopover');
   const badge = document.getElementById('welcomeBadge');
   const text = document.getElementById('welcomeText');
-  const safeName = (name || '').trim();
-  badge.textContent = safeName ? safeName.charAt(0).toUpperCase() : DEFAULT_BADGE_INITIAL;
+  const safeName = normalizeWelcomeName(name);
+  badge.textContent = safeName ? Array.from(safeName)[0].toUpperCase() : DEFAULT_BADGE_INITIAL;
   text.textContent = getWelcomeText(safeName);
   pop.classList.remove('hidden');
   requestAnimationFrame(() => pop.classList.add('show'));
@@ -904,8 +907,9 @@ async function login() {
     document.getElementById('sbUname').textContent = data.user.name  || username;
 
     await initApp();
-    showWelcomePopover(data.user.name || username);
-    toast(getWelcomeText(data.user.name || username), 'success');
+    const welcomeName = normalizeWelcomeName(data.user.name || username);
+    showWelcomePopover(welcomeName);
+    toast(getWelcomeText(welcomeName), 'success');
 
   } catch (e) {
     btn.disabled = false;
