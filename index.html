@@ -1647,7 +1647,6 @@ async function login() {
     await initApp();
     const welcomeName = normalizeWelcomeName(data.user.name || username);
     showWelcomePopover(welcomeName);
-    toast(getWelcomeText(welcomeName), 'success');
 
   } catch (e) {
     btn.disabled = false;
