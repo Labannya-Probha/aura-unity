@@ -913,7 +913,7 @@ const LOCAL_STATE_KEY = 'aura-unity-local-state-v2';
 
 function safeJsonParse(value, fallback) {
   try { return value ? JSON.parse(value) : fallback; }
-  catch { return fallback; }
+  catch (error) { console.warn('Local state parse failed:', error); return fallback; }
 }
 
 function getLocalState() {
@@ -1819,7 +1819,7 @@ async function editJournal(id) {
   if (iErr) { toast('জার্নাল আইটেম লোড ব্যর্থ।', 'error'); return; }
   S.editJournalId = id;
   document.getElementById('jDate').value = journal.journal_date || '';
-  document.getElementById('jRef').value = journal.ref_no || makeVoucherRef('জার্নাল');
+  document.getElementById('jRef').value = journal.ref_no || '';
   document.getElementById('jNar').value = journal.narration || '';
   document.querySelectorAll('#jLines .entry-line:not(.entry-line-hdr)').forEach(el => el.remove());
   S.jlc = 0;
