@@ -1102,10 +1102,7 @@ function refreshVoucherRef() {
   if (noEl && !noEl.dataset.locked) noEl.value = makeVoucherRef(type);
 }
 
-function setVoucherTab(tab) {
-  // Legacy: tabs removed; summary always visible. Load summary on entry focus.
-  loadVoucherSummary();
-}
+function setVoucherTab(_tab) { loadVoucherSummary(); }
 
 async function fetchStatementSource(range) {
   const assets = getCurrentAssetAccounts();
@@ -1420,7 +1417,7 @@ async function initApp() {
   document.getElementById('jRef').value = makeVoucherRef('জার্নাল');
   document.getElementById('colRno').value = genRno();
   refreshVoucherRef();
-  setVoucherTab('entry');
+  loadVoucherSummary();
 
   await loadCompany();
   await loadCOA();
@@ -1806,7 +1803,7 @@ async function deleteJournal(id) {
 // RECONCILIATION
 // ══════════════════════════════════════════
 function getReconciledJournals() {
-  try { return new Set(JSON.parse(localStorage.getItem('aura_reconciled') || '[]').map(String)); } catch { return new Set(); }
+  try { return new Set(JSON.parse(localStorage.getItem('aura_reconciled') || '[]').map(String)); } catch(e) { console.error('Reconciled journals parse error:', e); return new Set(); }
 }
 function saveReconciledJournals(set) {
   localStorage.setItem('aura_reconciled', JSON.stringify([...set]));
