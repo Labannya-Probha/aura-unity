@@ -509,6 +509,20 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
                 ◑&nbsp;ক্যাশ ও ব্যাংক
               </button>
             </div>
+            <div class="form-row-2" style="margin-top:14px">
+              <div class="form-group">
+                <label class="form-label">From Date</label>
+                <input type="date" id="rptFromDate" class="form-control">
+              </div>
+              <div class="form-group">
+                <label class="form-label">To Date</label>
+                <input type="date" id="rptToDate" class="form-control">
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+              <button class="btn btn-primary btn-sm" onclick="applyReportDateRange()">Apply Date Range</button>
+              <button class="btn btn-ghost btn-sm" onclick="clearReportDateRange()">Clear</button>
+            </div>
           </div>
         </div>
         <!-- Report Output -->
@@ -1077,6 +1091,23 @@ async function saveAccount() {
 
 function loadCOASelect() { populateAccSelects(); }
 
+function isUUID(v) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v || ''));
+}
+
+async function getTenantId() {
+  const directId = S.session?.user?.id || S.user?.id;
+  if (isUUID(directId)) return directId;
+  const { data: { session } } = await sb.auth.getSession();
+  const sid = session?.user?.id;
+  if (isUUID(sid)) {
+    S.session = session;
+    if (!S.user) S.user = session.user;
+    return sid;
+  }
+  return null;
+}
+
 // ══════════════════════════════════════════
 // COLLECTION
 // ══════════════════════════════════════════
@@ -1091,10 +1122,12 @@ async function saveCollection() {
   const amt  = Number(document.getElementById('colAmt').value);
   const desc = document.getElementById('colDesc').value.trim();
   const rno  = document.getElementById('colRno').value || genRno();
+  const tenantId = await getTenantId();
   if (!name || !amt) { toast('নাম ও পরিমাণ দিন।','warning'); return; }
+  if (!tenantId) { toast('Tenant ID (UUID) পাওয়া যায়নি। আবার লগইন করুন।','error'); return; }
 
   const { error } = await sb.from('collections').insert({
-    receipt_no: rno, collection_date: date, payer_name: name, amount: amt, description: desc
+    receipt_no: rno, collection_date: date, payer_name: name, amount: amt, description: desc, tenant_id: tenantId
   });
   if (error) { toast('সেভ ব্যর্থ: '+error.message,'error'); return; }
 
@@ -1130,8 +1163,10 @@ async function saveVoucher() {
   const acc  = document.getElementById('vchAcc').value;
   const amt  = Number(document.getElementById('vchAmt').value);
   const desc = document.getElementById('vchDesc').value.trim();
+  const tenantId = await getTenantId();
   if (!amt) { toast('পরিমাণ দিন।','warning'); return; }
-  const { error } = await sb.from('vouchers').insert({ vch_type:type, vch_date:date, account_code:acc, amount:amt, description:desc });
+  if (!tenantId) { toast('Tenant ID (UUID) পাওয়া যায়নি। আবার লগইন করুন।','error'); return; }
+  const { error } = await sb.from('vouchers').insert({ vch_type:type, vch_date:date, account_code:acc, amount:amt, description:desc, tenant_id: tenantId });
   if (error) { toast('সেভ ব্যর্থ: '+error.message,'error'); return; }
   toast('ভাউচার সেভ হয়েছে।','success');
   document.getElementById('vchAmt').value=''; document.getElementById('vchDesc').value='';
@@ -1178,7 +1213,9 @@ async function saveJournal() {
   let dr=0, cr=0;
   document.querySelectorAll('.jDr').forEach(x => dr+=Number(x.value||0));
   document.querySelectorAll('.jCr').forEach(x => cr+=Number(x.value||0));
+  const tenantId = await getTenantId();
   if (Math.abs(dr-cr) > 0.01) { toast('ডেবিট ≠ ক্রেডিট!','error'); return; }
+  if (!tenantId) { toast('Tenant ID (UUID) পাওয়া যায়নি। আবার লগইন করুন।','error'); return; }
 
   const lines = [];
   document.querySelectorAll('#jLines .entry-line:not(.entry-line-hdr)').forEach(row => {
@@ -1193,12 +1230,12 @@ async function saveJournal() {
     journal_date: document.getElementById('jDate').value,
     ref_no: ref,
     narration: document.getElementById('jNar').value,
-    total_debit: dr, total_credit: cr
+    total_debit: dr, total_credit: cr, tenant_id: tenantId
   }).select().single();
 
   if (jErr) { toast('জার্নাল সেভ ব্যর্থ: '+jErr.message,'error'); return; }
 
-  const items = lines.map(l => ({ journal_id: jData.id, account_code: l.account_code, debit: l.debit, credit: l.credit }));
+  const items = lines.map(l => ({ journal_id: jData.id, account_code: l.account_code, debit: l.debit, credit: l.credit, tenant_id: tenantId }));
   const { error: iErr } = await sb.from('journal_items').insert(items);
   if (iErr) { toast('জার্নাল আইটেম সেভ ব্যর্থ: '+iErr.message,'error'); return; }
 
@@ -1368,6 +1405,53 @@ const RPT_TITLES = {
   cashbank:'ক্যাশ ও ব্যাংক বুক',
 };
 
+function getReportDateRange() {
+  return {
+    from: document.getElementById('rptFromDate')?.value || '',
+    to: document.getElementById('rptToDate')?.value || ''
+  };
+}
+
+function getReportRangeLabel() {
+  const { from, to } = getReportDateRange();
+  if (!from && !to) return '';
+  if (from && to) return `${from} → ${to}`;
+  if (from) return `From: ${from}`;
+  return `To: ${to}`;
+}
+
+function isWithinDateRange(value, range) {
+  if (!range.from && !range.to) return true;
+  if (!value) return false;
+  const d = String(value).slice(0, 10);
+  if (range.from && d < range.from) return false;
+  if (range.to && d > range.to) return false;
+  return true;
+}
+
+function withDateRange(query, column) {
+  const range = getReportDateRange();
+  let q = query;
+  if (range.from) q = q.gte(column, range.from);
+  if (range.to) q = q.lte(column, range.to);
+  return q;
+}
+
+function applyReportDateRange() {
+  const { from, to } = getReportDateRange();
+  if (from && to && from > to) { toast('From Date, To Date থেকে বড় হতে পারবে না।', 'warning'); return; }
+  if (!currentReportName) { toast('আগে একটি রিপোর্ট নির্বাচন করুন।', 'info'); return; }
+  loadReport(currentReportName);
+}
+
+function clearReportDateRange() {
+  const fromEl = document.getElementById('rptFromDate');
+  const toEl = document.getElementById('rptToDate');
+  if (fromEl) fromEl.value = '';
+  if (toEl) toEl.value = '';
+  if (currentReportName) loadReport(currentReportName);
+}
+
 function setActiveRptBtn(name) {
   document.querySelectorAll('.rpt-btn').forEach(b=>{ b.classList.remove('btn-primary'); b.classList.add('btn-ghost'); });
   const map={collection:0,daybook:1,trial:2,pl:3,bs:4,cashbank:5};
@@ -1379,6 +1463,8 @@ function setActiveRptBtn(name) {
 }
 
 async function loadReport(name) {
+  const { from, to } = getReportDateRange();
+  if (from && to && from > to) { toast('From Date, To Date থেকে বড় হতে পারবে না।', 'warning'); return; }
   currentReportName  = name;
   currentReportTitle = RPT_TITLES[name]||name;
   const resultEl  = document.getElementById('reportResult');
@@ -1388,7 +1474,8 @@ async function loadReport(name) {
   resultEl.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">⏳ লোড হচ্ছে...</div>';
   card.classList.remove('hidden');
   titleEl.textContent = currentReportTitle;
-  subEl.textContent   = (S.company?.name||"Challengers of 90's") + ' | ' + new Date().toLocaleDateString('bn-BD');
+  const rangeLabel = getReportRangeLabel();
+  subEl.textContent   = (S.company?.name||"Challengers of 90's") + ' | ' + new Date().toLocaleDateString('bn-BD') + (rangeLabel ? ` | ${rangeLabel}` : '');
   setActiveRptBtn(name);
   let html='';
   if      (name==='collection') html=await buildCollectionReport();
@@ -1430,7 +1517,10 @@ function rptHdr(label,sub='') {
 }
 
 async function buildCollectionReport() {
-  const {data,error}=await sb.from('collections').select('receipt_no,collection_date,payer_name,amount,description').order('collection_date',{ascending:false});
+  const {data,error}=await withDateRange(
+    sb.from('collections').select('receipt_no,collection_date,payer_name,amount,description').order('collection_date',{ascending:false}),
+    'collection_date'
+  );
   if(error||!data?.length) return '<div class="alert alert-warning">কোনো কালেকশন ডেটা নেই।</div>';
   const monthly={};
   let grand=0;
@@ -1446,10 +1536,22 @@ async function buildCollectionReport() {
 }
 
 async function buildDaybookReport() {
-  const [colRes,vchRes,jRes]=await Promise.all([
+  const colQuery = withDateRange(
     sb.from('collections').select('collection_date,description,amount,receipt_no').order('collection_date'),
+    'collection_date'
+  );
+  const vchQuery = withDateRange(
     sb.from('vouchers').select('vch_date,description,amount,vch_type,account_code').order('vch_date'),
+    'vch_date'
+  );
+  const jQuery = withDateRange(
     sb.from('journals').select('journal_date,narration,ref_no,total_debit,total_credit').order('journal_date'),
+    'journal_date'
+  );
+  const [colRes,vchRes,jRes]=await Promise.all([
+    colQuery,
+    vchQuery,
+    jQuery,
   ]);
   const all=[];
   (colRes.data||[]).forEach(r=>all.push({date:r.collection_date,desc:'Collection: '+(r.description||r.receipt_no||''),dr:Number(r.amount||0),cr:0,acc:'Cash in Hand',ref:r.receipt_no}));
@@ -1464,9 +1566,10 @@ async function buildDaybookReport() {
 }
 
 async function buildTrialReport() {
-  const {data}=await sb.from('journal_items').select('account_code,debit,credit,coa(account_name,account_group)');
+  const range = getReportDateRange();
+  const {data}=await sb.from('journal_items').select('account_code,debit,credit,coa(account_name,account_group),journals(journal_date)');
   const accs={};
-  (data||[]).forEach(r=>{ if(!accs[r.account_code])accs[r.account_code]={name:r.coa?.account_name||r.account_code,group:r.coa?.account_group||'',dr:0,cr:0}; accs[r.account_code].dr+=Number(r.debit||0); accs[r.account_code].cr+=Number(r.credit||0); });
+  (data||[]).filter(r=>isWithinDateRange(r.journals?.journal_date, range)).forEach(r=>{ if(!accs[r.account_code])accs[r.account_code]={name:r.coa?.account_name||r.account_code,group:r.coa?.account_group||'',dr:0,cr:0}; accs[r.account_code].dr+=Number(r.debit||0); accs[r.account_code].cr+=Number(r.credit||0); });
   let tDr=0,tCr=0;
   const rows=Object.keys(accs).map(code=>{ const a=accs[code]; const dr=a.dr>a.cr?a.dr-a.cr:0,cr=a.cr>a.dr?a.cr-a.dr:0; tDr+=dr; tCr+=cr; return {cells:[{val:code,color:'#647188'},{val:a.name},{val:a.group,color:'#647188'},{val:dr?rptFmt(dr):rptDash(),color:dr?'#1A7A4A':'#BCC5D4'},{val:cr?rptFmt(cr):rptDash(),color:cr?'#C0392B':'#BCC5D4'}]}; });
   if(!rows.length) return '<div class="alert alert-warning">কোনো জার্নাল এন্ট্রি নেই।</div>';
@@ -1477,9 +1580,10 @@ async function buildTrialReport() {
 }
 
 async function buildPLReport() {
-  const {data}=await sb.from('journal_items').select('account_code,debit,credit,coa(account_name,account_group)');
+  const range = getReportDateRange();
+  const {data}=await sb.from('journal_items').select('account_code,debit,credit,coa(account_name,account_group),journals(journal_date)');
   const inc={},exp={};
-  (data||[]).forEach(r=>{ const g=r.coa?.account_group||''; const net=Number(r.debit||0)-Number(r.credit||0); if(g==='Income')inc[r.coa?.account_name||r.account_code]=(inc[r.coa?.account_name||r.account_code]||0)+(-net); if(g==='Expense')exp[r.coa?.account_name||r.account_code]=(exp[r.coa?.account_name||r.account_code]||0)+net; });
+  (data||[]).filter(r=>isWithinDateRange(r.journals?.journal_date, range)).forEach(r=>{ const g=r.coa?.account_group||''; const net=Number(r.debit||0)-Number(r.credit||0); if(g==='Income')inc[r.coa?.account_name||r.account_code]=(inc[r.coa?.account_name||r.account_code]||0)+(-net); if(g==='Expense')exp[r.coa?.account_name||r.account_code]=(exp[r.coa?.account_name||r.account_code]||0)+net; });
   const tI=Object.values(inc).reduce((s,v)=>s+v,0), tE=Object.values(exp).reduce((s,v)=>s+v,0), sur=tI-tE;
   const rows=[];
   rows.push({cells:[{val:'আয় (INCOME)',color:'#0F1F3D'},{val:''}],_section:true,_bold:true});
@@ -1497,9 +1601,10 @@ async function buildPLReport() {
 }
 
 async function buildBSReport() {
-  const {data}=await sb.from('journal_items').select('account_code,debit,credit,coa(account_name,account_group)');
+  const range = getReportDateRange();
+  const {data}=await sb.from('journal_items').select('account_code,debit,credit,coa(account_name,account_group),journals(journal_date)');
   const grps={Asset:{},Liability:{},Equity:{},Income:{},Expense:{}};
-  (data||[]).forEach(r=>{ const g=r.coa?.account_group||'Other'; const net=Number(r.debit||0)-Number(r.credit||0); if(grps[g])grps[g][r.coa?.account_name||r.account_code]=(grps[g][r.coa?.account_name||r.account_code]||0)+net; });
+  (data||[]).filter(r=>isWithinDateRange(r.journals?.journal_date, range)).forEach(r=>{ const g=r.coa?.account_group||'Other'; const net=Number(r.debit||0)-Number(r.credit||0); if(grps[g])grps[g][r.coa?.account_name||r.account_code]=(grps[g][r.coa?.account_name||r.account_code]||0)+net; });
   const sg=g=>Object.values(grps[g]||{}).reduce((s,v)=>s+v,0);
   const tA=sg('Asset'),tL=sg('Liability'),tE=sg('Equity'),sur=sg('Income')-sg('Expense');
   const rows=[];
@@ -1523,13 +1628,18 @@ async function buildBSReport() {
 }
 
 async function buildCashBankReport() {
-  const [colRes,jRes]=await Promise.all([
+  const colQuery = withDateRange(
     sb.from('collections').select('collection_date,receipt_no,description,amount').order('collection_date'),
+    'collection_date'
+  );
+  const [colRes,jRes]=await Promise.all([
+    colQuery,
     sb.from('journal_items').select('debit,credit,journals(journal_date,ref_no,narration),coa(account_name)').in('account_code',['1110','1120']),
   ]);
+  const range = getReportDateRange();
   const all=[];
   (colRes.data||[]).forEach(r=>all.push({date:r.collection_date,ref:r.receipt_no||'',desc:r.description||'Collection',acc:'Cash in Hand',dr:Number(r.amount||0),cr:0}));
-  (jRes.data||[]).forEach(r=>{ const j=r.journals||{}; all.push({date:j.journal_date,ref:j.ref_no||'',desc:j.narration||'',acc:r.coa?.account_name||'',dr:Number(r.debit||0),cr:Number(r.credit||0)}); });
+  (jRes.data||[]).filter(r=>isWithinDateRange(r.journals?.journal_date, range)).forEach(r=>{ const j=r.journals||{}; all.push({date:j.journal_date,ref:j.ref_no||'',desc:j.narration||'',acc:r.coa?.account_name||'',dr:Number(r.debit||0),cr:Number(r.credit||0)}); });
   all.sort((a,b)=>new Date(a.date)-new Date(b.date));
   if(!all.length) return '<div class="alert alert-warning">কোনো ক্যাশ/ব্যাংক এন্ট্রি নেই।</div>';
   let runBal=0;
