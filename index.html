@@ -2,8 +2,17 @@
 <html lang="bn" data-lang="bn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Aura Unity ERP</title>
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#D4A017">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Aura Unity">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
@@ -56,6 +65,7 @@ input,select,textarea,button{font-family:inherit;outline:none}
 .sb-powered span{color:#3D6B9A;font-weight:600}
 /* TOPBAR */
 .topbar{height:var(--th);background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 var(--border),0 4px 16px rgba(8,15,30,.04)}
+.topbar-l{display:flex;align-items:center;gap:10px}
 .topbar-l h2{font-size:16px;font-weight:700}
 .topbar-l p{font-size:11.5px;color:var(--muted);margin-top:1px}
 .topbar-r{display:flex;gap:8px;align-items:center}
@@ -172,8 +182,8 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 .t-info{border-left:4px solid var(--info)}
 .t-warning{border-left:4px solid var(--gold)}
 /* WELCOME POPOVER */
-.welcome-popover{position:fixed;top:14px;left:50%;transform:translateX(-50%) translateY(-14px);background:linear-gradient(135deg,var(--navy2),var(--navy3));border:1px solid rgba(212,160,23,.34);color:#fff;padding:10px 14px;border-radius:12px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;z-index:10001;opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
-.welcome-popover.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.welcome-popover{position:fixed;top:14px;right:24px;transform:translateY(-14px);background:linear-gradient(135deg,var(--navy2),var(--navy3));border:1px solid rgba(212,160,23,.34);color:#fff;padding:10px 14px;border-radius:12px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;z-index:10001;opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
+.welcome-popover.show{opacity:1;transform:translateY(0)}
 .welcome-badge{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,var(--gold),#B8860B);display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--navy)}
 .welcome-text{font-size:12.5px;font-weight:600;white-space:nowrap}
 /* MODAL */
@@ -245,19 +255,78 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 /* SCROLLBAR */
 .sidebar::-webkit-scrollbar{width:4px}
 .sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:4px}
+/* Touch targets – all interactive elements at least 44px tall */
+.btn{min-height:40px}
+.nav-item{min-height:44px}
+.form-control{min-height:42px}
+.btn-logout{min-height:40px}
+/* TABLET (601px – 900px): sidebar hidden, single-column refinements */
 @media(max-width:900px){
   :root{--sw:0px}
-  .sidebar{display:none}
+  .sidebar{display:none;position:fixed;top:0;left:0;bottom:0;width:260px;z-index:300}
+  .sidebar.mob-open{display:flex}
+  .mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:299}
+  .mob-overlay.mob-open{display:block}
+  .mob-menu-btn{display:flex!important}
   .main{margin-left:0}
   .topbar{padding:0 16px}
-  .content{padding:16px}
-  .welcome-popover{max-width:calc(100vw - 24px)}
+  .content{padding:16px;padding-bottom:80px}
+  .welcome-popover{right:12px;left:auto;max-width:min(320px,calc(100vw - 24px))}
   .welcome-text{white-space:normal}
   .form-row-2,.form-row-3,.day-grid,.receipt-grid{grid-template-columns:1fr}
   .entry-line,.entry-totals{grid-template-columns:1fr 1fr 80px 80px 36px}
   .receipt-meta-grid{grid-template-columns:1fr}
+  .ledger-grid{grid-template-columns:1fr 1fr 1fr}
+  .topbar-r .btn:not(.btn-sm){display:none}
+  .topbar-r .btn.btn-sm{padding:7px 11px}
+  .mob-bottom-nav{display:flex!important}
+  .mob-install-btn{display:flex!important}
 }
+/* SMALL PHONE (<480px): further collapse */
+@media(max-width:480px){
+  .content{padding:12px}
+  .topbar{padding:0 12px}
+  .card-body{padding:16px}
+  .card-header{padding:12px 16px}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .stat-value{font-size:20px}
+  .quick-grid{grid-template-columns:repeat(3,1fr)}
+  .ledger-grid{grid-template-columns:1fr}
+  .entry-line,.entry-totals{grid-template-columns:1fr 70px 70px 30px}
+  .entry-line>*:nth-child(2){display:none}
+  .form-row{grid-template-columns:1fr}
+  .day-mini-grid{grid-template-columns:1fr 1fr}
+  .toast-wrap{bottom:12px;right:12px;left:12px}
+  .toast{max-width:100%}
+  .login-box{border-radius:16px}
+  .login-body{padding:20px 18px 14px}
+  .login-header{padding:22px 18px 18px}
+  thead th{font-size:9.5px;padding:8px 10px}
+  tbody td{padding:9px 10px;font-size:12.5px}
+}
+.mob-menu-btn{display:none;align-items:center;justify-content:center;width:40px;height:40px;background:transparent;border:none;cursor:pointer;padding:4px;border-radius:var(--r);color:var(--navy2)}
+.mob-menu-btn:hover{background:var(--info-lt)}
+.mob-menu-btn svg{display:block}
+.mob-overlay{display:none}
+/* MOBILE BOTTOM NAVIGATION */
+.mob-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--navy);border-top:1px solid rgba(255,255,255,.1);z-index:250;padding-bottom:env(safe-area-inset-bottom,0px)}
+.mob-bottom-nav-inner{display:flex;align-items:stretch;height:58px}
+.mob-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:transparent;border:none;cursor:pointer;color:#7A96B2;font-size:9.5px;font-weight:600;padding:6px 2px;transition:var(--tr);position:relative}
+.mob-nav-btn.active{color:var(--gold-lt)}
+.mob-nav-btn.active::before{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--gold);border-radius:0 0 2px 2px}
+.mob-nav-btn svg{width:20px;height:20px;flex-shrink:0}
+/* PWA INSTALL BUTTON */
+.mob-install-btn{display:none;align-items:center;justify-content:center;width:38px;height:38px;background:var(--gold-bg);border:1.5px solid var(--gold);border-radius:var(--r);cursor:pointer;color:var(--navy2);flex-shrink:0}
+.mob-install-btn svg{width:18px;height:18px}
 #printArea{display:none}
+/* Safe-area insets for notched / Dynamic-Island phones */
+@supports(padding: max(0px)){
+  .topbar{padding-left:max(28px,env(safe-area-inset-left));padding-right:max(28px,env(safe-area-inset-right))}
+  .sidebar{padding-top:env(safe-area-inset-top);padding-bottom:max(14px,env(safe-area-inset-bottom))}
+  .login-overlay{padding-top:max(20px,env(safe-area-inset-top));padding-bottom:max(20px,env(safe-area-inset-bottom))}
+  .toast-wrap{bottom:max(24px,env(safe-area-inset-bottom));right:max(24px,env(safe-area-inset-right))}
+  .welcome-popover{top:max(14px,env(safe-area-inset-top));right:max(24px,env(safe-area-inset-right))}
+}
 @media print{
   body>*{display:none!important}
   #printArea{display:block!important;position:fixed;inset:0;background:#fff;z-index:99999;padding:0;margin:0}
@@ -267,6 +336,7 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 </head>
 <body>
 <div id="printArea"></div>
+<div id="mobOverlay" class="mob-overlay" onclick="closeMobSidebar()"></div>
 <div id="welcomePopover" class="welcome-popover hidden" role="status" aria-live="polite" aria-atomic="true" aria-hidden="true">
   <div id="welcomeBadge" class="welcome-badge"></div>
   <div id="welcomeText" class="welcome-text"></div>
@@ -281,22 +351,49 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
       <div class="login-title">Aura Unity</div>
       <div class="login-sub">Accounting Management System</div>
     </div>
-    <div class="login-body">
+
+    <!-- Step 1: Server Address -->
+    <div id="serverStep" class="login-body">
+      <div style="text-align:center;margin-bottom:18px">
+        <div style="font-size:13px;color:var(--muted);line-height:1.6" data-bn="আপনার প্রতিষ্ঠানের সার্ভার অ্যাড্রেস দিন" data-en="Enter your organisation server address">আপনার প্রতিষ্ঠানের সার্ভার অ্যাড্রেস দিন</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-bn="সার্ভার অ্যাড্রেস" data-en="Server Address">সার্ভার অ্যাড্রেস</label>
+        <input id="serverAddr" class="form-control" type="url" placeholder="https://your-tenant.vercel.app" autocomplete="url" inputmode="url">
+      </div>
+      <div id="serverErr" class="alert alert-danger hidden" style="margin-bottom:12px"></div>
+      <div style="margin-top:18px">
+        <button id="connectBtn" class="btn btn-primary" style="width:100%;justify-content:center" onclick="connectServer()">
+          <span data-bn="সংযুক্ত করুন" data-en="Connect">সংযুক্ত করুন</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2: Username / Password -->
+    <div id="loginStep" class="login-body hidden">
+      <div id="serverBadge" style="display:flex;align-items:center;justify-content:space-between;background:var(--info-lt);border:1px solid rgba(21,88,176,.15);border-radius:var(--r);padding:8px 12px;margin-bottom:16px;gap:8px">
+        <div style="display:flex;align-items:center;gap:6px;min-width:0">
+          <span style="font-size:13px">🌐</span>
+          <span id="serverBadgeUrl" style="font-size:11.5px;color:var(--info);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
+        </div>
+        <button onclick="changeServer()" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--muted);white-space:nowrap;flex-shrink:0;padding:2px 4px;border-radius:4px" data-bn="পরিবর্তন" data-en="Change">পরিবর্তন</button>
+      </div>
       <div class="form-group">
         <label class="form-label" data-bn="ইউজারনেম" data-en="Username">ইউজারনেম</label>
-        <input id="loginUser" class="form-control" placeholder="superuser" autocomplete="">
+        <input id="loginUser" class="form-control" placeholder="superuser" autocomplete="username">
       </div>
       <div class="form-group">
         <label class="form-label" data-bn="পাসওয়ার্ড" data-en="Password">পাসওয়ার্ড</label>
-        <input id="loginPass" type="password" class="form-control" placeholder="">
+        <input id="loginPass" type="password" class="form-control" placeholder="" autocomplete="current-password">
       </div>
       <div id="loginErr" class="alert alert-danger hidden" style="margin-bottom:12px"></div>
       <div style="display:flex;gap:8px;margin-top:18px">
         <button id="loginBtn" class="btn btn-primary" style="flex:1;justify-content:center" onclick="login()">
           <span data-bn="লগইন করুন" data-en="Sign In">লগইন করুন</span>
-        </button>      
+        </button>
       </div>
     </div>
+
     <div class="login-footer">
       <div>© 2026 Aura Stay &nbsp;·&nbsp; <strong>Powered by Aura Stay</strong></div>
     </div>
@@ -343,8 +440,16 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 
   <div class="main">
     <div class="topbar">
-      <div class="topbar-l"><h2 id="topTitle">ড্যাশবোর্ড</h2><p id="topSub">সার্বিক আর্থিক অবস্থান</p></div>
+      <div class="topbar-l">
+        <button class="mob-menu-btn" onclick="openMobSidebar()" aria-label="Menu">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect y="4" width="22" height="2.2" rx="1.1" fill="currentColor"/><rect y="9.9" width="22" height="2.2" rx="1.1" fill="currentColor"/><rect y="15.8" width="22" height="2.2" rx="1.1" fill="currentColor"/></svg>
+        </button>
+        <h2 id="topTitle">ড্যাশবোর্ড</h2><p id="topSub">সার্বিক আর্থিক অবস্থান</p>
+      </div>
       <div class="topbar-r">
+        <button id="pwaInstallBtn" class="mob-install-btn" onclick="triggerPwaInstall()" aria-label="Install App" title="অ্যাপ ইনস্টল করুন">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
         <button class="btn btn-ghost btn-sm" onclick="openModule('company')">⚙</button>
         <button class="btn btn-gold btn-sm" onclick="openModule('collection')"><span data-bn="+ কালেকশন" data-en="+ Collection">+ কালেকশন</span></button>
         <button class="btn btn-ghost btn-sm" onclick="openModule('voucher')"><span data-bn="+ ভাউচার / জার্নাল" data-en="+ Voucher / Journal">+ ভাউচার / জার্নাল</span></button>
@@ -832,6 +937,32 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
   </div>
 </div>
 
+<!-- MOBILE BOTTOM NAVIGATION -->
+<nav id="mobBottomNav" class="mob-bottom-nav hidden" aria-label="Mobile navigation">
+  <div class="mob-bottom-nav-inner">
+    <button class="mob-nav-btn active" data-module="dashboard" onclick="openModule('dashboard')" aria-label="Dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span data-bn="হোম" data-en="Home">হোম</span>
+    </button>
+    <button class="mob-nav-btn" data-module="collection" onclick="openModule('collection')" aria-label="Collections">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <span data-bn="কালেকশন" data-en="Collection">কালেকশন</span>
+    </button>
+    <button class="mob-nav-btn" data-module="voucher" onclick="openModule('voucher')" aria-label="Voucher">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span data-bn="ভাউচার" data-en="Voucher">ভাউচার</span>
+    </button>
+    <button class="mob-nav-btn" data-module="reports" onclick="openModule('reports')" aria-label="Reports">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span data-bn="রিপোর্ট" data-en="Reports">রিপোর্ট</span>
+    </button>
+    <button class="mob-nav-btn" data-module="menu" onclick="openMobSidebar()" aria-label="More">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      <span data-bn="মেনু" data-en="Menu">মেনু</span>
+    </button>
+  </div>
+</nav>
+
 <!-- COA MODAL -->
 <div id="accModal" class="modal-overlay hidden">
   <div class="modal-box">
@@ -853,6 +984,97 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 </div>
 
 <script>
+// ══════════════════════════════════════════
+// SECURITY HELPERS
+// ══════════════════════════════════════════
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// ══════════════════════════════════════════
+// SERVER / TENANT STEP
+// ══════════════════════════════════════════
+const _SERVER_KEY = 'aura-unity-server-url';
+
+function _normalizeServerUrl(raw) {
+  raw = raw.trim();
+  if (!raw) return null;
+  // Auto-prepend https:// if no scheme given
+  if (!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
+  try {
+    const u = new URL(raw);
+    // Return clean origin (no trailing slash / path)
+    return u.origin;
+  } catch (_) {
+    return null;
+  }
+}
+
+function _showServerStep() {
+  document.getElementById('serverStep').classList.remove('hidden');
+  document.getElementById('loginStep').classList.add('hidden');
+  const saved = localStorage.getItem(_SERVER_KEY);
+  if (saved) document.getElementById('serverAddr').value = saved;
+}
+
+function _showLoginStep(serverUrl) {
+  document.getElementById('serverStep').classList.add('hidden');
+  document.getElementById('loginStep').classList.remove('hidden');
+  document.getElementById('serverBadgeUrl').textContent = serverUrl;
+}
+
+function connectServer() {
+  const raw = document.getElementById('serverAddr').value;
+  const errEl = document.getElementById('serverErr');
+  errEl.classList.add('hidden');
+
+  const url = _normalizeServerUrl(raw);
+  if (!url) {
+    errEl.textContent = 'সঠিক সার্ভার অ্যাড্রেস দিন। (যেমন: https://your-tenant.vercel.app)';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  localStorage.setItem(_SERVER_KEY, url);
+
+  // If the entered URL is a different origin, redirect there
+  if (url !== window.location.origin) {
+    window.location.href = url;
+    return;
+  }
+
+  _showLoginStep(url);
+}
+
+function changeServer() {
+  _showServerStep();
+}
+
+// Login rate-limiting (client-side, defence-in-depth)
+let _loginAttempts = 0;
+let _loginLockUntil = 0;
+const _MAX_ATTEMPTS = 5;
+const _LOCKOUT_MS   = 15 * 60 * 1000; // 15 minutes
+
+// Session idle timeout (30 minutes)
+let _idleTimer;
+const _IDLE_MS = 30 * 60 * 1000;
+function _resetIdleTimer() {
+  clearTimeout(_idleTimer);
+  _idleTimer = setTimeout(() => {
+    toast('নিষ্ক্রিয়তার কারণে সেশন শেষ হয়েছে।', 'warning');
+    setTimeout(logout, 2000);
+  }, _IDLE_MS);
+}
+['click','keydown','mousemove','touchstart','scroll'].forEach(ev =>
+  document.addEventListener(ev, _resetIdleTimer, { passive: true })
+);
+
 // ══════════════════════════════════════════
 // SUPABASE INIT
 // ══════════════════════════════════════════
@@ -1008,10 +1230,10 @@ function renderDayAuditTable() {
   }
   body.innerHTML = sessions.map(s => `
     <tr>
-      <td><strong>${s.date || '—'}</strong></td>
+      <td><strong>${esc(s.date || '—')}</strong></td>
       <td><span class="badge ${s.status === 'closed' ? 'bg-green' : 'bg-gold'}">${s.status === 'closed' ? 'Closed' : 'Open'}</span></td>
-      <td>${s.openedBy ? `${s.openedBy}<div class="td-m" style="font-size:11px">${fmtDateTime(s.openedAt)}</div>` : '<span class="td-m">—</span>'}</td>
-      <td>${s.closedBy ? `${s.closedBy}<div class="td-m" style="font-size:11px">${fmtDateTime(s.closedAt)}</div>` : '<span class="td-m">—</span>'}</td>
+      <td>${s.openedBy ? `${esc(s.openedBy)}<div class="td-m" style="font-size:11px">${esc(fmtDateTime(s.openedAt))}</div>` : '<span class="td-m">—</span>'}</td>
+      <td>${s.closedBy ? `${esc(s.closedBy)}<div class="td-m" style="font-size:11px">${esc(fmtDateTime(s.closedAt))}</div>` : '<span class="td-m">—</span>'}</td>
     </tr>`).join('');
 }
 
@@ -1301,8 +1523,23 @@ function setLang(lang) {
 // ══════════════════════════════════════════
 // NAVIGATION
 // ══════════════════════════════════════════
+// MOBILE SIDEBAR TOGGLE
+// ══════════════════════════════════════════
+function openMobSidebar() {
+  document.querySelector('.sidebar').classList.add('mob-open');
+  document.getElementById('mobOverlay').classList.add('mob-open');
+}
+function closeMobSidebar() {
+  document.querySelector('.sidebar').classList.remove('mob-open');
+  document.getElementById('mobOverlay').classList.remove('mob-open');
+}
+
+// ══════════════════════════════════════════
 document.querySelectorAll('.nav-item').forEach(el => {
-  el.addEventListener('click', () => openModule(el.getAttribute('data-module')));
+  el.addEventListener('click', () => {
+    openModule(el.getAttribute('data-module'));
+    closeMobSidebar();
+  });
 });
 
 function openModule(id) {
@@ -1311,6 +1548,7 @@ function openModule(id) {
   const t = document.getElementById(id);
   if (t) t.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(a => a.classList.toggle('active', a.getAttribute('data-module')===id));
+  document.querySelectorAll('.mob-nav-btn[data-module]').forEach(b => b.classList.toggle('active', b.getAttribute('data-module')===id));
   document.getElementById('topTitle').textContent = TT[S.lang][id] || id;
   document.getElementById('topSub').textContent = '';
   if (id==='collection') loadCollections();
@@ -1328,16 +1566,20 @@ function openModule(id) {
 // ══════════════════════════════════════════
 // LOGIN — Supabase Auth
 // ══════════════════════════════════════════
-function fillGuest() {
-  document.getElementById('loginUser').value = 'superuser';
-  document.getElementById('loginPass').value = 'superuser123';
-}
-
 async function login() {
+  const now = Date.now();
   const username = document.getElementById('loginUser').value.trim();
-  const password = document.getElementById('loginPass').value.trim();
+  const password = document.getElementById('loginPass').value; // do NOT trim passwords
   const err = document.getElementById('loginErr');
   const btn = document.getElementById('loginBtn');
+
+  // Client-side rate-limit (defence-in-depth)
+  if (now < _loginLockUntil) {
+    const remaining = Math.ceil((_loginLockUntil - now) / 1000);
+    err.textContent = `অনেক বেশি প্রচেষ্টা। ${remaining} সেকেন্ড পরে আবার চেষ্টা করুন।`;
+    err.classList.remove('hidden');
+    return;
+  }
 
   if (!username || !password) {
     err.textContent = 'ইউজারনেম ও পাসওয়ার্ড দিন।';
@@ -1365,10 +1607,20 @@ async function login() {
     btn.innerHTML = '<span data-bn="লগইন করুন" data-en="Sign In">লগইন করুন</span>';
 
     if (!data.ok) {
-      err.textContent = data.message || 'ইউজারনেম বা পাসওয়ার্ড ভুল।';
+      _loginAttempts++;
+      if (_loginAttempts >= _MAX_ATTEMPTS) {
+        _loginLockUntil = Date.now() + _LOCKOUT_MS;
+        _loginAttempts = 0;
+        err.textContent = 'অনেক বেশি ব্যর্থ প্রচেষ্টা। ১৫ মিনিট পরে আবার চেষ্টা করুন।';
+      } else {
+        err.textContent = data.message || 'ইউজারনেম বা পাসওয়ার্ড ভুল।';
+      }
       err.classList.remove('hidden');
       return;
     }
+
+    _loginAttempts = 0;
+    _loginLockUntil = 0;
 
     // Supabase client এ session set করো
     if (data.access_token) {
@@ -1382,9 +1634,11 @@ async function login() {
 
     document.getElementById('loginModal').classList.add('hidden');
     document.getElementById('app').classList.remove('hidden');
+    document.getElementById('mobBottomNav').classList.remove('hidden');
     document.getElementById('sbRole').textContent  = data.user.role  || 'Super User';
     document.getElementById('sbUname').textContent = data.user.name  || username;
 
+    _resetIdleTimer();
     await initApp();
     const welcomeName = normalizeWelcomeName(data.user.name || username);
     showWelcomePopover(welcomeName);
@@ -1402,6 +1656,7 @@ async function logout() {
   await sb.auth.signOut();
   S.user = null; S.session = null;
   document.getElementById('app').classList.add('hidden');
+  document.getElementById('mobBottomNav').classList.add('hidden');
   document.getElementById('loginModal').classList.remove('hidden');
 }
 
@@ -1514,10 +1769,10 @@ function renderCOA(rows) {
   if (!rows.length) { tb.innerHTML='<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">কোনো অ্যাকাউন্ট নেই</td></tr>'; return; }
   tb.innerHTML = rows.map(r => `
     <tr>
-      <td><strong>${r.account_code}</strong></td>
-      <td>${r.account_name}</td>
-      <td>${r.account_group||''}</td>
-      <td><span class="badge bg-gold">${r.account_type||'Ledger'}</span></td>
+      <td><strong>${esc(r.account_code)}</strong></td>
+      <td>${esc(r.account_name)}</td>
+      <td>${esc(r.account_group||'')}</td>
+      <td><span class="badge bg-gold">${esc(r.account_type||'Ledger')}</span></td>
       <td class="td-g">${fmt(r.opening_balance||0)}</td>
     </tr>`).join('');
 }
@@ -1607,11 +1862,11 @@ async function loadCollections() {
   if (error || !data.length) { tb.innerHTML='<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">কোনো কালেকশন নেই</td></tr>'; return; }
   tb.innerHTML = data.map(r => `
     <tr>
-      <td><span class="badge bg-gold">${r.receipt_no||'—'}</span></td>
-      <td>${r.collection_date||''}</td>
-      <td>${r.payer_name||''}</td>
+      <td><span class="badge bg-gold">${esc(r.receipt_no||'—')}</span></td>
+      <td>${esc(r.collection_date||'')}</td>
+      <td>${esc(r.payer_name||'')}</td>
       <td class="td-g"><strong>${fmt(r.amount)}</strong></td>
-      <td class="td-m">${r.description||''}</td>
+      <td class="td-m">${esc(r.description||'')}</td>
     </tr>`).join('');
 }
 
@@ -1744,9 +1999,9 @@ async function loadVoucherSummary() {
   journalBody.innerHTML = journals.map(j => {
     const isReconciled = reconciledSet.has(String(j.id));
     return `<tr>
-      <td><span class="badge bg-navy">${j.ref_no || 'JV'}</span>${isReconciled ? ' <span class="badge bg-green" style="font-size:9px">✓ Reconciled</span>' : ''}</td>
-      <td>${j.journal_date || ''}</td>
-      <td>${j.narration || ''}</td>
+      <td><span class="badge bg-navy">${esc(j.ref_no || 'JV')}</span>${isReconciled ? ' <span class="badge bg-green" style="font-size:9px">✓ Reconciled</span>' : ''}</td>
+      <td>${esc(j.journal_date || '')}</td>
+      <td>${esc(j.narration || '')}</td>
       <td class="td-g">${fmt(j.total_debit || 0)}</td>
       <td class="td-r">${fmt(j.total_credit || 0)}</td>
       <td>
@@ -1958,12 +2213,12 @@ async function loadDaybook() {
   if (!rows.length) { tb.innerHTML='<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">কোনো এন্ট্রি নেই</td></tr>'; return; }
   tb.innerHTML = rows.map(r => `
     <tr>
-      <td>${r.date||''}</td>
-      <td>${r.desc||''}</td>
+      <td>${esc(r.date||'')}</td>
+      <td>${esc(r.desc||'')}</td>
       <td class="${r.dr?'td-g':'td-m'}">${r.dr?fmt(r.dr):'—'}</td>
       <td class="${r.cr?'td-r':'td-m'}">${r.cr?fmt(r.cr):'—'}</td>
-      <td class="td-m">${r.acc||''}</td>
-      <td class="td-m">${r.ref||''}</td>
+      <td class="td-m">${esc(r.acc||'')}</td>
+      <td class="td-m">${esc(r.ref||'')}</td>
     </tr>`).join('');
 }
 
@@ -1989,9 +2244,9 @@ async function loadLedger() {
     tDr+=dr; tCr+=cr; bal=tDr-tCr;
     const j = r.journals||{};
     return `<tr>
-      <td>${j.journal_date||''}</td>
-      <td>${j.narration||''}</td>
-      <td class="td-m">${j.ref_no||''}</td>
+      <td>${esc(j.journal_date||'')}</td>
+      <td>${esc(j.narration||'')}</td>
+      <td class="td-m">${esc(j.ref_no||'')}</td>
       <td class="${dr?'td-g':'td-m'}">${dr?fmt(dr):'—'}</td>
       <td class="${cr?'td-r':'td-m'}">${cr?fmt(cr):'—'}</td>
       <td style="font-weight:600">${fmt(bal)}</td>
@@ -2029,8 +2284,8 @@ async function loadTrialBalance() {
     const cr = a.cr > a.dr ? a.cr-a.dr : 0;
     tDr+=dr; tCr+=cr;
     return `<tr>
-      <td>${a.name}</td>
-      <td class="td-m">${a.group}</td>
+      <td>${esc(a.name)}</td>
+      <td class="td-m">${esc(a.group)}</td>
       <td class="${dr?'td-g':'td-m'}">${dr?fmt(dr):'—'}</td>
       <td class="${cr?'td-r':'td-m'}">${cr?fmt(cr):'—'}</td>
     </tr>`;
@@ -2636,10 +2891,10 @@ async function loadUsers() {
     const badgeCls = role === 'Super User' ? 'bg-gold' : role === 'ম্যানেজার' ? 'bg-navy' : 'bg-green';
     const date  = u.created_at ? u.created_at.slice(0,10) : '—';
     return `<tr>
-      <td><strong>${uname}</strong></td>
-      <td class="td-m">${u.email || '—'}</td>
-      <td><span class="badge ${badgeCls}">${role}</span></td>
-      <td class="td-m">${date}</td>
+      <td><strong>${esc(uname)}</strong></td>
+      <td class="td-m">${esc(u.email || '—')}</td>
+      <td><span class="badge ${badgeCls}">${esc(role)}</span></td>
+      <td class="td-m">${esc(date)}</td>
       <td><span class="badge bg-green">Active</span></td>
     </tr>`;
   }).join('');
@@ -2656,11 +2911,53 @@ sb.auth.onAuthStateChange(async (event, session) => {
 });
 
 // ══════════════════════════════════════════
+// PWA INSTALL PROMPT
+// ══════════════════════════════════════════
+let _pwaInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  _pwaInstallPrompt = e;
+  const btn = document.getElementById('pwaInstallBtn');
+  if (btn) btn.style.display = 'flex';
+});
+window.addEventListener('appinstalled', () => {
+  _pwaInstallPrompt = null;
+  const btn = document.getElementById('pwaInstallBtn');
+  if (btn) btn.style.display = 'none';
+});
+function triggerPwaInstall() {
+  if (!_pwaInstallPrompt) return;
+  _pwaInstallPrompt.prompt();
+  _pwaInstallPrompt.userChoice.then(() => { _pwaInstallPrompt = null; }).catch(() => { _pwaInstallPrompt = null; });
+}
+
+// ══════════════════════════════════════════
 // DOM READY
 // ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('colRno').value = genRno();
   genReceiptPreview();
+
+  // Allow Enter key on server address input
+  const addrInput = document.getElementById('serverAddr');
+  if (addrInput) {
+    addrInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); connectServer(); }
+    });
+  }
+
+  // Register PWA service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch((e) => console.debug('[SW] Registration failed:', e));
+  }
+
+  // Server / tenant step: show server step first if no saved URL
+  const savedServer = localStorage.getItem(_SERVER_KEY);
+  if (savedServer) {
+    _showLoginStep(savedServer);
+  } else {
+    _showServerStep();
+  }
 
   // Check existing session
   sb.auth.getSession().then(async ({ data:{ session } }) => {
@@ -2668,10 +2965,12 @@ document.addEventListener('DOMContentLoaded', () => {
       S.user = session.user; S.session = session;
       document.getElementById('loginModal').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
+      document.getElementById('mobBottomNav').classList.remove('hidden');
       // username lookup
       const { data: pub } = await sb.from('users').select('username').eq('email', session.user.email).single();
       document.getElementById('sbUname').textContent = pub?.username || session.user.email?.split('@')[0] || 'user';
       document.getElementById('sbRole').textContent  = 'Super User';
+      _resetIdleTimer();
       initApp();
       showWelcomePopover(pub?.username || session.user.email?.split('@')[0] || 'user');
     }
