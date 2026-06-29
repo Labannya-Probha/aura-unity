@@ -239,9 +239,9 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 </head>
 <body>
 <div id="printArea"></div>
-<div id="welcomePopover" class="welcome-popover hidden" role="status" aria-live="polite" aria-atomic="true">
-  <div id="welcomeBadge" class="welcome-badge">A</div>
-  <div id="welcomeText" class="welcome-text">স্বাগতম!</div>
+<div id="welcomePopover" class="welcome-popover hidden" role="status" aria-live="polite" aria-atomic="true" aria-hidden="true">
+  <div id="welcomeBadge" class="welcome-badge"></div>
+  <div id="welcomeText" class="welcome-text"></div>
 </div>
 <div id="toastWrap" class="toast-wrap"></div>
 
@@ -787,6 +787,15 @@ function getWelcomeText(safeName = '') {
   return safeName ? `স্বাগতম, ${safeName}!` : 'স্বাগতম!';
 }
 
+function getBadgeInitial(safeName = '') {
+  if (!safeName) return '';
+  if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+    const first = new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(safeName)[Symbol.iterator]().next().value;
+    return (first?.segment || '').toUpperCase();
+  }
+  return (Array.from(safeName)[0] || '').toUpperCase();
+}
+
 function showWelcomePopover(name = '') {
   const POPOVER_TRANSITION_MS = 260;
   const POPOVER_DISPLAY_MS = 3200;
@@ -795,13 +804,17 @@ function showWelcomePopover(name = '') {
   const badge = document.getElementById('welcomeBadge');
   const text = document.getElementById('welcomeText');
   const safeName = normalizeWelcomeName(name);
-  badge.textContent = safeName ? Array.from(safeName)[0].toUpperCase() : DEFAULT_BADGE_INITIAL;
+  badge.textContent = getBadgeInitial(safeName) || DEFAULT_BADGE_INITIAL;
   text.textContent = getWelcomeText(safeName);
   pop.classList.remove('hidden');
-  requestAnimationFrame(() => pop.classList.add('show'));
+  pop.setAttribute('aria-hidden', 'false');
+  requestAnimationFrame(() => requestAnimationFrame(() => pop.classList.add('show')));
   setTimeout(() => {
     pop.classList.remove('show');
-    setTimeout(() => pop.classList.add('hidden'), POPOVER_TRANSITION_MS);
+    setTimeout(() => {
+      pop.classList.add('hidden');
+      pop.setAttribute('aria-hidden', 'true');
+    }, POPOVER_TRANSITION_MS);
   }, POPOVER_DISPLAY_MS);
 }
 
