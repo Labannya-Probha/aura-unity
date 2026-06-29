@@ -67,6 +67,10 @@ var TT = {
 
 const LOCAL_STATE_KEY = 'aura-unity-local-state-v2';
 
+// Maps tenant_members.role values to display labels (Bengali/English)
+const MEMBER_ROLE_LABELS = { owner: 'Owner', superuser: 'Super User', manager: 'ম্যানেজার', user: 'ইউজার' };
+const MEMBER_ROLE_BADGES = { owner: 'bg-danger', superuser: 'bg-gold', manager: 'bg-navy', user: 'bg-green' };
+
 function safeJsonParse(value, fallback) {
   try { return value ? JSON.parse(value) : fallback; }
   catch (error) { console.warn('Local state parse failed:', error); return fallback; }
@@ -649,8 +653,7 @@ async function initApp() {
   await getTenantId();
   // Reflect the resolved tenant member role in the sidebar
   if (S.activeMemberRole) {
-    const roleLabels = { owner: 'Owner', superuser: 'Super User', manager: 'ম্যানেজার', user: 'ইউজার' };
-    document.getElementById('sbRole').textContent = roleLabels[S.activeMemberRole] || S.activeMemberRole;
+    document.getElementById('sbRole').textContent = MEMBER_ROLE_LABELS[S.activeMemberRole] || S.activeMemberRole;
   }
   await loadVoucherSummary();
   await loadCompany();
@@ -1958,9 +1961,9 @@ async function addUser() {
       headers: {
         'Content-Type': 'application/json',
         'apikey': SUPA_ANON,
-        'Authorization': `******
+        'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify({ username, password, role, tenant_id: S.tenantId || undefined }),
+      body: JSON.stringify({ username, password, role, ...(S.tenantId ? { tenant_id: S.tenantId } : {}) }),
     });
 
     const data = await res.json();
@@ -2026,12 +2029,11 @@ async function loadUsers() {
       return;
     }
 
-    const roleLabels = { owner: 'Owner', superuser: 'Super User', manager: 'ম্যানেজার', user: 'ইউজার' };
     const badgeMap   = { owner: 'bg-danger', superuser: 'bg-gold', manager: 'bg-navy', user: 'bg-green' };
     tb.innerHTML = data.map(m => {
       const uname     = m.users?.username || m.users?.email?.split('@')[0] || '—';
-      const roleLabel = roleLabels[m.role] || m.role || 'ইউজার';
-      const badgeCls  = badgeMap[m.role] || 'bg-green';
+      const roleLabel = MEMBER_ROLE_LABELS[m.role] || m.role || 'ইউজার';
+      const badgeCls  = MEMBER_ROLE_BADGES[m.role] || 'bg-green';
       const statusCls = m.status === 'active' ? 'bg-green' : m.status === 'invited' ? 'bg-gold' : 'bg-danger';
       const date      = m.created_at ? m.created_at.slice(0,10) : '—';
       return `<tr>
@@ -2125,10 +2127,9 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('loginModal').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
       document.getElementById('mobBottomNav').classList.remove('hidden');
-      // Username display only — tenant is resolved inside initApp via getTenantId
+      // Username display only — tenant and role are resolved inside initApp via getTenantId
       const { data: pub } = await sb.from('users').select('username').eq('email', session.user.email).limit(1).maybeSingle();
       document.getElementById('sbUname').textContent = pub?.username || session.user.email?.split('@')[0] || 'user';
-      document.getElementById('sbRole').textContent  = 'Super User';
       _resetIdleTimer();
       await initApp();
       showWelcomePopover(pub?.username || session.user.email?.split('@')[0] || 'user');

@@ -148,6 +148,7 @@ returns uuid language sql stable security definer as $$
   where  user_id   = auth.uid()
     and  is_active = true
     and  status    = 'active'
+  order by created_at asc
   limit 1;
 $$;
 
@@ -160,16 +161,37 @@ create policy "tenants_select_own" on public.tenants
     id = public.my_tenant_id()
   );
 
+-- tenants: allow authenticated users to create a new tenant (they become its first owner)
+drop policy if exists "tenants_insert_creator" on public.tenants;
+create policy "tenants_insert_creator" on public.tenants
+  for insert with check (
+    auth.uid() is not null
+  );
+
 -- tenant_members: users can read their own membership row(s)
 alter table public.tenant_members enable row level security;
 
 drop policy if exists "tenant_members_select_own" on public.tenant_members;
 create policy "tenant_members_select_own" on public.tenant_members
   for select using (
-    user_id = auth.uid()
+    user_id   = auth.uid()
     or tenant_id = public.my_tenant_id()
   );
 
+-- tenant_members: allow a user to insert themselves as the first owner of a tenant
+-- (bootstrapping — my_tenant_id() returns null before this row exists)
+drop policy if exists "tenant_members_insert_self_owner" on public.tenant_members;
+create policy "tenant_members_insert_self_owner" on public.tenant_members
+  for insert with check (
+    user_id = auth.uid()
+    and role = 'owner'
+    and not exists (
+      select 1 from public.tenant_members existing
+      where existing.tenant_id = tenant_members.tenant_id
+    )
+  );
+
+-- tenant_members: owners/superusers of a tenant can add more members
 drop policy if exists "tenant_members_insert_owner" on public.tenant_members;
 create policy "tenant_members_insert_owner" on public.tenant_members
   for insert with check (
