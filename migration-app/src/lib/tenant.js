@@ -36,12 +36,10 @@ export function hasTenantIdColumnError(error) {
 /** Strip tenant_id from a payload object or array. */
 export function removeTenantId(payload) {
   if (Array.isArray(payload)) {
-    // eslint-disable-next-line no-unused-vars
-    return payload.map(({ tenant_id: _tid, ...rest }) => rest)
+    return payload.map(({ tenant_id: _, ...rest }) => rest)
   }
   if (payload && typeof payload === 'object') {
-    // eslint-disable-next-line no-unused-vars
-    const { tenant_id: _tid, ...rest } = payload
+    const { tenant_id: _, ...rest } = payload
     return rest
   }
   return payload

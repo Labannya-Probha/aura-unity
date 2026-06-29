@@ -49,9 +49,7 @@ export function TenantProvider({ children }) {
       tid,
     )
     if (!data?.length) return
-    const obj = {}
-    data.forEach((r) => { obj[r.setting_key] = r.setting_value })
-    dispatch({ type: 'COMPANY', company: obj })
+    dispatch({ type: 'COMPANY', company: Object.fromEntries(data.map((r) => [r.setting_key, r.setting_value])) })
   }, [])
 
   const loadCoa = useCallback(async (tid) => {
@@ -158,7 +156,6 @@ export function TenantProvider({ children }) {
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function useTenant() {
   return useContext(TenantContext)
 }
