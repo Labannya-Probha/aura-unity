@@ -10,6 +10,10 @@ function esc(s) {
     .replace(/'/g, '&#39;');
 }
 
+function rptTrusted(html = '') {
+  return { html: String(html == null ? '' : html) };
+}
+
 // Login rate-limiting (client-side, defence-in-depth)
 let _loginAttempts = 0;
 let _loginLockUntil = 0;
@@ -417,7 +421,12 @@ function toast(msg, type='success') {
   const icons = {success:'✅',error:'❌',info:'ℹ️',warning:'⚠️'};
   const t = document.createElement('div');
   t.className = `toast t-${type}`;
-  t.innerHTML = `<span style="font-size:17px">${icons[type]}</span><span>${msg}</span>`;
+  const icon = document.createElement('span');
+  icon.style.fontSize = '17px';
+  icon.textContent = icons[type] || icons.info;
+  const text = document.createElement('span');
+  text.textContent = msg;
+  t.append(icon, text);
   document.getElementById('toastWrap').appendChild(t);
   setTimeout(() => { t.style.opacity='0'; t.style.transition='.3s'; setTimeout(()=>t.remove(),300); }, 3200);
 }
@@ -1092,23 +1101,34 @@ async function printJournalVoucher(id) {
   const totalCr  = Number(journal.total_credit || 0);
   const inWords  = amountToWords(Math.max(totalDr, totalCr));
   const preparedBy = getCurrentUserName() || 'System';
+  const safeCoName = esc(coName);
+  const safeCoSub = esc(coSub);
+  const safeCoAddr = esc(coAddr);
+  const safeCoPhone = esc(coPhone);
+  const safeBin = esc(bin);
+  const safePreparedBy = esc(preparedBy);
+  const safeJournalRef = esc(journal.ref_no || 'Journal Voucher');
+  const safeJournalDate = esc(journal.journal_date || '—');
+  const safeNarration = esc(journal.narration || '');
+  const safeInWords = esc(inWords);
+  const safeLogoSrc = /^(https?:|data:image\/)/i.test(coLogo) ? coLogo : '';
 
-  const logoHtml = coLogo
-    ? `<img src="${coLogo}" style="width:52px;height:52px;border-radius:10px;object-fit:cover;border:1.5px solid #D4A017">`
-    : `<div style="width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,#D4A017,#B8860B);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:#080F1E">${(coName[0]||'A')}</div>`;
+  const logoHtml = safeLogoSrc
+    ? `<img src="${esc(safeLogoSrc)}" style="width:52px;height:52px;border-radius:10px;object-fit:cover;border:1.5px solid #D4A017">`
+    : `<div style="width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,#D4A017,#B8860B);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:#080F1E">${esc(coName[0]||'A')}</div>`;
 
   const rowsHtml = (items || []).map(r => {
     const acc = coaMap[r.account_code] || {};
     return `<tr>
-      <td style="padding:7px 10px;border:1px solid #D0D8E8;font-size:12px">${r.account_code || ''}</td>
-      <td style="padding:7px 10px;border:1px solid #D0D8E8;font-size:12px">${acc.account_name || r.account_code || ''}</td>
+      <td style="padding:7px 10px;border:1px solid #D0D8E8;font-size:12px">${esc(r.account_code || '')}</td>
+      <td style="padding:7px 10px;border:1px solid #D0D8E8;font-size:12px">${esc(acc.account_name || r.account_code || '')}</td>
       <td style="padding:7px 10px;border:1px solid #D0D8E8;font-size:12px;text-align:right">${Number(r.debit||0) > 0 ? fmt(r.debit) : ''}</td>
       <td style="padding:7px 10px;border:1px solid #D0D8E8;font-size:12px;text-align:right">${Number(r.credit||0) > 0 ? fmt(r.credit) : ''}</td>
     </tr>`;
   }).join('');
 
   const html = `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>${journal.ref_no || 'Journal Voucher'}</title>
+<html><head><meta charset="UTF-8"><title>${safeJournalRef}</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   @page{margin:0}
@@ -1121,10 +1141,10 @@ async function printJournalVoucher(id) {
   <div style="display:flex;align-items:center;gap:16px;padding-bottom:10px;border-bottom:3px solid #1A7A4A">
     ${logoHtml}
     <div>
-      <div style="font-size:20px;font-weight:900;color:#080F1E">${coName}</div>
-      ${coSub ? `<div style="font-size:12px;color:#647188">${coSub}</div>` : ''}
-      <div style="font-size:11.5px;color:#647188">${coAddr}${coAddr && coPhone ? ' · ' : ''}${coPhone}</div>
-      ${bin ? `<div style="font-size:11px;color:#647188">BIN: ${bin}</div>` : ''}
+      <div style="font-size:20px;font-weight:900;color:#080F1E">${safeCoName}</div>
+      ${coSub ? `<div style="font-size:12px;color:#647188">${safeCoSub}</div>` : ''}
+      <div style="font-size:11.5px;color:#647188">${safeCoAddr}${coAddr && coPhone ? ' · ' : ''}${safeCoPhone}</div>
+      ${bin ? `<div style="font-size:11px;color:#647188">BIN: ${safeBin}</div>` : ''}
     </div>
   </div>
 
@@ -1138,14 +1158,14 @@ async function printJournalVoucher(id) {
   <!-- Meta -->
   <div style="display:flex;justify-content:space-between;margin-bottom:12px;font-size:12.5px">
     <div>
-      <div><strong>Voucher No:</strong> ${journal.ref_no || '—'}</div>
+      <div><strong>Voucher No:</strong> ${safeJournalRef}</div>
       <div><strong>Source:</strong> MANUAL_JOURNAL</div>
     </div>
     <div style="text-align:right">
-      <div><strong>Date:</strong> ${journal.journal_date || '—'}</div>
+      <div><strong>Date:</strong> ${safeJournalDate}</div>
     </div>
   </div>
-  ${journal.narration ? `<div style="font-size:12px;color:#647188;margin-bottom:10px"><strong>Narration:</strong> ${journal.narration}</div>` : ''}
+  ${journal.narration ? `<div style="font-size:12px;color:#647188;margin-bottom:10px"><strong>Narration:</strong> ${safeNarration}</div>` : ''}
 
   <!-- Entry Table -->
   <table>
@@ -1168,27 +1188,30 @@ async function printJournalVoucher(id) {
   </table>
 
   <!-- In Words -->
-  <div style="font-size:12.5px;margin-top:10px"><strong>In words:</strong> ${inWords}</div>
+  <div style="font-size:12.5px;margin-top:10px"><strong>In words:</strong> ${safeInWords}</div>
 
   <!-- Signatures -->
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:24px;margin-top:36px">
-    ${['Prepared by<br><small style="color:#647188">'+preparedBy+'</small>', 'Checked by', 'Approved by', "Receiver's Signature"].map(label => `
-      <div style="text-align:center">
-        <div style="border-top:1.5px solid #0B1629;padding-top:6px;font-size:11.5px">${label}</div>
-      </div>`).join('')}
+      <div style="text-align:center"><div style="border-top:1.5px solid #0B1629;padding-top:6px;font-size:11.5px">Prepared by<br><small style="color:#647188">${safePreparedBy}</small></div></div>
+      <div style="text-align:center"><div style="border-top:1.5px solid #0B1629;padding-top:6px;font-size:11.5px">Checked by</div></div>
+      <div style="text-align:center"><div style="border-top:1.5px solid #0B1629;padding-top:6px;font-size:11.5px">Approved by</div></div>
+      <div style="text-align:center"><div style="border-top:1.5px solid #0B1629;padding-top:6px;font-size:11.5px">Receiver's Signature</div></div>
   </div>
 
   <!-- Footer -->
   <div style="margin-top:24px;text-align:center;font-size:10.5px;color:#647188;border-top:1px solid #E2E8F4;padding-top:8px">
-    Prepared under the double-entry system in accordance with IFRS. System-generated voucher — ${coName}.
+    Prepared under the double-entry system in accordance with IFRS. System-generated voucher — ${safeCoName}.
   </div>
-
-<script>window.onload=()=>window.print();<\/script>
 </body></html>`;
 
-  const win = window.open('', '_blank');
-  win.document.write(html);
-  win.document.close();
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank');
+  if (!win) { URL.revokeObjectURL(url); toast('পপ-আপ ব্লক হয়েছে।', 'error'); return; }
+  win.addEventListener('load', () => {
+    win.print();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }, { once: true });
 }
 
 // ══════════════════════════════════════════
@@ -1434,34 +1457,37 @@ async function loadReport(name) {
 }
 
 function rptTable(headers, rows, totals) {
-  let th=headers.map((h,i)=>`<th style="background:#0F1F3D;color:#fff;padding:9px 14px;text-align:${i===0?'left':'right'};font-size:11px;font-weight:700;white-space:nowrap">${h}</th>`).join('');
+  let th=headers.map((h,i)=>`<th style="background:#0F1F3D;color:#fff;padding:9px 14px;text-align:${i===0?'left':'right'};font-size:11px;font-weight:700;white-space:nowrap">${esc(h)}</th>`).join('');
   let tbody=rows.map((r,ri)=>{
     const bg=r._section?'#E8F0FE':(ri%2===0?'#fff':'#FAFAF8');
     const fw=r._bold?'700':'400';
     const cells=r.cells.map((c,ci)=>{
       const align=ci===0?'left':'right';
       const color=c.color||'#0B1629';
-      const val=c.val!==undefined?c.val:c;
+      const val=c && typeof c === 'object' && c.val!==undefined ? c.val : c;
+      const safeVal=val && typeof val === 'object' && Object.prototype.hasOwnProperty.call(val, 'html')
+        ? String(val.html ?? '')
+        : esc(val);
       const indent=(ci===0&&r._indent)?`padding-left:${14+r._indent*18}px`:'';
-      return `<td style="padding:9px 14px;${indent};border-bottom:1px solid #E2E8F4;text-align:${align};font-weight:${fw};color:${color};font-size:13px">${val}</td>`;
+      return `<td style="padding:9px 14px;${indent};border-bottom:1px solid #E2E8F4;text-align:${align};font-weight:${fw};color:${color};font-size:13px">${safeVal}</td>`;
     }).join('');
     return `<tr style="background:${bg}">${cells}</tr>`;
   }).join('');
   let tfoot='';
   if(totals){
-    const tc=totals.map((c,i)=>`<td style="padding:10px 14px;text-align:${i===0?'left':'right'};font-weight:800;color:#fff;font-size:13px">${c||''}</td>`).join('');
+    const tc=totals.map((c,i)=>`<td style="padding:10px 14px;text-align:${i===0?'left':'right'};font-weight:800;color:#fff;font-size:13px">${esc(c||'')}</td>`).join('');
     tfoot=`<tr style="background:#0F1F3D">${tc}</tr>`;
   }
   return `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr>${th}</tr></thead><tbody>${tbody}${tfoot}</tbody></table></div>`;
 }
 
 function rptFmt(n) { return '৳ '+Number(n||0).toLocaleString('en-IN'); }
-function rptDash() { return '<span style="color:#BCC5D4">—</span>'; }
+function rptDash() { return rptTrusted('<span style="color:#BCC5D4">—</span>'); }
 function rptHdr(label,sub='') {
-  return `<div style="background:linear-gradient(135deg,#0F1F3D,#1A3260);color:#fff;padding:14px 16px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:0">${label}<div style="font-weight:400;color:#C7D3E6;font-size:11px;letter-spacing:0;text-transform:none;margin-top:4px">${sub || getReportRangeLabel() || 'Professional ERP Format'}</div></div>`;
+  return `<div style="background:linear-gradient(135deg,#0F1F3D,#1A3260);color:#fff;padding:14px 16px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:0">${esc(label)}<div style="font-weight:400;color:#C7D3E6;font-size:11px;letter-spacing:0;text-transform:none;margin-top:4px">${esc(sub || getReportRangeLabel() || 'Professional ERP Format')}</div></div>`;
 }
 function rptMeta(note='') {
-  return `<div class="report-meta"><span><strong>Period:</strong> ${getReportRangeLabel() || 'All available dates'}</span><span><strong>Prepared By:</strong> ${getCurrentUserName()}</span><span><strong>Generated:</strong> ${new Date().toLocaleString('en-GB')}</span>${note?`<span>${note}</span>`:''}</div>`;
+  return `<div class="report-meta"><span><strong>Period:</strong> ${esc(getReportRangeLabel() || 'All available dates')}</span><span><strong>Prepared By:</strong> ${esc(getCurrentUserName())}</span><span><strong>Generated:</strong> ${esc(new Date().toLocaleString('en-GB'))}</span>${note?`<span>${esc(note)}</span>`:''}</div>`;
 }
 function wrapReportShell(title, subtitle, content, note='') {
   return `<div class="report-shell">${rptHdr(title, subtitle)}<div style="padding:16px">${content}</div>${rptMeta(note)}</div>`;
@@ -1479,7 +1505,7 @@ async function buildCollectionReport() {
   Object.keys(monthly).sort().reverse().forEach(m=>{
     const mT=monthly[m].reduce((s,r)=>s+Number(r.amount||0),0);
     rows.push({cells:[{val:m,color:'#0F1F3D'},{val:''},{val:''},{val:rptFmt(mT),color:'#1A7A4A'},{val:''}],_section:true,_bold:true});
-    monthly[m].forEach(r=>rows.push({cells:[{val:r.collection_date||rptDash()},{val:`<span style="background:#FDF8EC;border:1px solid rgba(212,160,23,.3);padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;color:#7A5500">${r.receipt_no||'—'}</span>`},{val:r.payer_name||'—'},{val:rptFmt(r.amount),color:'#1A7A4A'},{val:r.description||'—'}],_indent:1}));
+    monthly[m].forEach(r=>rows.push({cells:[{val:r.collection_date||rptDash()},{val:rptTrusted(`<span style="background:#FDF8EC;border:1px solid rgba(212,160,23,.3);padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;color:#7A5500">${esc(r.receipt_no||'—')}</span>`)},{val:r.payer_name||'—'},{val:rptFmt(r.amount),color:'#1A7A4A'},{val:r.description||'—'}],_indent:1}));
   });
   if (!rows.length) rows.push({cells:[{val:rptDash()},{val:'—'},{val:'No collection yet',color:'#647188'},{val:rptFmt(0),color:'#1A7A4A'},{val:'Professional empty report format'}]});
   return wrapReportShell('মাসিক কালেকশন','Monthly Collection Summary',
