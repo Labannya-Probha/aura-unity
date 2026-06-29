@@ -2842,7 +2842,7 @@ window.addEventListener('appinstalled', () => {
 function triggerPwaInstall() {
   if (!_pwaInstallPrompt) return;
   _pwaInstallPrompt.prompt();
-  _pwaInstallPrompt.userChoice.then(() => { _pwaInstallPrompt = null; });
+  _pwaInstallPrompt.userChoice.then(() => { _pwaInstallPrompt = null; }).catch(() => { _pwaInstallPrompt = null; });
 }
 
 // ══════════════════════════════════════════
