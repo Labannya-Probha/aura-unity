@@ -8,6 +8,8 @@ const APP_SHELL = [
   '/migration/index.html',
   '/migration/assets/index-Ck-UC7pW.css',
   '/migration/assets/index-CDM1T0lQ.js',
+  '/assets/css/index.css',
+  '/assets/js/index.js',
   '/manifest.json',
   '/icons/icon.svg',
   '/icons/icon-192.png',
