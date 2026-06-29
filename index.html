@@ -1823,7 +1823,7 @@ async function getTenantId() {
 
 function hasTenantIdColumnError(error) {
   const msg = String(error?.message || '');
-  return msg.includes("Could not find the 'tenant_id' column");
+  return error?.code === 'PGRST204' && msg.includes("'tenant_id'");
 }
 
 function removeTenantId(payload) {
@@ -1841,11 +1841,12 @@ async function writeWithOptionalTenant(table, payload, executor) {
   const canRetryWithoutTenant =
     S.tenantColumnSupport[table] !== false &&
     (Array.isArray(payload)
-      ? payload.some((item) => item && Object.prototype.hasOwnProperty.call(item, 'tenant_id'))
-      : payload && Object.prototype.hasOwnProperty.call(payload, 'tenant_id'));
+      ? payload.some((item) => item && Object.hasOwn(item, 'tenant_id'))
+      : payload && Object.hasOwn(payload, 'tenant_id'));
 
   let result = await executor(payload);
   if (canRetryWithoutTenant && hasTenantIdColumnError(result?.error)) {
+    // Cache per-table fallback so tables without tenant_id do not trigger the same failed write twice.
     S.tenantColumnSupport[table] = false;
     result = await executor(removeTenantId(payload));
   }
