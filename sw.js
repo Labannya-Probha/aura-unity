@@ -1,18 +1,13 @@
 // Aura Unity ERP — Service Worker
 // Provides offline shell + cache-first for static assets
 
-const CACHE_NAME = 'aura-unity-v2';
+const CACHE_NAME = 'aura-unity-v3';
 const APP_SHELL = [
   '/',
   '/index.html',
   '/migration/index.html',
-  '/migration/styles.css',
-  '/migration/components/ui.jsx',
-  '/migration/pages/Login.jsx',
-  '/migration/pages/Dashboard.jsx',
-  '/migration/pages/Reports.jsx',
-  '/migration/App.jsx',
-  '/migration/main.jsx',
+  '/migration/assets/index-Ck-UC7pW.css',
+  '/migration/assets/index-CDM1T0lQ.js',
   '/manifest.json',
   '/icons/icon.svg',
   '/icons/icon-192.png',
