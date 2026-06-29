@@ -171,6 +171,11 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 .t-error{border-left:4px solid var(--danger)}
 .t-info{border-left:4px solid var(--info)}
 .t-warning{border-left:4px solid var(--gold)}
+/* WELCOME POPOVER */
+.welcome-popover{position:fixed;top:14px;left:50%;transform:translateX(-50%) translateY(-14px);background:linear-gradient(135deg,var(--navy2),var(--navy3));border:1px solid rgba(212,160,23,.34);color:#fff;padding:10px 14px;border-radius:12px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;z-index:10001;opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
+.welcome-popover.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.welcome-badge{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,var(--gold),#B8860B);display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--navy)}
+.welcome-text{font-size:12.5px;font-weight:600;white-space:nowrap}
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(8,15,30,.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:3000;padding:16px}
 .modal-box{width:min(100%,520px);background:#fff;border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-lg);animation:mIn .28s cubic-bezier(.34,1.56,.64,1)}
@@ -220,6 +225,8 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
   .main{margin-left:0}
   .topbar{padding:0 16px}
   .content{padding:16px}
+  .welcome-popover{max-width:calc(100vw - 24px)}
+  .welcome-text{white-space:normal}
   .form-row-2,.form-row-3{grid-template-columns:1fr}
   .entry-line,.entry-totals{grid-template-columns:1fr 1fr 80px 80px 36px}
 }
@@ -232,6 +239,10 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 </head>
 <body>
 <div id="printArea"></div>
+<div id="welcomePopover" class="welcome-popover hidden">
+  <div class="welcome-badge">A</div>
+  <div id="welcomeText" class="welcome-text">স্বাগতম!</div>
+</div>
 <div id="toastWrap" class="toast-wrap"></div>
 
 <!-- LOGIN -->
@@ -768,6 +779,19 @@ function toast(msg, type='success') {
   setTimeout(() => { t.style.opacity='0'; t.style.transition='.3s'; setTimeout(()=>t.remove(),300); }, 3200);
 }
 
+function showWelcomePopover(name = '') {
+  const pop = document.getElementById('welcomePopover');
+  const text = document.getElementById('welcomeText');
+  const safeName = (name || '').toString().trim();
+  text.textContent = safeName ? `স্বাগতম, ${safeName}!` : 'স্বাগতম!';
+  pop.classList.remove('hidden');
+  requestAnimationFrame(() => pop.classList.add('show'));
+  setTimeout(() => {
+    pop.classList.remove('show');
+    setTimeout(() => pop.classList.add('hidden'), 260);
+  }, 3200);
+}
+
 // ══════════════════════════════════════════
 // LANGUAGE
 // ══════════════════════════════════════════
@@ -870,6 +894,7 @@ async function login() {
     document.getElementById('sbUname').textContent = data.user.name  || username;
 
     await initApp();
+    showWelcomePopover(data.user.name || username);
     toast(`স্বাগতম, ${data.user.name || username}!`, 'success');
 
   } catch (e) {
@@ -1790,6 +1815,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('sbUname').textContent = pub?.username || session.user.email?.split('@')[0] || 'user';
       document.getElementById('sbRole').textContent  = 'Super User';
       initApp();
+      showWelcomePopover(pub?.username || session.user.email?.split('@')[0] || 'user');
     }
   });
 });
