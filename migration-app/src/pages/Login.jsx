@@ -3,25 +3,52 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
+import { useAuth } from '@/context/AuthContext'
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+  const { login, session } = useAuth()
 
-  function onSubmit(event) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  // Already signed in — redirect immediately
+  if (session) {
+    navigate('/dashboard', { replace: true })
+    return null
+  }
+
+  async function onSubmit(event) {
     event.preventDefault()
-    if (!username.trim() || !password) return
-    navigate('/dashboard')
+    if (!email.trim() || !password) return
+    setError('')
+    setLoading(true)
+    try {
+      await login(email.trim(), password)
+      navigate('/dashboard', { replace: true })
+    } catch (err) {
+      setError(err.message || 'Login failed. Check your email and password.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <main className="container">
-      <Card title="Login" subtitle="Build-tool based Login.jsx route for migration work">
+      <Card title="Sign In" subtitle="AIS · Aura Unity ERP">
         <form className="au-stack" onSubmit={onSubmit}>
           <label className="au-label">
-            Username
-            <Input value={username} onChange={(event) => setUsername(event.target.value)} placeholder="superuser" />
+            Email
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              autoComplete="email"
+              required
+            />
           </label>
 
           <label className="au-label">
@@ -29,15 +56,18 @@ export default function LoginPage() {
             <Input
               type="password"
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
+              autoComplete="current-password"
+              required
             />
           </label>
 
+          {error && <p className="au-text" style={{ color: '#dc2626' }}>{error}</p>}
+
           <div className="au-row">
-            <Button type="submit">Login</Button>
-            <Button type="button" variant="ghost" onClick={() => navigate('/reports')}>
-              Go to Reports
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Signing in…' : 'Sign In'}
             </Button>
           </div>
         </form>

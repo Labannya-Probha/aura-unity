@@ -17,5 +17,12 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      // Context files export both the Provider component and a hook.
+      // Allowing non-component exports avoids per-file disable comments.
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      // Destructured-away variables named _ are intentionally unused.
+      'no-unused-vars': ['error', { destructuredArrayIgnorePattern: '^_', ignoreRestSiblings: true }],
+    },
   },
 ])
