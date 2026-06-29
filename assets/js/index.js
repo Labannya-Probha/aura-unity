@@ -813,7 +813,7 @@ async function resolveTenantFromMembership(userId) {
       .maybeSingle();
     if (!error && data?.tenant_id) {
       S.tenantId = data.tenant_id;
-      S.activeMemberRole = data.role || 'user';
+      S.activeMemberRole = data.role || (() => { console.warn('[tenant] tenant_members role missing for user', userId); return 'user'; })();
       S.tenantResolved = true;
       return true;
     }
@@ -2029,7 +2029,6 @@ async function loadUsers() {
       return;
     }
 
-    const badgeMap   = { owner: 'bg-danger', superuser: 'bg-gold', manager: 'bg-navy', user: 'bg-green' };
     tb.innerHTML = data.map(m => {
       const uname     = m.users?.username || m.users?.email?.split('@')[0] || '—';
       const roleLabel = MEMBER_ROLE_LABELS[m.role] || m.role || 'ইউজার';
