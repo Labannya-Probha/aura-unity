@@ -239,7 +239,7 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 </head>
 <body>
 <div id="printArea"></div>
-<div id="welcomePopover" class="welcome-popover hidden">
+<div id="welcomePopover" class="welcome-popover hidden" role="status" aria-live="polite" aria-atomic="true">
   <div id="welcomeBadge" class="welcome-badge">A</div>
   <div id="welcomeText" class="welcome-text">স্বাগতম!</div>
 </div>
@@ -779,15 +779,21 @@ function toast(msg, type='success') {
   setTimeout(() => { t.style.opacity='0'; t.style.transition='.3s'; setTimeout(()=>t.remove(),300); }, 3200);
 }
 
+function getWelcomeText(name = '') {
+  const safeName = (name || '').trim();
+  return safeName ? `স্বাগতম, ${safeName}!` : 'স্বাগতম!';
+}
+
 function showWelcomePopover(name = '') {
   const POPOVER_TRANSITION_MS = 260;
   const POPOVER_DISPLAY_MS = 3200;
+  const DEFAULT_BADGE_INITIAL = 'A';
   const pop = document.getElementById('welcomePopover');
   const badge = document.getElementById('welcomeBadge');
   const text = document.getElementById('welcomeText');
   const safeName = (name || '').trim();
-  badge.textContent = safeName ? safeName.charAt(0).toUpperCase() : 'A';
-  text.textContent = safeName ? `স্বাগতম, ${safeName}!` : 'স্বাগতম!';
+  badge.textContent = safeName ? safeName.charAt(0).toUpperCase() : DEFAULT_BADGE_INITIAL;
+  text.textContent = getWelcomeText(safeName);
   pop.classList.remove('hidden');
   requestAnimationFrame(() => pop.classList.add('show'));
   setTimeout(() => {
@@ -899,7 +905,7 @@ async function login() {
 
     await initApp();
     showWelcomePopover(data.user.name || username);
-    toast(`স্বাগতম, ${data.user.name || username}!`, 'success');
+    toast(getWelcomeText(data.user.name || username), 'success');
 
   } catch (e) {
     btn.disabled = false;
