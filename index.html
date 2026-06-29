@@ -1823,7 +1823,7 @@ async function getTenantId() {
 
 function hasTenantIdColumnError(error) {
   const msg = String(error?.message || '');
-  return error?.code === 'PGRST204' && msg.includes("'tenant_id'");
+  return error?.code === 'PGRST204' && /\btenant_id\b/i.test(msg);
 }
 
 function removeTenantId(payload) {
@@ -1841,8 +1841,8 @@ async function writeWithOptionalTenant(table, payload, executor) {
   const canRetryWithoutTenant =
     S.tenantColumnSupport[table] !== false &&
     (Array.isArray(payload)
-      ? payload.some((item) => item && Object.hasOwn(item, 'tenant_id'))
-      : payload && Object.hasOwn(payload, 'tenant_id'));
+      ? payload.some((item) => item && item.tenant_id != null)
+      : payload && payload.tenant_id != null);
 
   let result = await executor(payload);
   if (canRetryWithoutTenant && hasTenantIdColumnError(result?.error)) {
