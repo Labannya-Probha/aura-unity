@@ -280,7 +280,6 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
   .topbar-r .btn:not(.btn-sm){display:none}
   .topbar-r .btn.btn-sm{padding:7px 11px}
   .mob-bottom-nav{display:flex!important}
-  .mob-install-btn{display:flex!important}
 }
 /* SMALL PHONE (<480px): further collapse */
 @media(max-width:480px){
@@ -315,9 +314,6 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 .mob-nav-btn.active{color:var(--gold-lt)}
 .mob-nav-btn.active::before{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--gold);border-radius:0 0 2px 2px}
 .mob-nav-btn svg{width:20px;height:20px;flex-shrink:0}
-/* PWA INSTALL BUTTON */
-.mob-install-btn{display:none;align-items:center;justify-content:center;width:38px;height:38px;background:var(--gold-bg);border:1.5px solid var(--gold);border-radius:var(--r);cursor:pointer;color:var(--navy2);flex-shrink:0}
-.mob-install-btn svg{width:18px;height:18px}
 #printArea{display:none}
 /* Safe-area insets for notched / Dynamic-Island phones */
 @supports(padding: max(0px)){
@@ -352,32 +348,7 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
       <div class="login-sub">Accounting Management System</div>
     </div>
 
-    <!-- Step 1: Server Address -->
-    <div id="serverStep" class="login-body">
-      <div style="text-align:center;margin-bottom:18px">
-        <div style="font-size:13px;color:var(--muted);line-height:1.6" data-bn="আপনার প্রতিষ্ঠানের সার্ভার অ্যাড্রেস দিন" data-en="Enter your organisation server address">আপনার প্রতিষ্ঠানের সার্ভার অ্যাড্রেস দিন</div>
-      </div>
-      <div class="form-group">
-        <label class="form-label" data-bn="সার্ভার অ্যাড্রেস" data-en="Server Address">সার্ভার অ্যাড্রেস</label>
-        <input id="serverAddr" class="form-control" type="url" placeholder="https://your-tenant.vercel.app" autocomplete="url" inputmode="url">
-      </div>
-      <div id="serverErr" class="alert alert-danger hidden" style="margin-bottom:12px"></div>
-      <div style="margin-top:18px">
-        <button id="connectBtn" class="btn btn-primary" style="width:100%;justify-content:center" onclick="connectServer()">
-          <span data-bn="সংযুক্ত করুন" data-en="Connect">সংযুক্ত করুন</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Step 2: Username / Password -->
-    <div id="loginStep" class="login-body hidden">
-      <div id="serverBadge" style="display:flex;align-items:center;justify-content:space-between;background:var(--info-lt);border:1px solid rgba(21,88,176,.15);border-radius:var(--r);padding:8px 12px;margin-bottom:16px;gap:8px">
-        <div style="display:flex;align-items:center;gap:6px;min-width:0">
-          <span style="font-size:13px">🌐</span>
-          <span id="serverBadgeUrl" style="font-size:11.5px;color:var(--info);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></span>
-        </div>
-        <button onclick="changeServer()" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--muted);white-space:nowrap;flex-shrink:0;padding:2px 4px;border-radius:4px" data-bn="পরিবর্তন" data-en="Change">পরিবর্তন</button>
-      </div>
+    <div id="loginStep" class="login-body">
       <div class="form-group">
         <label class="form-label" data-bn="ইউজারনেম" data-en="Username">ইউজারনেম</label>
         <input id="loginUser" class="form-control" placeholder="superuser" autocomplete="username">
@@ -447,9 +418,6 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
         <h2 id="topTitle">ড্যাশবোর্ড</h2><p id="topSub">সার্বিক আর্থিক অবস্থান</p>
       </div>
       <div class="topbar-r">
-        <button id="pwaInstallBtn" class="mob-install-btn" onclick="triggerPwaInstall()" aria-label="Install App" title="অ্যাপ ইনস্টল করুন">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        </button>
         <button class="btn btn-ghost btn-sm" onclick="openModule('company')">⚙</button>
         <button class="btn btn-gold btn-sm" onclick="openModule('collection')"><span data-bn="+ কালেকশন" data-en="+ Collection">+ কালেকশন</span></button>
         <button class="btn btn-ghost btn-sm" onclick="openModule('voucher')"><span data-bn="+ ভাউচার / জার্নাল" data-en="+ Voucher / Journal">+ ভাউচার / জার্নাল</span></button>
@@ -994,65 +962,6 @@ function esc(s) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
-}
-
-// ══════════════════════════════════════════
-// SERVER / TENANT STEP
-// ══════════════════════════════════════════
-const _SERVER_KEY = 'aura-unity-server-url';
-
-function _normalizeServerUrl(raw) {
-  raw = raw.trim();
-  if (!raw) return null;
-  // Auto-prepend https:// if no scheme given
-  if (!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
-  try {
-    const u = new URL(raw);
-    // Return clean origin (no trailing slash / path)
-    return u.origin;
-  } catch (_) {
-    return null;
-  }
-}
-
-function _showServerStep() {
-  document.getElementById('serverStep').classList.remove('hidden');
-  document.getElementById('loginStep').classList.add('hidden');
-  const saved = localStorage.getItem(_SERVER_KEY);
-  if (saved) document.getElementById('serverAddr').value = saved;
-}
-
-function _showLoginStep(serverUrl) {
-  document.getElementById('serverStep').classList.add('hidden');
-  document.getElementById('loginStep').classList.remove('hidden');
-  document.getElementById('serverBadgeUrl').textContent = serverUrl;
-}
-
-function connectServer() {
-  const raw = document.getElementById('serverAddr').value;
-  const errEl = document.getElementById('serverErr');
-  errEl.classList.add('hidden');
-
-  const url = _normalizeServerUrl(raw);
-  if (!url) {
-    errEl.textContent = 'সঠিক সার্ভার অ্যাড্রেস দিন। (যেমন: https://your-tenant.vercel.app)';
-    errEl.classList.remove('hidden');
-    return;
-  }
-
-  localStorage.setItem(_SERVER_KEY, url);
-
-  // If the entered URL is a different origin, redirect there
-  if (url !== window.location.origin) {
-    window.location.href = url;
-    return;
-  }
-
-  _showLoginStep(url);
-}
-
-function changeServer() {
-  _showServerStep();
 }
 
 // Login rate-limiting (client-side, defence-in-depth)
@@ -2960,52 +2869,15 @@ sb.auth.onAuthStateChange(async (event, session) => {
 });
 
 // ══════════════════════════════════════════
-// PWA INSTALL PROMPT
-// ══════════════════════════════════════════
-let _pwaInstallPrompt = null;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  _pwaInstallPrompt = e;
-  const btn = document.getElementById('pwaInstallBtn');
-  if (btn) btn.style.display = 'flex';
-});
-window.addEventListener('appinstalled', () => {
-  _pwaInstallPrompt = null;
-  const btn = document.getElementById('pwaInstallBtn');
-  if (btn) btn.style.display = 'none';
-});
-function triggerPwaInstall() {
-  if (!_pwaInstallPrompt) return;
-  _pwaInstallPrompt.prompt();
-  _pwaInstallPrompt.userChoice.then(() => { _pwaInstallPrompt = null; }).catch(() => { _pwaInstallPrompt = null; });
-}
-
-// ══════════════════════════════════════════
 // DOM READY
 // ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('colRno').value = genRno();
   genReceiptPreview();
 
-  // Allow Enter key on server address input
-  const addrInput = document.getElementById('serverAddr');
-  if (addrInput) {
-    addrInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); connectServer(); }
-    });
-  }
-
   // Register PWA service worker
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch((e) => console.debug('[SW] Registration failed:', e));
-  }
-
-  // Server / tenant step: show server step first if no saved URL
-  const savedServer = localStorage.getItem(_SERVER_KEY);
-  if (savedServer) {
-    _showLoginStep(savedServer);
-  } else {
-    _showServerStep();
   }
 
   // Check existing session
