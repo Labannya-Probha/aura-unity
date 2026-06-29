@@ -63,7 +63,6 @@ input,select,textarea,button{font-family:inherit;outline:none}
 .btn-logout:hover{background:rgba(192,57,43,.2);color:#fff}
 .sb-powered{margin-top:10px;text-align:center;font-size:10.5px;color:#2A4060;line-height:1.8}
 .sb-powered span{color:#3D6B9A;font-weight:600}
-.sb-version{display:inline-block;margin-top:4px;padding:2px 8px;background:rgba(212,160,23,.15);border:1px solid rgba(212,160,23,.3);border-radius:20px;color:var(--gold-lt)!important;font-size:10px;font-weight:700;letter-spacing:.06em}
 /* TOPBAR */
 .topbar{height:var(--th);background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 var(--border),0 4px 16px rgba(8,15,30,.04)}
 .topbar-l{display:flex;align-items:center;gap:10px}
@@ -310,15 +309,12 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 .mob-menu-btn svg{display:block}
 .mob-overlay{display:none}
 /* MOBILE BOTTOM NAVIGATION */
-.mob-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--navy);border-top:1px solid rgba(255,255,255,.08);z-index:250;padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:0 -4px 20px rgba(0,0,0,.25)}
-.mob-bottom-nav-inner{display:flex;align-items:stretch;height:64px}
-.mob-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:transparent;border:none;cursor:pointer;color:#5C7A9E;font-size:9px;font-weight:600;padding:8px 4px 6px;transition:var(--tr);position:relative;letter-spacing:.02em}
-.mob-nav-btn:hover{color:#8AAAC8}
-.mob-nav-btn .nav-icon-wrap{width:38px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:14px;transition:var(--tr)}
+.mob-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--navy);border-top:1px solid rgba(255,255,255,.1);z-index:250;padding-bottom:env(safe-area-inset-bottom,0px)}
+.mob-bottom-nav-inner{display:flex;align-items:stretch;height:58px}
+.mob-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:transparent;border:none;cursor:pointer;color:#7A96B2;font-size:9.5px;font-weight:600;padding:6px 2px;transition:var(--tr);position:relative}
 .mob-nav-btn.active{color:var(--gold-lt)}
-.mob-nav-btn.active .nav-icon-wrap{background:rgba(212,160,23,.18)}
-.mob-nav-btn.active::after{content:'';position:absolute;bottom:0;left:25%;right:25%;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold-lt));border-radius:3px 3px 0 0}
-.mob-nav-btn svg{width:22px;height:22px;flex-shrink:0}
+.mob-nav-btn.active::before{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--gold);border-radius:0 0 2px 2px}
+.mob-nav-btn svg{width:20px;height:20px;flex-shrink:0}
 /* PWA INSTALL BUTTON */
 .mob-install-btn{display:none;align-items:center;justify-content:center;width:38px;height:38px;background:var(--gold-bg);border:1.5px solid var(--gold);border-radius:var(--r);cursor:pointer;color:var(--navy2);flex-shrink:0}
 .mob-install-btn svg{width:18px;height:18px}
@@ -330,12 +326,6 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
   .login-overlay{padding-top:max(20px,env(safe-area-inset-top));padding-bottom:max(20px,env(safe-area-inset-bottom))}
   .toast-wrap{bottom:max(24px,env(safe-area-inset-bottom));right:max(24px,env(safe-area-inset-right))}
   .welcome-popover{top:max(14px,env(safe-area-inset-top));right:max(24px,env(safe-area-inset-right))}
-}
-/* PAGE FOOTER */
-.page-footer{padding:14px 28px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:11.5px;color:var(--muted);background:var(--white);flex-shrink:0}
-.page-footer-right span{color:var(--em);font-weight:700}
-@media(max-width:900px){
-  .page-footer{padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));margin-bottom:64px}
 }
 @media print{
   body>*{display:none!important}
@@ -444,7 +434,7 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
     <div class="nav-item" data-module="users"><span class="nav-icon">◉</span><span data-bn="ইউজার" data-en="Users">ইউজার</span></div>
     <div class="sb-footer">
       <button class="btn-logout" onclick="logout()"><span data-bn="লগআউট" data-en="Logout">লগআউট</span></button>
-      <div class="sb-powered">© 2026 Aura Unity<br><span>Powered by Aura Stay</span><br><span class="sb-version" id="sbVersion"></span></div>
+      <div class="sb-powered">© 2026 Aura Stay<br><span>Powered by Aura Stay</span></div>
     </div>
   </aside>
 
@@ -944,10 +934,6 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
       </div>
 
     </div>
-    <footer class="page-footer">
-      <div>© 2026 Aura Stay</div>
-      <div class="page-footer-right">Powered by <span>Aura Stay</span></div>
-    </footer>
   </div>
 </div>
 
@@ -955,23 +941,23 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 <nav id="mobBottomNav" class="mob-bottom-nav hidden" aria-label="Mobile navigation">
   <div class="mob-bottom-nav-inner">
     <button class="mob-nav-btn active" data-module="dashboard" onclick="openModule('dashboard')" aria-label="Dashboard">
-      <div class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
       <span data-bn="হোম" data-en="Home">হোম</span>
     </button>
     <button class="mob-nav-btn" data-module="collection" onclick="openModule('collection')" aria-label="Collections">
-      <div class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       <span data-bn="কালেকশন" data-en="Collection">কালেকশন</span>
     </button>
     <button class="mob-nav-btn" data-module="voucher" onclick="openModule('voucher')" aria-label="Voucher">
-      <div class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       <span data-bn="ভাউচার" data-en="Voucher">ভাউচার</span>
     </button>
     <button class="mob-nav-btn" data-module="reports" onclick="openModule('reports')" aria-label="Reports">
-      <div class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
       <span data-bn="রিপোর্ট" data-en="Reports">রিপোর্ট</span>
     </button>
     <button class="mob-nav-btn" data-module="menu" onclick="openMobSidebar()" aria-label="More">
-      <div class="nav-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       <span data-bn="মেনু" data-en="Menu">মেনু</span>
     </button>
   </div>
@@ -1092,7 +1078,6 @@ function _resetIdleTimer() {
 // ══════════════════════════════════════════
 // SUPABASE INIT
 // ══════════════════════════════════════════
-const APP_VERSION = 'v1.0.2';
 const SUPA_URL  = 'https://ltcjgbhjkfvlzzvvulhz.supabase.co';
 const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx0Y2pnYmhqa2Z2bHp6dnZ1bGh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NDM2MjYsImV4cCI6MjA5ODExOTYyNn0.nfSI1_x4LSg9xNGQJSeflU8_zWSnpwRmzRBG0_YldUc';
 const { createClient } = supabase;
@@ -1109,7 +1094,8 @@ var S = {
   coa: [],
   jlc: 0,
   lastReceipt: null,
-  editJournalId: null
+  editJournalId: null,
+  tenantColumnSupport: {}
 };
 
 var TT = {
@@ -1657,6 +1643,7 @@ async function login() {
     await initApp();
     const welcomeName = normalizeWelcomeName(data.user.name || username);
     showWelcomePopover(welcomeName);
+    toast(getWelcomeText(welcomeName), 'success');
 
   } catch (e) {
     btn.disabled = false;
@@ -1687,8 +1674,6 @@ async function initApp() {
   document.getElementById('colRno').value = genRno();
   refreshVoucherRef();
   loadVoucherSummary();
-  const vEl = document.getElementById('sbVersion');
-  if (vEl) vEl.textContent = APP_VERSION;
 
   await loadCompany();
   await loadCOA();
@@ -1836,6 +1821,38 @@ async function getTenantId() {
   return null;
 }
 
+function hasTenantIdColumnError(error) {
+  const msg = String(error?.message || '');
+  return error?.code === 'PGRST204' && /\btenant_id\b/i.test(msg);
+}
+
+function removeTenantId(payload) {
+  if (Array.isArray(payload)) {
+    return payload.map(({ tenant_id, ...rest }) => rest);
+  }
+  if (payload && typeof payload === 'object') {
+    const { tenant_id, ...rest } = payload;
+    return rest;
+  }
+  return payload;
+}
+
+async function writeWithOptionalTenant(table, payload, executor) {
+  const canRetryWithoutTenant =
+    S.tenantColumnSupport[table] !== false &&
+    (Array.isArray(payload)
+      ? payload.some((item) => item && item.tenant_id != null)
+      : payload && payload.tenant_id != null);
+
+  let result = await executor(payload);
+  if (canRetryWithoutTenant && hasTenantIdColumnError(result?.error)) {
+    // Cache per-table fallback so tables without tenant_id do not trigger the same failed write twice.
+    S.tenantColumnSupport[table] = false;
+    result = await executor(removeTenantId(payload));
+  }
+  return result;
+}
+
 // ══════════════════════════════════════════
 // COLLECTION
 // ══════════════════════════════════════════
@@ -1854,11 +1871,14 @@ async function saveCollection() {
   const rno  = document.getElementById('colRno').value || genRno();
   const tenantId = await getTenantId();
   if (!name || !amt) { toast('নাম ও পরিমাণ দিন।','warning'); return; }
-  if (!tenantId) { toast('Tenant ID (UUID) পাওয়া যায়নি। আবার লগইন করুন।','error'); return; }
+  const payload = {
+    receipt_no: rno, collection_date: date, payer_name: name, amount: amt, description: desc
+  };
+  if (tenantId) payload.tenant_id = tenantId;
 
-  const { error } = await sb.from('collections').insert({
-    receipt_no: rno, collection_date: date, payer_name: name, amount: amt, description: desc, tenant_id: tenantId
-  });
+  const { error } = await writeWithOptionalTenant('collections', payload, (finalPayload) =>
+    sb.from('collections').insert(finalPayload)
+  );
   if (error) { toast('সেভ ব্যর্থ: '+error.message,'error'); return; }
 
   persistReceiptMeta(rno, { rno, date, name, amount: amt, desc, head, mode, savedBy:getCurrentUserName(), savedAt:new Date().toISOString() });
@@ -1898,8 +1918,11 @@ async function saveVoucher() {
   const desc = document.getElementById('vchDesc').value.trim();
   const tenantId = await getTenantId();
   if (!amt) { toast('পরিমাণ দিন।','warning'); return; }
-  if (!tenantId) { toast('Tenant ID (UUID) পাওয়া যায়নি। আবার লগইন করুন।','error'); return; }
-  const { data, error } = await sb.from('vouchers').insert({ vch_type:type, vch_date:date, account_code:acc, amount:amt, description:desc, tenant_id: tenantId }).select().single();
+  const payload = { vch_type:type, vch_date:date, account_code:acc, amount:amt, description:desc };
+  if (tenantId) payload.tenant_id = tenantId;
+  const { data, error } = await writeWithOptionalTenant('vouchers', payload, (finalPayload) =>
+    sb.from('vouchers').insert(finalPayload).select().single()
+  );
   if (error) { toast('সেভ ব্যর্থ: '+error.message,'error'); return; }
   if (data?.id) persistReceiptMeta(`voucher-${data.id}`, { voucher_no: ref, voucher_type: type });
   toast('ভাউচার সেভ হয়েছে।','success');
@@ -1962,7 +1985,6 @@ async function saveJournal() {
   document.querySelectorAll('.jCr').forEach(x => cr+=Number(x.value||0));
   const tenantId = await getTenantId();
   if (Math.abs(dr-cr) > 0.01) { toast('ডেবিট ≠ ক্রেডিট!','error'); return; }
-  if (!tenantId) { toast('Tenant ID (UUID) পাওয়া যায়নি। আবার লগইন করুন।','error'); return; }
 
   const lines = [];
   document.querySelectorAll('#jLines .entry-line:not(.entry-line-hdr)').forEach(row => {
@@ -1977,14 +1999,19 @@ async function saveJournal() {
     journal_date: document.getElementById('jDate').value,
     ref_no: ref,
     narration: document.getElementById('jNar').value,
-    total_debit: dr, total_credit: cr, tenant_id: tenantId
+    total_debit: dr, total_credit: cr
   };
+  if (tenantId) payload.tenant_id = tenantId;
   let jData, jErr;
   if (S.editJournalId) {
     if (!canEditVoucher()) { toast('Edit করার অনুমতি নেই।', 'error'); return; }
-    ({ data: jData, error: jErr } = await sb.from('journals').update(payload).eq('id', S.editJournalId).select().single());
+    ({ data: jData, error: jErr } = await writeWithOptionalTenant('journals', payload, (finalPayload) =>
+      sb.from('journals').update(finalPayload).eq('id', S.editJournalId).select().single()
+    ));
   } else {
-    ({ data: jData, error: jErr } = await sb.from('journals').insert(payload).select().single());
+    ({ data: jData, error: jErr } = await writeWithOptionalTenant('journals', payload, (finalPayload) =>
+      sb.from('journals').insert(finalPayload).select().single()
+    ));
   }
 
   if (jErr) { toast('জার্নাল সেভ ব্যর্থ: '+jErr.message,'error'); return; }
@@ -1993,8 +2020,14 @@ async function saveJournal() {
     const { error: dErr } = await sb.from('journal_items').delete().eq('journal_id', S.editJournalId);
     if (dErr) { toast('পুরনো জার্নাল আইটেম মুছতে ব্যর্থ: '+dErr.message,'error'); return; }
   }
-  const items = lines.map(l => ({ journal_id: jData.id, account_code: l.account_code, debit: l.debit, credit: l.credit, tenant_id: tenantId }));
-  const { error: iErr } = await sb.from('journal_items').insert(items);
+  const items = lines.map(l => {
+    const item = { journal_id: jData.id, account_code: l.account_code, debit: l.debit, credit: l.credit };
+    if (tenantId) item.tenant_id = tenantId;
+    return item;
+  });
+  const { error: iErr } = await writeWithOptionalTenant('journal_items', items, (finalPayload) =>
+    sb.from('journal_items').insert(finalPayload)
+  );
   if (iErr) { toast('জার্নাল আইটেম সেভ ব্যর্থ: '+iErr.message,'error'); return; }
 
   toast(S.editJournalId ? 'জার্নাল আপডেট হয়েছে।' : 'জার্নাল সেভ হয়েছে।','success');
