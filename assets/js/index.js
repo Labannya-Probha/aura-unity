@@ -53,6 +53,7 @@ var S = {
   coa: [],
   jlc: 0,
   lastReceipt: null,
+  editCollectionId: null,
   editJournalId: null,
   tenantId: null,
   tenantSlug: null,
@@ -331,6 +332,26 @@ function getReceiptDraft() {
 function canEditVoucher() {
   if (S.activeMemberRole === 'owner' || S.activeMemberRole === 'superuser' || S.activeMemberRole === 'manager') return true;
   return isSuperUser() || /admin|manager|ম্যানেজার/i.test(getCurrentRole());
+}
+
+function canManageMasterData() {
+  return ['owner', 'superuser', 'manager'].includes(S.activeMemberRole) || canEditVoucher();
+}
+
+function canManageUsers() {
+  return ['owner', 'superuser'].includes(S.activeMemberRole) || isSuperUser();
+}
+
+function normalizeRole(role) {
+  const value = String(role || '').toLowerCase();
+  if (value === 'owner') return 'owner';
+  if (value.includes('super')) return 'superuser';
+  if (value.includes('manager')) return 'manager';
+  return 'user';
+}
+
+function roleBadge(role) {
+  return MEMBER_ROLE_BADGES[normalizeRole(role)] || 'bg-green';
 }
 
 function getVoucherPrefix(type) {
@@ -845,6 +866,108 @@ function renderCOA(rows) {
     </tr>`).join('');
 }
 
+function requireXLSX() {
+  if (typeof XLSX === 'undefined') {
+    toast('XLSX library load হয়নি। Page refresh করে আবার চেষ্টা করুন।', 'error');
+    return false;
+  }
+  return true;
+}
+
+function coaRowsForSheet(rows = S.coa) {
+  return (rows || []).map(r => ({
+    'Account Code': r.account_code || '',
+    'Account Name': r.account_name || '',
+    'Group': r.account_group || 'Asset',
+    'Type': r.account_type || 'Ledger',
+    'Opening Balance': Number(r.opening_balance || 0)
+  }));
+}
+
+function downloadXLSX(filename, sheets) {
+  if (!requireXLSX()) return;
+  const wb = XLSX.utils.book_new();
+  Object.entries(sheets).forEach(([name, rows]) => {
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), name.slice(0, 31));
+  });
+  XLSX.writeFile(wb, filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`);
+}
+
+function downloadCOATemplate() {
+  downloadXLSX('coa_opening_balance_template.xlsx', {
+    COA: coaRowsForSheet(S.coa.length ? S.coa : [
+      { account_code:'1110', account_name:'Cash in Hand', account_group:'Asset', account_type:'Ledger', opening_balance:0 }
+    ]).map(r => ({
+      'Account Code': r['Account Code'],
+      'Account Name': r['Account Name'],
+      'Group': r.Group,
+      'Type': r.Type,
+      'Opening Balance': r['Opening Balance']
+    }))
+  });
+}
+
+function exportCOAXLSX() {
+  downloadXLSX(`chart_of_accounts_${new Date().toISOString().slice(0,10)}.xlsx`, { COA: coaRowsForSheet() });
+}
+
+function readFirstSheet(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const wb = XLSX.read(new Uint8Array(event.target.result), { type:'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        resolve(XLSX.utils.sheet_to_json(ws, { defval:'' }));
+      } catch (error) { reject(error); }
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function pick(row, ...keys) {
+  const entries = Object.entries(row || {});
+  for (const key of keys) {
+    const match = entries.find(([k]) => k.trim().toLowerCase() === key.trim().toLowerCase());
+    if (match) return match[1];
+  }
+  return '';
+}
+
+async function importCOAOpeningBalances(event) {
+  const file = event.target.files?.[0];
+  event.target.value = '';
+  if (!file || !requireXLSX()) return;
+  if (!canManageMasterData()) { toast('Only Owner, Super User or Manager can import opening balances.', 'error'); return; }
+  await getTenantId();
+  if (!requireTenantForWrite()) return;
+  try {
+    const rows = await readFirstSheet(file);
+    const payload = rows.map(row => {
+      const code = String(pick(row, 'Account Code', 'Code', 'account_code')).trim();
+      if (!code) return null;
+      return tenantInsertPayload({
+        account_code: code,
+        account_name: String(pick(row, 'Account Name', 'Name', 'account_name') || code).trim(),
+        account_group: String(pick(row, 'Group', 'Account Group', 'account_group') || 'Asset').trim(),
+        account_type: String(pick(row, 'Type', 'Account Type', 'account_type') || 'Ledger').trim(),
+        opening_balance: Number(pick(row, 'Opening Balance', 'Opening', 'opening_balance') || 0)
+      });
+    }).filter(Boolean);
+    if (!payload.length) { toast('Valid COA rows পাওয়া যায়নি।', 'warning'); return; }
+    const { error } = await writeWithOptionalTenant('coa', payload, (finalPayload) =>
+      sb.from('coa').upsert(finalPayload, { onConflict: S.tenantId ? 'tenant_id,account_code' : 'account_code' })
+    );
+    if (error) { toast('COA import failed: ' + error.message, 'error'); return; }
+    toast(`${payload.length} COA rows imported/updated.`, 'success');
+    await loadCOA();
+    await loadDashboard();
+  } catch (error) {
+    toast('XLSX import failed: ' + error.message, 'error');
+  }
+}
+
 function populateAccSelects() {
   const opts = S.coa.map(a => `<option value="${a.account_code}">${a.account_code} — ${a.account_name}</option>`).join('');
   const vchAcc = document.getElementById('vchAcc');
@@ -1081,14 +1204,19 @@ async function saveCollection() {
   };
   if (tenantId) payload.tenant_id = tenantId;
 
-  const { error } = await writeWithOptionalTenant('collections', payload, (finalPayload) =>
-    sb.from('collections').insert(finalPayload)
-  );
+  const { error } = S.editCollectionId
+    ? await writeWithOptionalTenant('collections', payload, (finalPayload) =>
+        sb.from('collections').update(finalPayload).eq('id', S.editCollectionId)
+      )
+    : await writeWithOptionalTenant('collections', payload, (finalPayload) =>
+        sb.from('collections').insert(finalPayload)
+      );
   if (error) { toast('সেভ ব্যর্থ: '+error.message,'error'); return; }
 
   persistReceiptMeta(rno, { rno, date, name, amount: amt, desc, head, mode, savedBy:getCurrentUserName(), savedAt:new Date().toISOString() });
   S.lastReceipt = { rno, date, name, amount: amt, desc, head, mode };
-  toast('কালেকশন সেভ হয়েছে।','success');
+  toast(S.editCollectionId ? 'Collection updated.' : 'Collection saved.','success');
+  S.editCollectionId = null;
   document.getElementById('colName').value=''; document.getElementById('colAmt').value=''; document.getElementById('colDesc').value='';
   document.getElementById('colRno').value = genRno();
   genReceiptPreview();
@@ -1098,9 +1226,9 @@ async function saveCollection() {
 
 async function loadCollections() {
   const tb = document.getElementById('colList');
-  tb.innerHTML = '<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
+  tb.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">Loading...</td></tr>';
   const { data, error } = await readTenantRows('collections', (from) => from.select('*').order('created_at', { ascending:false }).limit(20));
-  if (error || !data.length) { tb.innerHTML='<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">কোনো কালেকশন নেই</td></tr>'; return; }
+  if (error || !data.length) { tb.innerHTML='<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">No collection found</td></tr>'; return; }
   tb.innerHTML = data.map(r => `
     <tr>
       <td><span class="badge bg-gold">${esc(r.receipt_no||'—')}</span></td>
@@ -1108,7 +1236,65 @@ async function loadCollections() {
       <td>${esc(r.payer_name||'')}</td>
       <td class="td-g"><strong>${fmt(r.amount)}</strong></td>
       <td class="td-m">${esc(r.description||'')}</td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick='editCollection(${JSON.stringify(r.receipt_no || '')})'>Edit</button>
+          <button class="btn btn-primary btn-sm" onclick='printCollectionReceipt(${JSON.stringify(r.receipt_no || '')})'>Print</button>
+          <button class="btn btn-danger-lt btn-sm" onclick='deleteCollection(${JSON.stringify(r.receipt_no || '')})'>Delete</button>
+        </div>
+      </td>
     </tr>`).join('');
+}
+
+async function findCollectionByReceipt(receiptNo) {
+  const { data, error } = await readTenantRows('collections', (from) => from.select('*').eq('receipt_no', receiptNo).limit(1));
+  if (error || !data?.[0]) return null;
+  return data[0];
+}
+
+async function editCollection(receiptNo) {
+  if (!canEditVoucher()) { toast('Only Owner, Super User or Manager can edit collections.', 'error'); return; }
+  const row = await findCollectionByReceipt(receiptNo);
+  if (!row) { toast('Collection row not found.', 'error'); return; }
+  const meta = getReceiptMeta(row.receipt_no);
+  S.editCollectionId = row.id;
+  document.getElementById('colDate').value = row.collection_date || '';
+  document.getElementById('colRno').value = row.receipt_no || '';
+  document.getElementById('colName').value = row.payer_name || '';
+  document.getElementById('colAmt').value = Number(row.amount || 0) || '';
+  document.getElementById('colDesc').value = row.description || '';
+  document.getElementById('colHead').value = meta.head || 'General Collection';
+  document.getElementById('colMode').value = meta.mode || 'Cash';
+  document.getElementById('colDate')?.scrollIntoView({ behavior:'smooth', block:'center' });
+  toast('Collection loaded for editing.', 'info');
+}
+
+async function printCollectionReceipt(receiptNo) {
+  const row = await findCollectionByReceipt(receiptNo);
+  if (!row) { toast('Receipt data not found.', 'error'); return; }
+  const meta = getReceiptMeta(row.receipt_no);
+  S.lastReceipt = {
+    rno: row.receipt_no,
+    date: row.collection_date,
+    name: row.payer_name,
+    amount: Number(row.amount || 0),
+    desc: row.description,
+    head: meta.head || 'General Collection',
+    mode: meta.mode || 'Cash'
+  };
+  printReceipt();
+}
+
+async function deleteCollection(receiptNo) {
+  if (!isSuperUser()) { toast('Only Owner/Super User can delete collections.', 'error'); return; }
+  if (!window.confirm(`Delete collection ${receiptNo}?`)) return;
+  let query = sb.from('collections').delete().eq('receipt_no', receiptNo);
+  if (S.tenantId) query = query.eq('tenant_id', S.tenantId);
+  const { error } = await query;
+  if (error) { toast('Collection delete failed: ' + error.message, 'error'); return; }
+  toast('Collection deleted.', 'success');
+  await loadCollections();
+  await loadDashboard();
 }
 
 // ══════════════════════════════════════════
@@ -1500,6 +1686,9 @@ async function loadDaybook() {
 async function loadLedger() {
   const accCode = document.getElementById('ledAcc').value;
   if (!accCode) return;
+  const fromDate = document.getElementById('ledFrom')?.value || '';
+  const toDate = document.getElementById('ledTo')?.value || '';
+  if (fromDate && toDate && fromDate > toDate) { toast('Ledger From date cannot be after To date.', 'warning'); return; }
   const tb = document.getElementById('ledBody');
   tb.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
 
@@ -1508,10 +1697,18 @@ async function loadLedger() {
     .eq('account_code', accCode)
     .order('journal_id'));
 
-  if (error || !data.length) { tb.innerHTML='<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">কোনো এন্ট্রি নেই</td></tr>'; return; }
+  const rows = (data || []).filter(row => {
+    const d = String(row.journals?.journal_date || '').slice(0, 10);
+    if (!d) return false;
+    if (fromDate && d < fromDate) return false;
+    if (toDate && d > toDate) return false;
+    return true;
+  });
+
+  if (error || !rows.length) { tb.innerHTML='<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">No ledger entry found for selected range</td></tr>'; return; }
 
   let tDr=0, tCr=0, bal=0;
-  tb.innerHTML = data.map(r => {
+  tb.innerHTML = rows.map(r => {
     const dr = Number(r.debit||0), cr = Number(r.credit||0);
     tDr+=dr; tCr+=cr; bal=tDr-tCr;
     const j = r.journals||{};
@@ -1528,6 +1725,14 @@ async function loadLedger() {
   document.getElementById('ledDr').textContent  = fmt(tDr);
   document.getElementById('ledCr').textContent  = fmt(tCr);
   document.getElementById('ledBal').textContent = fmt(tDr-tCr);
+}
+
+function clearLedgerRange() {
+  const from = document.getElementById('ledFrom');
+  const to = document.getElementById('ledTo');
+  if (from) from.value = '';
+  if (to) to.value = '';
+  loadLedger();
 }
 
 // ══════════════════════════════════════════
@@ -1910,25 +2115,24 @@ function exportExcel() {
   const body=document.getElementById('reportResult');
   const tables=body.querySelectorAll('table');
   if(!tables.length){ toast('রিপোর্ট আগে লোড করুন।','warning'); return; }
+  if (!requireXLSX()) return;
   const org=S.company?.name||"Challengers of 90's";
   const today=new Date().toISOString().slice(0,10);
-  let csv='\uFEFF';
-  csv+=`"${org}"\n"${title}"\n"Date: ${today}"\n\n`;
-  tables.forEach(tbl=>{
-    const ths=tbl.querySelectorAll('thead th');
-    if(ths.length) csv+=[...ths].map(th=>`"${th.textContent.trim()}"`).join(',')+'\n';
+  const wb = XLSX.utils.book_new();
+  const rows = [[org], [title], [`Date: ${today}`], []];
+  tables.forEach((tbl, index)=>{
+    const ths=[...tbl.querySelectorAll('thead th')].map(th=>th.textContent.trim());
+    if(ths.length) rows.push(ths);
     tbl.querySelectorAll('tbody tr').forEach(tr=>{
-      const tds=tr.querySelectorAll('td');
-      if(tds.length) csv+=[...tds].map(td=>`"${td.textContent.trim().replace(/"/g,'""')}"`).join(',')+'\n';
+      const tds=[...tr.querySelectorAll('td')].map(td=>td.textContent.trim());
+      if(tds.length) rows.push(tds);
     });
-    csv+='\n';
+    if (index < tables.length - 1) rows.push([]);
   });
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url; a.download=`${title.replace(/\s+/g,'_')}_${today}.csv`; a.click();
-  URL.revokeObjectURL(url);
-  toast('Excel (CSV) ডাউনলোড শুরু হয়েছে। ✅','success');
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  XLSX.utils.book_append_sheet(wb, ws, 'Report');
+  XLSX.writeFile(wb, `${title.replace(/[^\w]+/g,'_')}_${today}.xlsx`);
+  toast('XLSX download started.', 'success');
 }
 
 // ══════════════════════════════════════════
@@ -2158,35 +2362,49 @@ async function addUser() {
 // Load user list — tenant-scoped when tenant is resolved, falls back to public.users
 async function loadUsers() {
   const tb = document.getElementById('userTable');
-  tb.innerHTML = '<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
+  tb.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">Loading...</td></tr>';
 
   // When tenant is resolved, show tenant-scoped app users directly. The
   // tenant_members.user_id column points at auth.users, so PostgREST cannot
   // embed public.users from that relationship.
   if (S.tenantId) {
-    const { data, error } = await sb
+    const [{ data, error }, memberRes] = await Promise.all([
+      sb
       .from('users')
       .select('id, username, email, created_at')
       .eq('tenant_id', S.tenantId)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false }),
+      sb.from('tenant_members').select('user_id, role, status, is_active, created_at').eq('tenant_id', S.tenantId)
+    ]);
 
     if (error || !data?.length) {
-      tb.innerHTML = '<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">কোনো ইউজার নেই</td></tr>';
+      tb.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">No user found</td></tr>';
       return;
     }
 
-    const roleMap = { 'superuser': 'Super User' };
+    const memberByUserId = (memberRes.data || []).reduce((acc, row) => {
+      acc[row.user_id] = row;
+      return acc;
+    }, {});
     tb.innerHTML = data.map(u => {
       const uname     = u.username || u.email?.split('@')[0] || '—';
-      const roleLabel = roleMap[uname.toLowerCase()] || 'ইউজার';
-      const badgeCls  = roleLabel === 'Super User' ? 'bg-gold' : 'bg-green';
+      const member    = memberByUserId[u.id] || {};
+      const roleValue = normalizeRole(member.role || (uname.toLowerCase() === 'superuser' ? 'owner' : 'user'));
+      const roleLabel = MEMBER_ROLE_LABELS[roleValue] || roleValue;
+      const badgeCls  = roleBadge(roleValue);
       const date      = u.created_at ? u.created_at.slice(0,10) : '—';
+      const roleControl = canManageUsers()
+        ? `<select class="form-control" style="min-width:130px" onchange="updateUserRole('${esc(u.id)}', this.value)" ${roleValue === 'owner' && uname.toLowerCase() === 'superuser' ? 'disabled' : ''}>
+            ${['owner','superuser','manager','user'].map(role => `<option value="${role}" ${role===roleValue?'selected':''}>${MEMBER_ROLE_LABELS[role]}</option>`).join('')}
+          </select>`
+        : `<span class="badge ${badgeCls}">${esc(roleLabel)}</span>`;
       return `<tr>
         <td><strong>${esc(uname)}</strong></td>
         <td class="td-m">${esc(u.email || '—')}</td>
-        <td><span class="badge ${badgeCls}">${esc(roleLabel)}</span></td>
+        <td>${roleControl}</td>
         <td class="td-m">${esc(date)}</td>
         <td><span class="badge bg-green">Active</span></td>
+        <td>${canManageUsers() ? '<span class="td-m">Role based access</span>' : '<span class="td-m">Read only</span>'}</td>
       </tr>`;
     }).join('');
     return;
@@ -2199,7 +2417,7 @@ async function loadUsers() {
     .order('created_at', { ascending: false });
 
   if (error || !data?.length) {
-    tb.innerHTML = '<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">কোনো ইউজার নেই</td></tr>';
+    tb.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">No user found</td></tr>';
     return;
   }
 
@@ -2215,8 +2433,21 @@ async function loadUsers() {
       <td><span class="badge ${badgeCls}">${esc(role)}</span></td>
       <td class="td-m">${esc(date)}</td>
       <td><span class="badge bg-green">Active</span></td>
+      <td><span class="td-m">Tenant required</span></td>
     </tr>`;
   }).join('');
+}
+
+async function updateUserRole(userId, role) {
+  if (!canManageUsers()) { toast('Only Owner/Super User can update roles.', 'error'); return; }
+  if (!S.tenantId) { toast('Tenant is not resolved.', 'error'); return; }
+  const normalized = normalizeRole(role);
+  const { error } = await sb
+    .from('tenant_members')
+    .upsert({ tenant_id: S.tenantId, user_id: userId, role: normalized, status: 'active', is_active: true }, { onConflict:'tenant_id,user_id' });
+  if (error) { toast('Role update failed: ' + error.message, 'error'); await loadUsers(); return; }
+  toast('User role updated.', 'success');
+  await loadUsers();
 }
 
 // ══════════════════════════════════════════

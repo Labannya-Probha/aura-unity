@@ -182,8 +182,8 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 .ledger-box-lbl{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .ledger-box-val{font-size:20px;font-weight:800;margin-top:5px}
 /* RECEIPT */
-.receipt-sheet{max-width:500px;margin:0 auto}
-.receipt-copy{border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;background:#fff;box-shadow:var(--shadow-md);margin-bottom:0}
+.receipt-sheet{max-width:980px;margin:0 auto}
+.receipt-copy{border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#fff;box-shadow:var(--shadow-md);margin-bottom:0}
 .receipt-copy-label{background:#0F1F3D;color:#D4A017;text-align:center;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;padding:4px}
 .receipt-top{background:linear-gradient(135deg,var(--navy2),var(--navy3));padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
 .rcp-logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--gold),#B8860B);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:17px;color:var(--navy);overflow:hidden;background-size:cover;flex-shrink:0}
@@ -216,7 +216,7 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 .simple-table tr:last-child td{border-bottom:none}
 .day-note{font-size:11.5px;color:var(--muted);line-height:1.7}
 .voucher-stack{display:grid;gap:18px}
-.receipt-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.receipt-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch}
 .receipt-copy.professional .receipt-body{padding:16px 18px 18px}
 .receipt-meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;margin:14px 0}
 .receipt-meta-item{padding-bottom:8px;border-bottom:1px dashed rgba(226,232,244,.9)}
@@ -305,6 +305,15 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 }
 @media print{
   body>*{display:none!important}
-  #printArea{display:block!important;position:fixed;inset:0;background:#fff;z-index:99999;padding:0;margin:0}
-  @page{margin:0}
+  #printArea{display:block!important;position:fixed;inset:0;background:#fff;z-index:99999;padding:8mm;margin:0;color:#0B1629}
+  #printArea .receipt-sheet{width:194mm;max-width:194mm;margin:0 auto}
+  #printArea .receipt-grid{display:grid;grid-template-columns:1fr 1fr;gap:6mm;align-items:stretch}
+  #printArea .receipt-copy{box-shadow:none;border:1px solid #9AA8BD;border-radius:4mm;break-inside:avoid;page-break-inside:avoid}
+  #printArea .receipt-top{padding:8mm 7mm}
+  #printArea .receipt-body{padding:6mm 7mm}
+  #printArea .receipt-meta-grid{grid-template-columns:1fr 1fr;gap:4mm;margin:5mm 0}
+  #printArea .rcp-abox{padding:4mm 5mm}
+  #printArea .rcp-avalue{font-size:20px}
+  #printArea .qr-section{margin-top:4mm}
+  @page{size:A4 portrait;margin:0}
 }

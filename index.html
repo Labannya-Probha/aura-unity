@@ -9,7 +9,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="stylesheet" href="/assets/css/index.css?v=20260630-modulestruct1">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="/assets/css/index.css?v=20260630-enterprise1">
 
 </head>
 <body>
@@ -160,8 +161,8 @@
         <div class="card">
           <div class="card-header"><div class="card-title">সাম্প্রতিক কালেকশন</div></div>
           <div class="card-body np"><div class="table-wrap"><table>
-            <thead><tr><th>রিসিট নং</th><th>তারিখ</th><th>নাম</th><th>পরিমাণ</th><th>বিবরণ</th></tr></thead>
-            <tbody id="colList"><tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr></tbody>
+            <thead><tr><th>Receipt No</th><th>Date</th><th>Name</th><th>Amount</th><th>Description</th><th>Actions</th></tr></thead>
+            <tbody id="colList"><tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">Loading...</td></tr></tbody>
           </table></div></div>
         </div>
       </div>
@@ -437,9 +438,12 @@
         <div class="card">
           <div class="card-header">
             <div class="card-title">লেজার বুক</div>
-            <div style="display:flex;gap:8px;align-items:center">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <input type="date" id="ledFrom" class="form-control" style="width:auto" onchange="loadLedger()">
+              <input type="date" id="ledTo" class="form-control" style="width:auto" onchange="loadLedger()">
               <select id="ledAcc" class="form-control" style="width:auto;min-width:180px" onchange="loadLedger()"><option value="">-- অ্যাকাউন্ট নির্বাচন --</option></select>
-              <button class="btn btn-ghost btn-sm" onclick="loadLedger()">লোড</button>
+              <button class="btn btn-ghost btn-sm" onclick="clearLedgerRange()">Clear</button>
+              <button class="btn btn-ghost btn-sm" onclick="loadLedger()">Load</button>
             </div>
           </div>
           <div class="card-body">
@@ -491,7 +495,19 @@
       <!-- COA -->
       <div id="coa" class="module">
         <div class="card">
-          <div class="card-header"><div class="card-title">চার্ট অব অ্যাকাউন্টস</div><button class="btn btn-gold btn-sm" onclick="showAccModal()">+ অ্যাকাউন্ট যোগ</button></div>
+          <div class="card-header">
+            <div>
+              <div class="card-title">Chart of Accounts</div>
+              <div class="card-sub">Import opening balances from XLSX or export the current tenant COA.</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+              <input id="coaImportFile" type="file" accept=".xlsx,.xls" class="hidden" onchange="importCOAOpeningBalances(event)">
+              <button class="btn btn-ghost btn-sm" onclick="downloadCOATemplate()">Download Template</button>
+              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('coaImportFile').click()">Import XLSX</button>
+              <button class="btn btn-ghost btn-sm" onclick="exportCOAXLSX()">Export XLSX</button>
+              <button class="btn btn-gold btn-sm" onclick="showAccModal()">+ Add Account</button>
+            </div>
+          </div>
           <div class="card-body np"><div class="table-wrap"><table>
             <thead><tr><th>কোড</th><th>নাম</th><th>গ্রুপ</th><th>টাইপ</th><th>ওপেনিং</th></tr></thead>
             <tbody id="coaBody"><tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr></tbody>
@@ -578,8 +594,8 @@
           </div>
           <div class="card-body np">
             <div class="table-wrap"><table>
-              <thead><tr><th>ইউজারনেম</th><th>ইমেইল (অটো)</th><th>রোল</th><th>যোগের তারিখ</th><th>স্ট্যাটাস</th></tr></thead>
-              <tbody id="userTable"><tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr></tbody>
+              <thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="userTable"><tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">Loading...</td></tr></tbody>
             </table></div>
           </div>
         </div>
@@ -635,7 +651,7 @@
   </div>
 </div>
 
-  <script src="/assets/js/index.js?v=20260630-modulestruct1"></script>
+  <script src="/assets/js/index.js?v=20260630-enterprise1"></script>
 
 </body>
 </html>
