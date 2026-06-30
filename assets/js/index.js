@@ -75,7 +75,7 @@ var TT = {
 const LOCAL_STATE_KEY = 'aura-unity-local-state-v2';
 
 // Maps tenant_members.role values to display labels (Bengali/English)
-const MEMBER_ROLE_LABELS = { owner: 'Owner', superuser: 'Super User', manager: 'Manager', user: 'User' };
+const MEMBER_ROLE_LABELS = { owner: 'Superuser/Superadmin', superuser: 'Superuser/Superadmin', manager: 'Admin', user: 'User' };
 const MEMBER_ROLE_BADGES = { owner: 'bg-danger', superuser: 'bg-gold', manager: 'bg-navy', user: 'bg-green' };
 const UI_TEXT = {
   loading: { bn:'লোড হচ্ছে...', en:'Loading...' },
@@ -91,21 +91,21 @@ const UI_TEXT = {
   noLedger: { bn:'নির্বাচিত সময়সীমায় কোনো লেজার এন্ট্রি নেই', en:'No ledger entry found for selected range' },
   dateRangeInvalid: { bn:'From Date, To Date থেকে বড় হতে পারবে না।', en:'From date cannot be after To date.' },
   xlsxMissing: { bn:'XLSX library load হয়নি। Page refresh করে আবার চেষ্টা করুন।', en:'XLSX library did not load. Refresh and try again.' },
-  masterDataDenied: { bn:'শুধু Owner, Super User অথবা Manager ওপেনিং ব্যালেন্স ইমপোর্ট করতে পারবে।', en:'Only Owner, Super User or Manager can import opening balances.' },
+  masterDataDenied: { bn:'শুধু Superuser/Superadmin অথবা Admin ওপেনিং ব্যালেন্স ইমপোর্ট করতে পারবে।', en:'Only Superuser/Superadmin or Admin can import opening balances.' },
   validCoaMissing: { bn:'Valid COA row পাওয়া যায়নি।', en:'No valid COA rows were found.' },
   coaImported: { bn:'COA row ইমপোর্ট/আপডেট হয়েছে।', en:'COA rows imported/updated.' },
-  collectionEditDenied: { bn:'শুধু Owner, Super User অথবা Manager collection edit করতে পারবে।', en:'Only Owner, Super User or Manager can edit collections.' },
+  collectionEditDenied: { bn:'শুধু Superuser/Superadmin অথবা Admin collection edit করতে পারবে।', en:'Only Superuser/Superadmin or Admin can edit collections.' },
   collectionMissing: { bn:'Collection row পাওয়া যায়নি।', en:'Collection row not found.' },
   collectionLoaded: { bn:'Collection edit করার জন্য লোড হয়েছে।', en:'Collection loaded for editing.' },
   receiptMissing: { bn:'Receipt data পাওয়া যায়নি।', en:'Receipt data not found.' },
-  collectionDeleteDenied: { bn:'শুধু Owner/Super User collection delete করতে পারবে।', en:'Only Owner/Super User can delete collections.' },
+  collectionDeleteDenied: { bn:'শুধু Superuser/Superadmin collection delete করতে পারবে।', en:'Only Superuser/Superadmin can delete collections.' },
   collectionDeleted: { bn:'Collection delete হয়েছে।', en:'Collection deleted.' },
-  roleUpdateDenied: { bn:'শুধু Owner/Super User role update করতে পারবে।', en:'Only Owner/Super User can update roles.' },
+  roleUpdateDenied: { bn:'শুধু Superuser/Superadmin role update করতে পারবে।', en:'Only Superuser/Superadmin can update roles.' },
   tenantNotResolved: { bn:'Tenant resolve হয়নি।', en:'Tenant is not resolved.' },
   roleUpdated: { bn:'User role update হয়েছে।', en:'User role updated.' },
   xlsxDownloaded: { bn:'XLSX download শুরু হয়েছে।', en:'XLSX download started.' },
   deleteDenied: { bn:'শুধু Super User delete করতে পারবে।', en:'Only Super User can delete data.' },
-  wipeDenied: { bn:'শুধু Super User data wipe করতে পারবে।', en:'Only Super User can wipe data.' },
+  wipeDenied: { bn:'শুধু Superuser/Superadmin data wipe করতে পারবে।', en:'Only Superuser/Superadmin can wipe data.' },
   wipeTenantMissing: { bn:'Tenant resolve হয়নি, wipe করা যাবে না।', en:'Tenant is not resolved, data wipe is blocked.' },
   wipeConfirmPrompt: { bn:'ডাটা ওয়াইপ করতে tenant slug/name লিখুন:', en:'Type the tenant slug/name to wipe accounting data:' },
   wipeConfirmMismatch: { bn:'Confirmation মেলেনি। Data wipe cancel হয়েছে।', en:'Confirmation did not match. Data wipe cancelled.' },
@@ -113,9 +113,9 @@ const UI_TEXT = {
   wipeFailed: { bn:'Data wipe ব্যর্থ: ', en:'Data wipe failed: ' }
 };
 const ROLE_LABELS_I18N = {
-  owner: { bn:'Owner', en:'Owner' },
-  superuser: { bn:'Super User', en:'Super User' },
-  manager: { bn:'ম্যানেজার', en:'Manager' },
+  owner: { bn:'Superuser/Superadmin', en:'Superuser/Superadmin' },
+  superuser: { bn:'Superuser/Superadmin', en:'Superuser/Superadmin' },
+  manager: { bn:'Admin', en:'Admin' },
   user: { bn:'ইউজার', en:'User' }
 };
 const STATIC_TEXT_PAIRS = [
@@ -241,7 +241,7 @@ function syncSidebarRole() {
   const userName = (document.getElementById('sbUname')?.textContent || '').trim().toLowerCase();
   if (!roleEl) return;
   if (userName === 'superuser') {
-    roleEl.textContent = 'Owner';
+    roleEl.textContent = 'Superuser/Superadmin';
     return;
   }
   if (S.activeMemberRole) {
@@ -465,9 +465,9 @@ function updateDestructiveControls() {
 
 function normalizeRole(role) {
   const value = String(role || '').toLowerCase();
-  if (value === 'owner') return 'owner';
+  if (value === 'owner') return 'superuser';
   if (value.includes('super')) return 'superuser';
-  if (value.includes('manager')) return 'manager';
+  if (value.includes('admin') || value.includes('manager')) return 'manager';
   return 'user';
 }
 
@@ -711,6 +711,9 @@ function setLang(lang) {
   document.documentElement.setAttribute('data-lang', lang);
   document.getElementById('langBn')?.classList.toggle('active', lang==='bn');
   document.getElementById('langEn')?.classList.toggle('active', lang==='en');
+  document.querySelectorAll('[data-lang-btn]').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-lang-btn') === lang);
+  });
   document.querySelectorAll('[data-bn][data-en]').forEach(el => {
     if (el.tagName==='INPUT'||el.tagName==='SELECT'||el.tagName==='TEXTAREA') return;
     const val = el.getAttribute('data-'+lang);
@@ -726,12 +729,21 @@ function setLang(lang) {
 }
 
 function refreshActiveLanguageContent(activeModule) {
+  syncRoleInputOptions();
   if (activeModule === 'coa') renderCOA(S.coa || []);
   if (activeModule === 'collection') loadCollections();
   if (activeModule === 'users') loadUsers();
   if (activeModule === 'ledger') loadLedger();
   if (activeModule === 'receipt') genReceiptPreview();
   if (activeModule === 'dashboard') loadDashboard();
+}
+
+function syncRoleInputOptions() {
+  const select = document.getElementById('nuRole');
+  if (!select) return;
+  const current = normalizeRole(select.value || 'user');
+  const roles = ['user', 'manager', 'superuser'];
+  select.innerHTML = roles.map(role => `<option value="${role}" ${role===current?'selected':''}>${esc(roleText(role))}</option>`).join('');
 }
 
 // ══════════════════════════════════════════
@@ -1440,22 +1452,30 @@ async function wipeTenantAccountingData() {
   if (!canDeleteData()) { toast(t('wipeDenied'), 'error'); return; }
   await getTenantId();
   if (!S.tenantId) { toast(t('wipeTenantMissing'), 'error'); return; }
+  const selected = new Set(Array.from(document.querySelectorAll('.wipe-table:checked')).map(el => el.value));
+  if (!selected.size) { toast('Select at least one data area to wipe.', 'warning'); return; }
   const expected = S.tenantSlug || getRouteTenantSlug() || S.company?.name || '';
   const typed = window.prompt(`${t('wipeConfirmPrompt')}\n${expected}`);
   if (!typed || typed.trim().toLowerCase() !== String(expected).trim().toLowerCase()) {
     toast(t('wipeConfirmMismatch'), 'warning');
     return;
   }
-  const tables = ['journal_items', 'journals', 'vouchers', 'collections', 'coa'];
-  for (const table of tables) {
+  const tables = [];
+  if (selected.has('journals')) tables.push('journal_items', 'journals');
+  if (selected.has('vouchers')) tables.push('vouchers');
+  if (selected.has('collections')) tables.push('collections');
+  if (selected.has('coa')) tables.push('coa');
+  for (const table of [...new Set(tables)]) {
     const { error } = await sb.from(table).delete().eq('tenant_id', S.tenantId);
     if (error) { toast(t('wipeFailed') + error.message, 'error'); return; }
   }
-  updateLocalState((state) => {
-    state.receiptMeta = {};
-    state.daySessions = {};
-  });
-  S.coa = [];
+  if (selected.has('local_state')) {
+    updateLocalState((state) => {
+      state.receiptMeta = {};
+      state.daySessions = {};
+    });
+  }
+  if (selected.has('coa')) S.coa = [];
   S.lastReceipt = null;
   S.editCollectionId = null;
   S.editJournalId = null;
@@ -1798,9 +1818,7 @@ async function printJournalVoucher(id) {
   </div>
 
   <!-- Footer -->
-  <div style="margin-top:24px;text-align:center;font-size:10.5px;color:#647188;border-top:1px solid #E2E8F4;padding-top:8px">
-    Prepared under the double-entry system in accordance with IFRS. System-generated voucher — ${safeCoName}.
-  </div>
+  <div style="margin-top:24px;display:flex;justify-content:space-between;gap:16px;font-size:10.5px;color:#647188;border-top:1px solid #E2E8F4;padding-top:8px">     <span>&copy; 2026 Aura Stay</span><strong style="color:#0B1629">Powered by Aura Stay</strong>   </div>
 </body></html>`;
 
   const blob = new Blob([html], { type: 'text/html' });
@@ -2263,12 +2281,12 @@ function printReport() {
     h1{color:#0F1F3D;font-size:18px;margin:0}h2{color:#647188;font-size:13px;font-weight:normal;margin:4px 0 16px}
     table{width:100%;border-collapse:collapse}th{background:#0F1F3D;color:#fff;padding:8px 12px;font-size:11px;text-align:left}
     td{padding:8px 12px;border-bottom:1px solid #E2E8F4;font-size:12px}
-    .footer{margin-top:24px;padding-top:10px;border-top:1px solid #E2E8F4;font-size:10px;color:#647188;text-align:center}
+    .footer{margin-top:24px;padding-top:10px;border-top:1px solid #E2E8F4;font-size:10px;color:#647188;display:flex;justify-content:space-between;gap:16px}     .footer strong{color:#0B1629}
     @media print{body{padding:10mm}}</style>
   </head><body>
   <h1>${org}</h1><h2>${title} &nbsp;|&nbsp; ${today}</h2>
   ${body}
-  <div class="footer">Generated by Aura Unity ERP &nbsp;|&nbsp; © 2026 Aura Stay</div>
+  <div class="footer"><span>&copy; 2026 Aura Stay</span><strong>Powered by Aura Stay</strong></div>
   <script>window.onload=()=>window.print();<\/script></body></html>`);
   win.document.close();
 }
@@ -2445,9 +2463,8 @@ function checkPassStrength(val) {
 // Map UI role labels to tenant_members DB role values
 function mapUiRoleToDbRole(uiRole) {
   const r = String(uiRole || '').toLowerCase();
-  if (r.includes('owner'))                               return 'owner';
-  if (r.includes('super') || r.includes('admin'))        return 'superuser';
-  if (r.includes('manager') || r.includes('ম্যানেজার')) return 'manager';
+  if (r.includes('super')) return 'superuser';
+  if (r.includes('admin') || r.includes('manager')) return 'manager';
   return 'user';
 }
 
@@ -2513,7 +2530,8 @@ async function addUser() {
     // Reset form
     document.getElementById('nuName').value = '';
     document.getElementById('nuPass').value = '';
-    document.getElementById('nuRole').value = 'ইউজার';
+    document.getElementById('nuRole').value = 'user';
+    syncRoleInputOptions();
     document.getElementById('passStrengthBar').style.width = '0%';
     document.getElementById('passStrengthLabel').textContent = '';
 
@@ -2562,8 +2580,8 @@ async function loadUsers() {
       const badgeCls  = roleBadge(roleValue);
       const date      = u.created_at ? u.created_at.slice(0,10) : '—';
       const roleControl = canManageUsers()
-        ? `<select class="form-control" style="min-width:130px" onchange="updateUserRole('${esc(u.id)}', this.value)" ${roleValue === 'owner' && uname.toLowerCase() === 'superuser' ? 'disabled' : ''}>
-            ${['owner','superuser','manager','user'].map(role => `<option value="${role}" ${role===roleValue?'selected':''}>${esc(roleText(role))}</option>`).join('')}
+        ? `<select class="form-control" style="min-width:130px" onchange="updateUserRole('${esc(u.id)}', this.value)" ${roleValue === 'superuser' && uname.toLowerCase() === 'superuser' ? 'disabled' : ''}>
+            ${['superuser','manager','user'].map(role => `<option value="${role}" ${role===roleValue?'selected':''}>${esc(roleText(role))}</option>`).join('')}
           </select>`
         : `<span class="badge ${badgeCls}">${esc(roleLabel)}</span>`;
       return `<tr>

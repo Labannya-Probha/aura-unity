@@ -10,7 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <link rel="stylesheet" href="/assets/css/index.css?v=20260630-wipe3">
+  <link rel="stylesheet" href="/assets/css/index.css?v=20260630-polish2">
 
 </head>
 <body>
@@ -48,9 +48,15 @@
       </div>
     </div>
 
-    <div class="login-footer">
-      <div>© 2026 Aura Stay &nbsp;·&nbsp; <strong>Powered by Aura Stay</strong></div>
+    <div class="login-lang lang-toggle" aria-label="Language">
+      <button class="lang-btn" data-lang-btn="bn" onclick="setLang('bn')">বাংলা</button>
+      <button class="lang-btn active" data-lang-btn="en" onclick="setLang('en')">English</button>
     </div>
+
+    <div class="login-footer">
+      <div>&copy; 2026 Aura Stay &nbsp;&middot;&nbsp; <strong>Powered by Aura Stay</strong></div>
+    </div>
+
   </div>
 </div>
 
@@ -64,8 +70,8 @@
       </div>
     </div>
     <div class="lang-toggle">
-      <button class="lang-btn" id="langBn" onclick="setLang('bn')">বাংলা</button>
-      <button class="lang-btn active" id="langEn" onclick="setLang('en')">English</button>
+      <button class="lang-btn" id="langBn" data-lang-btn="bn" onclick="setLang('bn')">বাংলা</button>
+      <button class="lang-btn active" id="langEn" data-lang-btn="en" onclick="setLang('en')">English</button>
     </div>
     <div class="sb-user">
       <div id="sbRole" class="sb-role">Super User</div>
@@ -88,7 +94,7 @@
     <div class="nav-item" data-module="users"><span class="nav-icon">◉</span><span data-bn="ইউজার" data-en="Users">ইউজার</span></div>
     <div class="sb-footer">
       <button class="btn-logout" onclick="logout()"><span data-bn="লগআউট" data-en="Logout">লগআউট</span></button>
-      <div class="sb-powered">© 2026 Aura Stay<br><span>Powered by Aura Stay</span></div>
+      <div class="sb-powered">&copy; 2026 Aura Stay<br><span>Powered by Aura Stay</span></div>
     </div>
   </aside>
 
@@ -101,6 +107,10 @@
         <h2 id="topTitle">ড্যাশবোর্ড</h2><p id="topSub">সার্বিক আর্থিক অবস্থান</p>
       </div>
       <div class="topbar-r">
+        <div class="topbar-lang lang-toggle" aria-label="Language">
+          <button class="lang-btn" data-lang-btn="bn" onclick="setLang('bn')">বাংলা</button>
+          <button class="lang-btn active" data-lang-btn="en" onclick="setLang('en')">English</button>
+        </div>
         <button class="btn btn-ghost btn-sm" onclick="openModule('company')">⚙</button>
         <button class="btn btn-gold btn-sm" onclick="openModule('collection')"><span data-bn="+ কালেকশন" data-en="+ Collection">+ কালেকশন</span></button>
         <button class="btn btn-ghost btn-sm" onclick="openModule('voucher')"><span data-bn="+ ভাউচার / জার্নাল" data-en="+ Voucher / Journal">+ ভাউচার / জার্নাল</span></button>
@@ -326,8 +336,8 @@
                   </div>
                 </div>
                 <div class="receipt-copy professional">
-                  <div class="receipt-copy-label" style="background:#1A3260">🏢 Office Copy</div>
-                  <div class="receipt-top" style="background:linear-gradient(135deg,#1A3260,#243B55)">
+                  <div class="receipt-copy-label">🏢 Office Copy</div>
+                  <div class="receipt-top">
                     <div style="display:flex;align-items:center;gap:10px">
                       <div id="rcpLogo2" class="rcp-logo">A</div>
                       <div><div id="rcpName2" class="rcp-oname">Challengers of 90's</div><div id="rcpAddr2" class="rcp-osub">Organization Address</div></div>
@@ -547,6 +557,13 @@
             <span class="badge bg-danger">Super User</span>
           </div>
           <div class="card-body">
+            <div class="form-row-3" style="margin-bottom:14px">
+              <label style="display:flex;align-items:center;gap:8px;font-weight:700"><input type="checkbox" class="wipe-table" value="collections" checked> Collections</label>
+              <label style="display:flex;align-items:center;gap:8px;font-weight:700"><input type="checkbox" class="wipe-table" value="vouchers" checked> Vouchers</label>
+              <label style="display:flex;align-items:center;gap:8px;font-weight:700"><input type="checkbox" class="wipe-table" value="journals" checked> Journals</label>
+              <label style="display:flex;align-items:center;gap:8px;font-weight:700"><input type="checkbox" class="wipe-table" value="coa"> Chart of Accounts</label>
+              <label style="display:flex;align-items:center;gap:8px;font-weight:700"><input type="checkbox" class="wipe-table" value="local_state" checked> Local receipt/day cache</label>
+            </div>
             <button class="btn btn-danger-lt" onclick="wipeTenantAccountingData()" data-bn="Tenant Accounting Data Wipe" data-en="Wipe Tenant Accounting Data">Wipe Tenant Accounting Data</button>
           </div>
         </div>
@@ -615,6 +632,7 @@
       </div>
 
     </div>
+    <footer class="app-footer"><span>&copy; 2026 Aura Stay</span><strong>Powered by Aura Stay</strong></footer>
   </div>
 </div>
 
@@ -664,7 +682,7 @@
   </div>
 </div>
 
-  <script src="/assets/js/index.js?v=20260630-wipe3"></script>
+  <script src="/assets/js/index.js?v=20260630-polish2"></script>
 
 </body>
 </html>

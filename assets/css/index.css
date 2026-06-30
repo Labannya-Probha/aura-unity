@@ -33,6 +33,10 @@ input,select,textarea,button{font-family:inherit;outline:none}
 .lang-toggle{display:flex;margin:6px 14px 4px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px;overflow:hidden}
 .lang-btn{flex:1;padding:6px 4px;font-size:11px;font-weight:600;color:#5C7A9E;background:transparent;border:none;cursor:pointer;transition:var(--tr)}
 .lang-btn.active{background:var(--gold);color:var(--navy)}
+.topbar-lang{margin:0;background:#fff;border:1.5px solid var(--border);min-width:132px}
+.topbar-lang .lang-btn{color:var(--text);padding:8px 10px;font-size:12px}
+.login-lang{margin:0 28px 12px;background:#F8FAFD;border-color:var(--border)}
+.login-lang .lang-btn{color:var(--text);padding:8px 10px;font-size:12px}
 .nav-label{padding:10px 18px 4px;font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#2E4A6A}
 .nav-item{display:flex;align-items:center;gap:10px;padding:9px 18px;color:#7A96B2;cursor:pointer;font-size:13px;font-weight:500;border-left:2.5px solid transparent;transition:var(--tr);user-select:none}
 .nav-item:hover{background:rgba(255,255,255,.04);color:#C8D8E8;border-left-color:rgba(212,160,23,.3)}
@@ -176,24 +180,26 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 .modal-close:hover{color:var(--text)}
 .modal-body{padding:22px}
 .modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+.app-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 28px;border-top:1px solid var(--border);background:rgba(255,255,255,.96);font-size:12px;color:var(--muted)}
+.app-footer strong{color:var(--text);font-weight:700}
 /* LEDGER BOXES */
 .ledger-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
 .ledger-box{padding:14px 16px;border-radius:var(--r);border:1px solid var(--border);text-align:center}
 .ledger-box-lbl{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .ledger-box-val{font-size:20px;font-weight:800;margin-top:5px}
 /* RECEIPT */
-.receipt-sheet{max-width:980px;margin:0 auto}
-.receipt-copy{border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#fff;box-shadow:var(--shadow-md);margin-bottom:0}
-.receipt-copy-label{background:#0F1F3D;color:#D4A017;text-align:center;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;padding:4px}
-.receipt-top{background:linear-gradient(135deg,var(--navy2),var(--navy3));padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
+.receipt-sheet{max-width:760px;margin:0 auto}
+.receipt-copy{border:1px solid #B8C2D3;border-radius:6px;overflow:hidden;background:#fff;box-shadow:none;margin-bottom:0}
+.receipt-copy-label{background:#F8FAFD;color:#0F1F3D;text-align:center;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;padding:5px;border-bottom:1px solid var(--border)}
+.receipt-top{background:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #0F1F3D}
 .rcp-logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--gold),#B8860B);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:17px;color:var(--navy);overflow:hidden;background-size:cover;flex-shrink:0}
-.rcp-oname{font-size:13px;font-weight:700;color:#fff}
-.rcp-osub{font-size:10px;color:#7A95B8;margin-top:2px}
-.rcp-tag-t{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--gold-lt)}
-.rcp-no{font-size:14px;font-weight:800;color:#fff;margin-top:2px}
+.rcp-oname{font-size:13px;font-weight:700;color:var(--text)}
+.rcp-osub{font-size:10px;color:var(--muted);margin-top:2px}
+.rcp-tag-t{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.rcp-no{font-size:14px;font-weight:800;color:var(--text);margin-top:2px}
 .receipt-body{padding:14px 18px}
-.rcp-abox{background:linear-gradient(135deg,var(--gold-bg),#FFF8E1);border:1.5px solid rgba(212,160,23,.3);border-radius:var(--r);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.rcp-alabel{font-size:10px;font-weight:800;color:#7A5500;text-transform:uppercase}
+.rcp-abox{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.rcp-alabel{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase}
 .rcp-avalue{font-size:22px;font-weight:900;color:var(--navy)}
 .rcp-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(226,232,244,.6);gap:16px}
 .rcp-row:last-of-type{border-bottom:none}
@@ -216,7 +222,7 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 .simple-table tr:last-child td{border-bottom:none}
 .day-note{font-size:11.5px;color:var(--muted);line-height:1.7}
 .voucher-stack{display:grid;gap:18px}
-.receipt-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch}
+.receipt-grid{display:grid;grid-template-columns:1fr;gap:12px;align-items:stretch}
 .receipt-copy.professional .receipt-body{padding:16px 18px 18px}
 .receipt-meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;margin:14px 0}
 .receipt-meta-item{padding-bottom:8px;border-bottom:1px dashed rgba(226,232,244,.9)}
@@ -251,6 +257,7 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
   .main{margin-left:0}
   .topbar{padding:0 16px}
   .content{padding:16px;padding-bottom:80px}
+  .app-footer{padding:12px 16px 76px}
   .welcome-popover{right:12px;left:auto;max-width:min(320px,calc(100vw - 24px))}
   .welcome-text{white-space:normal}
   .form-row-2,.form-row-3,.day-grid,.receipt-grid{grid-template-columns:1fr}
@@ -259,12 +266,15 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
   .ledger-grid{grid-template-columns:1fr 1fr 1fr}
   .topbar-r .btn:not(.btn-sm){display:none}
   .topbar-r .btn.btn-sm{padding:7px 11px}
+  .topbar-lang{min-width:118px}
+  .topbar-lang .lang-btn{padding:7px 8px;font-size:11.5px}
   .mob-bottom-nav:not(.hidden){display:flex!important}
 }
 /* SMALL PHONE (<480px): further collapse */
 @media(max-width:480px){
   .content{padding:12px}
   .topbar{padding:0 12px}
+  .app-footer{padding:10px 12px 76px;font-size:11px}
   .card-body{padding:16px}
   .card-header{padding:12px 16px}
   .stats-grid{grid-template-columns:1fr 1fr}
@@ -305,12 +315,16 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 }
 @media print{
   body>*{display:none!important}
-  #printArea{display:block!important;position:fixed;inset:0;background:#fff;z-index:99999;padding:8mm;margin:0;color:#0B1629}
-  #printArea .receipt-sheet{width:194mm;max-width:194mm;margin:0 auto}
-  #printArea .receipt-grid{display:grid;grid-template-columns:1fr 1fr;gap:6mm;align-items:stretch}
-  #printArea .receipt-copy{box-shadow:none;border:1px solid #9AA8BD;border-radius:4mm;break-inside:avoid;page-break-inside:avoid}
-  #printArea .receipt-top{padding:8mm 7mm}
-  #printArea .receipt-body{padding:6mm 7mm}
+  #printArea{display:block!important;position:fixed;inset:0;background:#fff;z-index:99999;padding:10mm 12mm;margin:0;color:#0B1629}
+  #printArea .receipt-sheet{width:186mm;max-width:186mm;margin:0 auto}
+  #printArea .receipt-sheet::after{content:"Powered by Aura Stay";display:block;text-align:right;margin-top:4mm;font-size:10px;color:#647188}
+  #printArea .receipt-grid{display:grid;grid-template-columns:1fr;gap:7mm;align-items:stretch}
+  #printArea .receipt-copy{box-shadow:none;border:1px solid #9AA8BD;border-radius:3mm;break-inside:avoid;page-break-inside:avoid}
+  #printArea .receipt-copy-label{background:#F8FAFD!important;color:#111827!important;border-bottom:1px solid #D0D8E8}
+  #printArea .receipt-top{padding:6mm 7mm;background:#fff!important;border-bottom:2px solid #111827}
+  #printArea .rcp-oname,#printArea .rcp-no{color:#111827!important}
+  #printArea .rcp-osub,#printArea .rcp-tag-t{color:#4B5563!important}
+  #printArea .receipt-body{padding:5mm 7mm}
   #printArea .receipt-meta-grid{grid-template-columns:1fr 1fr;gap:4mm;margin:5mm 0}
   #printArea .rcp-abox{padding:4mm 5mm}
   #printArea .rcp-avalue{font-size:20px}
