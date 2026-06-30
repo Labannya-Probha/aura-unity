@@ -841,8 +841,10 @@ async function login() {
         refresh_token: data.refresh_token || '',
       });
     }
+    const { data: { session } } = await sb.auth.getSession();
 
     S.user = data.user;
+    S.session = session;
     S.tenantId = null;
     S.tenantSlug = getRouteTenantSlug();
     S.tenantResolved = false;
@@ -874,6 +876,7 @@ async function logout() {
   document.getElementById('app').classList.add('hidden');
   document.getElementById('mobBottomNav').classList.add('hidden');
   document.getElementById('loginModal').classList.remove('hidden');
+  updateDestructiveControls();
 }
 
 // ══════════════════════════════════════════
