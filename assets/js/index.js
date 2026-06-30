@@ -773,6 +773,8 @@ function openModule(id) {
   document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
   const t = document.getElementById(id);
   if (t) t.classList.add('active');
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  document.querySelector('.content')?.scrollTo?.({ top: 0, left: 0, behavior: 'auto' });
   document.querySelectorAll('.nav-item').forEach(a => a.classList.toggle('active', a.getAttribute('data-module')===id));
   document.querySelectorAll('.mob-nav-btn[data-module]').forEach(b => b.classList.toggle('active', b.getAttribute('data-module')===id));
   document.getElementById('topTitle').textContent = TT[S.lang][id] || id;
