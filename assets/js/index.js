@@ -2146,11 +2146,13 @@ async function loadUsers() {
   const tb = document.getElementById('userTable');
   tb.innerHTML = '<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
 
-  // When tenant is resolved, show members of the current tenant from tenant_members
+  // When tenant is resolved, show tenant-scoped app users directly. The
+  // tenant_members.user_id column points at auth.users, so PostgREST cannot
+  // embed public.users from that relationship.
   if (S.tenantId) {
     const { data, error } = await sb
-      .from('tenant_members')
-      .select('user_id, role, status, created_at, users(username, email)')
+      .from('users')
+      .select('id, username, email, created_at')
       .eq('tenant_id', S.tenantId)
       .order('created_at', { ascending: false });
 
@@ -2159,18 +2161,18 @@ async function loadUsers() {
       return;
     }
 
-    tb.innerHTML = data.map(m => {
-      const uname     = m.users?.username || m.users?.email?.split('@')[0] || '—';
-      const roleLabel = MEMBER_ROLE_LABELS[m.role] || m.role || 'ইউজার';
-      const badgeCls  = MEMBER_ROLE_BADGES[m.role] || 'bg-green';
-      const statusCls = m.status === 'active' ? 'bg-green' : m.status === 'invited' ? 'bg-gold' : 'bg-danger';
-      const date      = m.created_at ? m.created_at.slice(0,10) : '—';
+    const roleMap = { 'superuser': 'Super User' };
+    tb.innerHTML = data.map(u => {
+      const uname     = u.username || u.email?.split('@')[0] || '—';
+      const roleLabel = roleMap[uname.toLowerCase()] || 'ইউজার';
+      const badgeCls  = roleLabel === 'Super User' ? 'bg-gold' : 'bg-green';
+      const date      = u.created_at ? u.created_at.slice(0,10) : '—';
       return `<tr>
         <td><strong>${esc(uname)}</strong></td>
-        <td class="td-m">${esc(m.users?.email || '—')}</td>
+        <td class="td-m">${esc(u.email || '—')}</td>
         <td><span class="badge ${badgeCls}">${esc(roleLabel)}</span></td>
         <td class="td-m">${esc(date)}</td>
-        <td><span class="badge ${statusCls}">${esc(m.status || 'active')}</span></td>
+        <td><span class="badge bg-green">Active</span></td>
       </tr>`;
     }).join('');
     return;
