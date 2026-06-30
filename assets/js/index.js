@@ -1,6 +1,6 @@
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // SECURITY HELPERS
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 function esc(s) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;')
@@ -26,7 +26,7 @@ const _IDLE_MS = 30 * 60 * 1000;
 function _resetIdleTimer() {
   clearTimeout(_idleTimer);
   _idleTimer = setTimeout(() => {
-    toast('à¦¨à¦¿à¦·à§à¦•à§à¦°à¦¿à¦¯à¦¼à¦¤à¦¾à¦° à¦•à¦¾à¦°à¦£à§‡ à¦¸à§‡à¦¶à¦¨ à¦¶à§‡à¦· à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤', 'warning');
+    toast('নিষ্ক্রিয়তার কারণে সেশন শেষ হয়েছে।', 'warning');
     setTimeout(logout, 2000);
   }, _IDLE_MS);
 }
@@ -34,17 +34,17 @@ function _resetIdleTimer() {
   document.addEventListener(ev, _resetIdleTimer, { passive: true })
 );
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // SUPABASE INIT
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 const SUPA_URL  = 'https://ltcjgbhjkfvlzzvvulhz.supabase.co';
 const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx0Y2pnYmhqa2Z2bHp6dnZ1bGh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NDM2MjYsImV4cCI6MjA5ODExOTYyNn0.nfSI1_x4LSg9xNGQJSeflU8_zWSnpwRmzRBG0_YldUc';
 const { createClient } = supabase;
 const sb = createClient(SUPA_URL, SUPA_ANON);
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // APP STATE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 var S = {
   lang: 'bn',
   user: null,
@@ -67,14 +67,14 @@ var S = {
 };
 
 var TT = {
-  bn:{dashboard:'à¦¡à§à¦¯à¦¾à¦¶à¦¬à§‹à¦°à§à¦¡',collection:'à¦®à¦¾à¦¸à¦¿à¦• à¦•à¦¾à¦²à§‡à¦•à¦¶à¦¨',voucher:'à¦­à¦¾à¦‰à¦šà¦¾à¦° à¦“ à¦œà¦¾à¦°à§à¦¨à¦¾à¦²',receipt:'à¦®à¦¾à¦¨à¦¿ à¦°à¦¿à¦¸à¦¿à¦Ÿ',reports:'à¦°à¦¿à¦ªà§‹à¦°à§à¦Ÿà¦¸',journal:'à¦­à¦¾à¦‰à¦šà¦¾à¦° à¦“ à¦œà¦¾à¦°à§à¦¨à¦¾à¦²',ledger:'à¦²à§‡à¦œà¦¾à¦° à¦¬à§à¦•',daybook:'à¦¡à§‡ à¦¬à§à¦•',trialbalance:'à¦Ÿà§à¦°à¦¾à¦¯à¦¼à¦¾à¦² à¦¬à§à¦¯à¦¾à¦²à§‡à¦¨à§à¦¸',balancesheet:'à¦¬à§à¦¯à¦¾à¦²à§‡à¦¨à§à¦¸ à¦¶à§€à¦Ÿ',coa:'à¦šà¦¾à¦°à§à¦Ÿ à¦…à¦¬ à¦…à§à¦¯à¦¾à¦•à¦¾à¦‰à¦¨à§à¦Ÿà¦¸',company:'à¦•à§‹à¦®à§à¦ªà¦¾à¦¨à¦¿ à¦¤à¦¥à§à¦¯',users:'à¦‡à¦‰à¦œà¦¾à¦°'},
+  bn:{dashboard:'ড্যাশবোর্ড',collection:'মাসিক কালেকশন',voucher:'ভাউচার ও জার্নাল',receipt:'মানি রিসিট',reports:'রিপোর্টস',journal:'ভাউচার ও জার্নাল',ledger:'লেজার বুক',daybook:'ডে বুক',trialbalance:'ট্রায়াল ব্যালেন্স',balancesheet:'ব্যালেন্স শীট',coa:'চার্ট অব অ্যাকাউন্টস',company:'কোম্পানি তথ্য',users:'ইউজার'},
   en:{dashboard:'Dashboard',collection:'Collections',voucher:'Voucher & Journal',receipt:'Money Receipt',reports:'Reports',journal:'Voucher & Journal',ledger:'Ledger Book',daybook:'Day Book',trialbalance:'Trial Balance',balancesheet:'Balance Sheet',coa:'Chart of Accounts',company:'Company Info',users:'Users'}
 };
 
 const LOCAL_STATE_KEY = 'aura-unity-local-state-v2';
 
 // Maps tenant_members.role values to display labels (Bengali/English)
-const MEMBER_ROLE_LABELS = { owner: 'Owner', superuser: 'Super User', manager: 'à¦®à§à¦¯à¦¾à¦¨à§‡à¦œà¦¾à¦°', user: 'à¦‡à¦‰à¦œà¦¾à¦°' };
+const MEMBER_ROLE_LABELS = { owner: 'Owner', superuser: 'Super User', manager: 'ম্যানেজার', user: 'ইউজার' };
 const MEMBER_ROLE_BADGES = { owner: 'bg-danger', superuser: 'bg-gold', manager: 'bg-navy', user: 'bg-green' };
 
 function getRouteTenantSlug() {
@@ -89,8 +89,8 @@ function getTenantSlugCandidates(slug) {
     catch (_) { return String(slug || ''); }
   })();
   const compact = decoded.toLowerCase().replace(/[^a-z0-9]+/g, '');
-  const dashed = decoded.toLowerCase().replace(/['â€™]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-  return [...new Set([decoded, decoded.toLowerCase(), decoded.replace(/['â€™]/g, ''), compact, dashed].filter(Boolean))];
+  const dashed = decoded.toLowerCase().replace(/['’]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return [...new Set([decoded, decoded.toLowerCase(), decoded.replace(/['’]/g, ''), compact, dashed].filter(Boolean))];
 }
 
 function safeJsonParse(value, fallback) {
@@ -118,7 +118,7 @@ function getCurrentUserName() {
 }
 
 function getCurrentRole() {
-  return S.user?.role || document.getElementById('sbRole')?.textContent || 'à¦‡à¦‰à¦œà¦¾à¦°';
+  return S.user?.role || document.getElementById('sbRole')?.textContent || 'ইউজার';
 }
 
 function isSuperUser() {
@@ -127,7 +127,7 @@ function isSuperUser() {
 }
 
 function fmtDateTime(value) {
-  if (!value) return 'â€”';
+  if (!value) return '—';
   const dt = new Date(value);
   return Number.isNaN(dt.getTime()) ? value : dt.toLocaleString('en-GB');
 }
@@ -213,7 +213,7 @@ function renderOpeningBalanceRows(date, balances) {
     <tr>
       <td><strong>${a.account_name}</strong><div class="td-m" style="font-size:11px">${a.account_code}</div></td>
       <td><input class="form-control" type="number" data-account="${a.account_code}" value="${Number(opening[a.account_code] ?? a.opening_balance ?? 0)}"></td>
-    </tr>`).join('') || '<tr><td colspan="2" class="td-m" style="text-align:center;padding:18px">Current asset head à¦ªà¦¾à¦“à§Ÿà¦¾ à¦¯à¦¾à§Ÿà¦¨à¦¿</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="2" class="td-m" style="text-align:center;padding:18px">Current asset head পাওয়া যায়নি</td></tr>';
 }
 
 function collectOpeningBalancesFromUI() {
@@ -227,7 +227,7 @@ function collectOpeningBalancesFromUI() {
 function seedOpeningBalanceInputs() {
   const date = document.getElementById('dayDate')?.value || new Date().toISOString().slice(0,10);
   renderOpeningBalanceRows(date, deriveOpeningBalances(date));
-  toast('Previous closing / opening balance à¦²à§‹à¦¡ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤', 'info');
+  toast('Previous closing / opening balance লোড হয়েছে।', 'info');
 }
 
 function renderDayAuditTable() {
@@ -235,15 +235,15 @@ function renderDayAuditTable() {
   if (!body) return;
   const sessions = Object.values(getLocalState().daySessions || {}).sort((a,b) => String(b.date || '').localeCompare(String(a.date || ''))).slice(0, 8);
   if (!sessions.length) {
-    body.innerHTML = '<tr><td colspan="4" class="td-m" style="text-align:center;padding:18px">à¦•à§‹à¦¨à§‹ audit à¦¨à§‡à¦‡</td></tr>';
+    body.innerHTML = '<tr><td colspan="4" class="td-m" style="text-align:center;padding:18px">কোনো audit নেই</td></tr>';
     return;
   }
   body.innerHTML = sessions.map(s => `
     <tr>
-      <td><strong>${esc(s.date || 'â€”')}</strong></td>
+      <td><strong>${esc(s.date || '—')}</strong></td>
       <td><span class="badge ${s.status === 'closed' ? 'bg-green' : 'bg-gold'}">${s.status === 'closed' ? 'Closed' : 'Open'}</span></td>
-      <td>${s.openedBy ? `${esc(s.openedBy)}<div class="td-m" style="font-size:11px">${esc(fmtDateTime(s.openedAt))}</div>` : '<span class="td-m">â€”</span>'}</td>
-      <td>${s.closedBy ? `${esc(s.closedBy)}<div class="td-m" style="font-size:11px">${esc(fmtDateTime(s.closedAt))}</div>` : '<span class="td-m">â€”</span>'}</td>
+      <td>${s.openedBy ? `${esc(s.openedBy)}<div class="td-m" style="font-size:11px">${esc(fmtDateTime(s.openedAt))}</div>` : '<span class="td-m">—</span>'}</td>
+      <td>${s.closedBy ? `${esc(s.closedBy)}<div class="td-m" style="font-size:11px">${esc(fmtDateTime(s.closedAt))}</div>` : '<span class="td-m">—</span>'}</td>
     </tr>`).join('');
 }
 
@@ -265,8 +265,8 @@ function renderDayControlState() {
         ? `Open for ${date}`
         : (isSuperUser() ? 'Pending Day Open' : 'Pending Super User approval');
   }
-  if (openMeta) openMeta.innerHTML = session?.openedBy ? `${session.openedBy}<div class="td-m" style="font-size:11px">${fmtDateTime(session.openedAt)}</div>` : 'â€”';
-  if (closeMeta) closeMeta.innerHTML = session?.closedBy ? `${session.closedBy}<div class="td-m" style="font-size:11px">${fmtDateTime(session.closedAt)}</div>` : 'â€”';
+  if (openMeta) openMeta.innerHTML = session?.openedBy ? `${session.openedBy}<div class="td-m" style="font-size:11px">${fmtDateTime(session.openedAt)}</div>` : '—';
+  if (closeMeta) closeMeta.innerHTML = session?.closedBy ? `${session.closedBy}<div class="td-m" style="font-size:11px">${fmtDateTime(session.closedAt)}</div>` : '—';
   renderDayAuditTable();
 }
 
@@ -313,15 +313,15 @@ function getReceiptDraft() {
 
 function canEditVoucher() {
   if (S.activeMemberRole === 'owner' || S.activeMemberRole === 'superuser' || S.activeMemberRole === 'manager') return true;
-  return isSuperUser() || /admin|manager|à¦®à§à¦¯à¦¾à¦¨à§‡à¦œà¦¾à¦°/i.test(getCurrentRole());
+  return isSuperUser() || /admin|manager|ম্যানেজার/i.test(getCurrentRole());
 }
 
 function getVoucherPrefix(type) {
   const normalized = String(type || '').toLowerCase();
-  if (normalized.includes('à¦œà¦¾à¦°à§à¦¨à¦¾à¦²') || normalized.includes('journal')) return 'JV';
-  if (normalized.includes('à¦°à¦¿à¦¸à¦¿à¦Ÿ') || normalized.includes('receipt')) return 'DV';
-  if (normalized.includes('à¦ªà§‡à¦®à§‡à¦¨à§à¦Ÿ') || normalized.includes('payment')) return 'CV';
-  if (normalized.includes('à¦•à¦¨à¦Ÿà§à¦°à¦¾') || normalized.includes('contra')) return 'CN';
+  if (normalized.includes('জার্নাল') || normalized.includes('journal')) return 'JV';
+  if (normalized.includes('রিসিট') || normalized.includes('receipt')) return 'DV';
+  if (normalized.includes('পেমেন্ট') || normalized.includes('payment')) return 'CV';
+  if (normalized.includes('কনট্রা') || normalized.includes('contra')) return 'CN';
   return 'JV';
 }
 
@@ -330,7 +330,7 @@ function makeVoucherRef(type) {
 }
 
 function refreshVoucherRef() {
-  const type = document.getElementById('vchType')?.value || 'à¦ªà§‡à¦®à§‡à¦¨à§à¦Ÿ';
+  const type = document.getElementById('vchType')?.value || 'পেমেন্ট';
   const noEl = document.getElementById('vchNo');
   if (noEl && !noEl.dataset.locked) noEl.value = makeVoucherRef(type);
 }
@@ -380,12 +380,12 @@ function buildStatementSummary(source, openingBalances) {
     const amount = Number(r.amount || 0);
     const code = r.account_code;
     const accountName = source.coaMap[code]?.account_name || code || 'Voucher';
-    const isPayment = String(r.vch_type || '').includes('à¦ªà§‡à¦®à§‡à¦¨à§à¦Ÿ') || String(r.vch_type || '').toLowerCase().includes('payment');
+    const isPayment = String(r.vch_type || '').includes('পেমেন্ট') || String(r.vch_type || '').toLowerCase().includes('payment');
     if (assetSummary[code]) {
       if (isPayment) assetSummary[code].payments += amount;
       else assetSummary[code].receipts += amount;
     }
-    headPush(`${r.vch_type || 'Voucher'} â€” ${accountName}`, isPayment ? 0 : amount, isPayment ? amount : 0);
+    headPush(`${r.vch_type || 'Voucher'} — ${accountName}`, isPayment ? 0 : amount, isPayment ? amount : 0);
   });
   source.journals.forEach(r => {
     const code = r.account_code;
@@ -417,7 +417,7 @@ async function openDay() {
   const date = document.getElementById('dayDate')?.value || new Date().toISOString().slice(0,10);
   if (!isSuperUser()) {
     renderDayControlState();
-    toast('Day Open à¦¶à§à¦§à§ Super User à¦•à¦°à¦¤à§‡ à¦ªà¦¾à¦°à¦¬à§‡à¥¤', 'error');
+    toast('Day Open শুধু Super User করতে পারবে।', 'error');
     return;
   }
   const openingBalances = deriveOpeningBalances(date);
@@ -437,7 +437,7 @@ async function openDay() {
     };
   });
   renderDayControlState();
-  toast('Day Open à¦¸à¦®à§à¦ªà¦¨à§à¦¨ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤', 'success');
+  toast('Day Open সম্পন্ন হয়েছে।', 'success');
 }
 
 async function closeDay() {
@@ -462,14 +462,14 @@ async function closeDay() {
     };
   });
   renderDayControlState();
-  toast('Day Close à¦¸à¦®à§à¦ªà¦¨à§à¦¨ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤', 'success');
+  toast('Day Close সম্পন্ন হয়েছে।', 'success');
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // TOAST
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 function toast(msg, type='success') {
-  const icons = {success:'âœ…',error:'âŒ',info:'â„¹ï¸',warning:'âš ï¸'};
+  const icons = {success:'✅',error:'❌',info:'ℹ️',warning:'⚠️'};
   const t = document.createElement('div');
   t.className = `toast t-${type}`;
   const icon = document.createElement('span');
@@ -487,7 +487,7 @@ function normalizeWelcomeName(name = '') {
 }
 
 function getWelcomeText(safeName = '') {
-  return safeName ? `à¦¸à§à¦¬à¦¾à¦—à¦¤à¦®, ${safeName}!` : 'à¦¸à§à¦¬à¦¾à¦—à¦¤à¦®!';
+  return safeName ? `স্বাগতম, ${safeName}!` : 'স্বাগতম!';
 }
 
 function getBadgeInitial(safeName = '') {
@@ -543,9 +543,9 @@ function showWelcomePopover(name = '') {
   }, POPOVER_DISPLAY_MS);
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // LANGUAGE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 function setLang(lang) {
   S.lang = lang;
   document.documentElement.setAttribute('data-lang', lang);
@@ -558,11 +558,11 @@ function setLang(lang) {
   });
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // NAVIGATION
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // MOBILE SIDEBAR TOGGLE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 function openMobSidebar() {
   document.querySelector('.sidebar').classList.add('mob-open');
   document.getElementById('mobOverlay').classList.add('mob-open');
@@ -572,7 +572,7 @@ function closeMobSidebar() {
   document.getElementById('mobOverlay').classList.remove('mob-open');
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 document.querySelectorAll('.nav-item').forEach(el => {
   el.addEventListener('click', () => {
     openModule(el.getAttribute('data-module'));
@@ -600,9 +600,9 @@ function openModule(id) {
   if (id==='users')      loadUsers();
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// LOGIN â€” Supabase Auth
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
+// LOGIN — Supabase Auth
+// ══════════════════════════════════════════
 async function login() {
   const now = Date.now();
   const username = document.getElementById('loginUser').value.trim();
@@ -613,13 +613,13 @@ async function login() {
   // Client-side rate-limit (defence-in-depth)
   if (now < _loginLockUntil) {
     const remaining = Math.ceil((_loginLockUntil - now) / 1000);
-    err.textContent = `à¦…à¦¨à§‡à¦• à¦¬à§‡à¦¶à¦¿ à¦ªà§à¦°à¦šà§‡à¦·à§à¦Ÿà¦¾à¥¤ ${remaining} à¦¸à§‡à¦•à§‡à¦¨à§à¦¡ à¦ªà¦°à§‡ à¦†à¦¬à¦¾à¦° à¦šà§‡à¦·à§à¦Ÿà¦¾ à¦•à¦°à§à¦¨à¥¤`;
+    err.textContent = `অনেক বেশি প্রচেষ্টা। ${remaining} সেকেন্ড পরে আবার চেষ্টা করুন।`;
     err.classList.remove('hidden');
     return;
   }
 
   if (!username || !password) {
-    err.textContent = 'à¦‡à¦‰à¦œà¦¾à¦°à¦¨à§‡à¦® à¦“ à¦ªà¦¾à¦¸à¦“à¦¯à¦¼à¦¾à¦°à§à¦¡ à¦¦à¦¿à¦¨à¥¤';
+    err.textContent = 'ইউজারনেম ও পাসওয়ার্ড দিন।';
     err.classList.remove('hidden');
     return;
   }
@@ -627,7 +627,7 @@ async function login() {
   btn.disabled = true; btn.textContent = '...';
 
   try {
-    // Edge Function à¦¦à¦¿à¦¯à¦¼à§‡ username â†’ email â†’ Supabase Auth
+    // Edge Function দিয়ে username → email → Supabase Auth
     const res = await fetch(`${SUPA_URL}/functions/v1/login-verify`, {
       method: 'POST',
       headers: {
@@ -641,16 +641,16 @@ async function login() {
     const data = await res.json();
 
     btn.disabled = false;
-    btn.innerHTML = '<span data-bn="à¦²à¦—à¦‡à¦¨ à¦•à¦°à§à¦¨" data-en="Sign In">à¦²à¦—à¦‡à¦¨ à¦•à¦°à§à¦¨</span>';
+    btn.innerHTML = '<span data-bn="লগইন করুন" data-en="Sign In">লগইন করুন</span>';
 
     if (!data.ok) {
       _loginAttempts++;
       if (_loginAttempts >= _MAX_ATTEMPTS) {
         _loginLockUntil = Date.now() + _LOCKOUT_MS;
         _loginAttempts = 0;
-        err.textContent = 'à¦…à¦¨à§‡à¦• à¦¬à§‡à¦¶à¦¿ à¦¬à§à¦¯à¦°à§à¦¥ à¦ªà§à¦°à¦šà§‡à¦·à§à¦Ÿà¦¾à¥¤ à§§à§« à¦®à¦¿à¦¨à¦¿à¦Ÿ à¦ªà¦°à§‡ à¦†à¦¬à¦¾à¦° à¦šà§‡à¦·à§à¦Ÿà¦¾ à¦•à¦°à§à¦¨à¥¤';
+        err.textContent = 'অনেক বেশি ব্যর্থ প্রচেষ্টা। ১৫ মিনিট পরে আবার চেষ্টা করুন।';
       } else {
-        err.textContent = data.message || 'à¦‡à¦‰à¦œà¦¾à¦°à¦¨à§‡à¦® à¦¬à¦¾ à¦ªà¦¾à¦¸à¦“à¦¯à¦¼à¦¾à¦°à§à¦¡ à¦­à§à¦²à¥¤';
+        err.textContent = data.message || 'ইউজারনেম বা পাসওয়ার্ড ভুল।';
       }
       err.classList.remove('hidden');
       return;
@@ -659,7 +659,7 @@ async function login() {
     _loginAttempts = 0;
     _loginLockUntil = 0;
 
-    // Supabase client à¦ session set à¦•à¦°à§‹
+    // Supabase client এ session set করো
     if (data.access_token) {
       await sb.auth.setSession({
         access_token:  data.access_token,
@@ -687,8 +687,8 @@ async function login() {
 
   } catch (e) {
     btn.disabled = false;
-    btn.innerHTML = '<span>à¦²à¦—à¦‡à¦¨ à¦•à¦°à§à¦¨</span>';
-    err.textContent = 'à¦¸à¦‚à¦¯à§‹à¦— à¦¬à§à¦¯à¦°à§à¦¥: ' + e.message;
+    btn.innerHTML = '<span>লগইন করুন</span>';
+    err.textContent = 'সংযোগ ব্যর্থ: ' + e.message;
     err.classList.remove('hidden');
   }
 }
@@ -701,16 +701,16 @@ async function logout() {
   document.getElementById('loginModal').classList.remove('hidden');
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // INIT APP
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 async function initApp() {
   const today = new Date().toISOString().slice(0,10);
   ['colDate','vchDate','jDate','dayDate'].forEach(id => {
     const el = document.getElementById(id);
     if (el && !el.value) el.value = today;
   });
-  document.getElementById('jRef').value = makeVoucherRef('à¦œà¦¾à¦°à§à¦¨à¦¾à¦²');
+  document.getElementById('jRef').value = makeVoucherRef('জার্নাল');
   document.getElementById('colRno').value = genRno();
   refreshVoucherRef();
 
@@ -727,9 +727,9 @@ async function initApp() {
   initDashChart();
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // DASHBOARD
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 async function loadDashboard() {
   const [{ count: colCount }, { count: vchCount }, { count: jCount }, colData] = await Promise.all([
     readTenantRows('collections', (from) => from.select('*', { count:'exact', head:true })),
@@ -744,9 +744,9 @@ async function loadDashboard() {
   document.getElementById('statCash').textContent       = fmt(totalCol);
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // COMPANY
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 async function loadCompany() {
   const { data } = await readTenantRows('company_info', (from) => from.select('setting_key,setting_value'));
   if (!data || !data.length) return;
@@ -778,7 +778,7 @@ async function saveCompany() {
     address: document.getElementById('coAddr').value.trim(),
     logo:    S.company.logo || ''
   };
-  if (!c.name) { toast('à¦•à§‹à¦®à§à¦ªà¦¾à¦¨à¦¿à¦° à¦¨à¦¾à¦® à¦¦à¦¿à¦¨à¥¤','warning'); return; }
+  if (!c.name) { toast('কোম্পানির নাম দিন।','warning'); return; }
   Object.assign(S.company, c);
   await getTenantId();
   if (!requireTenantForWrite()) return;
@@ -786,9 +786,9 @@ async function saveCompany() {
   const { error } = await writeWithOptionalTenant('company_info', rows, (finalPayload) =>
     sb.from('company_info').upsert(finalPayload, { onConflict: S.tenantId ? 'tenant_id,setting_key' : 'setting_key' })
   );
-  if (error) { toast('à¦¸à§‡à¦­ à¦¬à§à¦¯à¦°à§à¦¥: '+error.message,'error'); return; }
+  if (error) { toast('সেভ ব্যর্থ: '+error.message,'error'); return; }
   applyCompany();
-  toast('à¦•à§‹à¦®à§à¦ªà¦¾à¦¨à¦¿ à¦¤à¦¥à§à¦¯ à¦¸à§‡à¦­ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤','success');
+  toast('কোম্পানি তথ্য সেভ হয়েছে।','success');
 }
 
 function loadLogo(ev) {
@@ -802,12 +802,12 @@ function loadLogo(ev) {
   r.readAsDataURL(f);
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // COA
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 async function loadCOA() {
   const { data, error } = await readTenantRows('coa', (from) => from.select('*').order('account_code'));
-  if (error) { toast('COA à¦²à§‹à¦¡ à¦¬à§à¦¯à¦°à§à¦¥','error'); return; }
+  if (error) { toast('COA লোড ব্যর্থ','error'); return; }
   S.coa = data || [];
   renderCOA(S.coa);
   populateAccSelects();
@@ -816,7 +816,7 @@ async function loadCOA() {
 
 function renderCOA(rows) {
   const tb = document.getElementById('coaBody');
-  if (!rows.length) { tb.innerHTML='<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">à¦•à§‹à¦¨à§‹ à¦…à§à¦¯à¦¾à¦•à¦¾à¦‰à¦¨à§à¦Ÿ à¦¨à§‡à¦‡</td></tr>'; return; }
+  if (!rows.length) { tb.innerHTML='<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">কোনো অ্যাকাউন্ট নেই</td></tr>'; return; }
   tb.innerHTML = rows.map(r => `
     <tr>
       <td><strong>${esc(r.account_code)}</strong></td>
@@ -828,10 +828,10 @@ function renderCOA(rows) {
 }
 
 function populateAccSelects() {
-  const opts = S.coa.map(a => `<option value="${a.account_code}">${a.account_code} â€” ${a.account_name}</option>`).join('');
+  const opts = S.coa.map(a => `<option value="${a.account_code}">${a.account_code} — ${a.account_name}</option>`).join('');
   const vchAcc = document.getElementById('vchAcc');
   if (vchAcc) vchAcc.innerHTML = opts;
-  document.getElementById('ledAcc').innerHTML = '<option value="">-- à¦¨à¦¿à¦°à§à¦¬à¦¾à¦šà¦¨ à¦•à¦°à§à¦¨ --</option>' + opts;
+  document.getElementById('ledAcc').innerHTML = '<option value="">-- নির্বাচন করুন --</option>' + opts;
 }
 
 function showAccModal() { document.getElementById('accModal').classList.remove('hidden'); }
@@ -843,16 +843,16 @@ async function saveAccount() {
   const grp  = document.getElementById('accGrp').value;
   const typ  = document.getElementById('accTyp').value;
   const op   = Number(document.getElementById('accOp').value) || 0;
-  if (!code || !name) { toast('à¦•à§‹à¦¡ à¦“ à¦¨à¦¾à¦® à¦¦à¦¿à¦¨à¥¤','warning'); return; }
+  if (!code || !name) { toast('কোড ও নাম দিন।','warning'); return; }
   await getTenantId();
   if (!requireTenantForWrite()) return;
   const payload = tenantInsertPayload({ account_code:code, account_name:name, account_group:grp, account_type:typ, opening_balance:op });
   const { error } = await writeWithOptionalTenant('coa', payload, (finalPayload) =>
     sb.from('coa').upsert(finalPayload, { onConflict: S.tenantId ? 'tenant_id,account_code' : 'account_code' })
   );
-  if (error) { toast('à¦¸à§‡à¦­ à¦¬à§à¦¯à¦°à§à¦¥: '+error.message,'error'); return; }
+  if (error) { toast('সেভ ব্যর্থ: '+error.message,'error'); return; }
   closeModal('accModal');
-  toast('à¦…à§à¦¯à¦¾à¦•à¦¾à¦‰à¦¨à§à¦Ÿ à¦¸à§‡à¦­ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤','success');
+  toast('অ্যাকাউন্ট সেভ হয়েছে।','success');
   await loadCOA();
 }
 
@@ -1008,7 +1008,7 @@ async function readTenantRows(table, buildQuery) {
   if (S.tenantSlug && !tenantId) {
     if (!S.tenantWarningShown) {
       S.tenantWarningShown = true;
-      toast(S.tenantResolveError || 'Tenant context resolve à¦¹à§Ÿà¦¨à¦¿à¥¤', 'error');
+      toast(S.tenantResolveError || 'Tenant context resolve হয়নি।', 'error');
     }
     return { data: [], count: 0, error: { message: S.tenantResolveError || 'Tenant context missing' } };
   }
@@ -1024,15 +1024,15 @@ function tenantInsertPayload(payload) {
 
 function requireTenantForWrite() {
   if (S.tenantSlug && !S.tenantId) {
-    toast(S.tenantResolveError || 'Tenant resolve à¦¹à§Ÿà¦¨à¦¿, à¦¤à¦¾à¦‡ save à¦•à¦°à¦¾ à¦¯à¦¾à¦¬à§‡ à¦¨à¦¾à¥¤', 'error');
+    toast(S.tenantResolveError || 'Tenant resolve হয়নি, তাই save করা যাবে না।', 'error');
     return false;
   }
   return true;
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // COLLECTION
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 function genRno() {
   const yr = String(new Date().getFullYear()).slice(-2);
   return 'MR-' + yr + '-' + String(Math.floor(1000+Math.random()*9000));
@@ -1048,7 +1048,7 @@ async function saveCollection() {
   const rno  = document.getElementById('colRno').value || genRno();
   const tenantId = await getTenantId();
   if (!requireTenantForWrite()) return;
-  if (!name || !amt) { toast('à¦¨à¦¾à¦® à¦“ à¦ªà¦°à¦¿à¦®à¦¾à¦£ à¦¦à¦¿à¦¨à¥¤','warning'); return; }
+  if (!name || !amt) { toast('নাম ও পরিমাণ দিন।','warning'); return; }
   const payload = {
     receipt_no: rno, collection_date: date, payer_name: name, amount: amt, description: desc
   };
@@ -1057,11 +1057,11 @@ async function saveCollection() {
   const { error } = await writeWithOptionalTenant('collections', payload, (finalPayload) =>
     sb.from('collections').insert(finalPayload)
   );
-  if (error) { toast('à¦¸à§‡à¦­ à¦¬à§à¦¯à¦°à§à¦¥: '+error.message,'error'); return; }
+  if (error) { toast('সেভ ব্যর্থ: '+error.message,'error'); return; }
 
   persistReceiptMeta(rno, { rno, date, name, amount: amt, desc, head, mode, savedBy:getCurrentUserName(), savedAt:new Date().toISOString() });
   S.lastReceipt = { rno, date, name, amount: amt, desc, head, mode };
-  toast('à¦•à¦¾à¦²à§‡à¦•à¦¶à¦¨ à¦¸à§‡à¦­ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤','success');
+  toast('কালেকশন সেভ হয়েছে।','success');
   document.getElementById('colName').value=''; document.getElementById('colAmt').value=''; document.getElementById('colDesc').value='';
   document.getElementById('colRno').value = genRno();
   genReceiptPreview();
@@ -1071,12 +1071,12 @@ async function saveCollection() {
 
 async function loadCollections() {
   const tb = document.getElementById('colList');
-  tb.innerHTML = '<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">à¦²à§‹à¦¡ à¦¹à¦šà§à¦›à§‡...</td></tr>';
+  tb.innerHTML = '<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
   const { data, error } = await readTenantRows('collections', (from) => from.select('*').order('created_at', { ascending:false }).limit(20));
-  if (error || !data.length) { tb.innerHTML='<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">à¦•à§‹à¦¨à§‹ à¦•à¦¾à¦²à§‡à¦•à¦¶à¦¨ à¦¨à§‡à¦‡</td></tr>'; return; }
+  if (error || !data.length) { tb.innerHTML='<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">কোনো কালেকশন নেই</td></tr>'; return; }
   tb.innerHTML = data.map(r => `
     <tr>
-      <td><span class="badge bg-gold">${esc(r.receipt_no||'â€”')}</span></td>
+      <td><span class="badge bg-gold">${esc(r.receipt_no||'—')}</span></td>
       <td>${esc(r.collection_date||'')}</td>
       <td>${esc(r.payer_name||'')}</td>
       <td class="td-g"><strong>${fmt(r.amount)}</strong></td>
@@ -1084,9 +1084,9 @@ async function loadCollections() {
     </tr>`).join('');
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // VOUCHER
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 async function saveVoucher() {
   const type = document.getElementById('vchType').value;
   const ref  = document.getElementById('vchNo').value || makeVoucherRef(type);
@@ -1096,24 +1096,24 @@ async function saveVoucher() {
   const desc = document.getElementById('vchDesc').value.trim();
   const tenantId = await getTenantId();
   if (!requireTenantForWrite()) return;
-  if (!amt) { toast('à¦ªà¦°à¦¿à¦®à¦¾à¦£ à¦¦à¦¿à¦¨à¥¤','warning'); return; }
+  if (!amt) { toast('পরিমাণ দিন।','warning'); return; }
   const payload = { vch_type:type, vch_date:date, account_code:acc, amount:amt, description:desc };
   if (tenantId) payload.tenant_id = tenantId;
   const { data, error } = await writeWithOptionalTenant('vouchers', payload, (finalPayload) =>
     sb.from('vouchers').insert(finalPayload).select().single()
   );
-  if (error) { toast('à¦¸à§‡à¦­ à¦¬à§à¦¯à¦°à§à¦¥: '+error.message,'error'); return; }
+  if (error) { toast('সেভ ব্যর্থ: '+error.message,'error'); return; }
   if (data?.id) persistReceiptMeta(`voucher-${data.id}`, { voucher_no: ref, voucher_type: type });
-  toast('à¦­à¦¾à¦‰à¦šà¦¾à¦° à¦¸à§‡à¦­ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤','success');
+  toast('ভাউচার সেভ হয়েছে।','success');
   document.getElementById('vchAmt').value=''; document.getElementById('vchDesc').value=''; refreshVoucherRef();
   loadVoucherSummary();
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// JOURNAL â€” Double Entry
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
+// JOURNAL — Double Entry
+// ══════════════════════════════════════════
 function buildAccOpts() {
-  return S.coa.map(a => `<option value="${a.account_code}">${a.account_code} â€” ${a.account_name}</option>`).join('');
+  return S.coa.map(a => `<option value="${a.account_code}">${a.account_code} — ${a.account_name}</option>`).join('');
 }
 
 function addJLine() {
@@ -1126,7 +1126,7 @@ function addJLine() {
     <div class="ecell"><input class="form-control" style="border:none;background:transparent" placeholder="Narration"></div>
     <div class="ecell"><input type="number" class="jDr form-control" style="border:none;background:transparent;color:var(--em)" placeholder="0.00" min="0" oninput="updateJTotals()"></div>
     <div class="ecell"><input type="number" class="jCr form-control" style="border:none;background:transparent;color:var(--danger)" placeholder="0.00" min="0" oninput="updateJTotals()"></div>
-    <div class="ecell" style="text-align:center"><button class="btn-rm" onclick="rmJLine(${i})">Ã—</button></div>`;
+    <div class="ecell" style="text-align:center"><button class="btn-rm" onclick="rmJLine(${i})">×</button></div>`;
   document.getElementById('jLines').appendChild(d);
   updateJTotals();
 }
@@ -1141,21 +1141,21 @@ function updateJTotals() {
   document.getElementById('jTCr').textContent = cr.toFixed(2);
   const ok = Math.abs(dr-cr) < 0.01;
   document.getElementById('jBalBadge').className = `badge ${ok?'bg-green':'bg-danger'}`;
-  document.getElementById('jBalBadge').textContent = ok ? 'âœ“ Balanced' : 'âœ— Unbalanced';
+  document.getElementById('jBalBadge').textContent = ok ? '✓ Balanced' : '✗ Unbalanced';
   document.getElementById('jBalMsg').className = `alert ${ok?'alert-success':'alert-danger'}`;
-  document.getElementById('jBalMsg').textContent = ok ? 'âœ“ à¦¬à§à¦¯à¦¾à¦²à§‡à¦¨à§à¦¸à¦¡' : 'âœ— à¦†à¦¨à¦¬à§à¦¯à¦¾à¦²à§‡à¦¨à§à¦¸à¦¡';
+  document.getElementById('jBalMsg').textContent = ok ? '✓ ব্যালেন্সড' : '✗ আনব্যালেন্সড';
 }
 
 function resetJournalForm() {
   document.getElementById('jNar').value = '';
-  document.getElementById('jRef').value = makeVoucherRef('à¦œà¦¾à¦°à§à¦¨à¦¾à¦²');
+  document.getElementById('jRef').value = makeVoucherRef('জার্নাল');
   document.querySelectorAll('#jLines .entry-line:not(.entry-line-hdr)').forEach(el => el.remove());
   S.jlc = 0;
   S.editJournalId = null;
   addJLine(); addJLine();
   updateJTotals();
   const btn = document.getElementById('saveJournalBtn');
-  if (btn) btn.textContent = 'à¦œà¦¾à¦°à§à¦¨à¦¾à¦² à¦­à¦¾à¦‰à¦šà¦¾à¦° à¦¸à§‡à¦­';
+  if (btn) btn.textContent = 'জার্নাল ভাউচার সেভ';
 }
 
 async function saveJournal() {
@@ -1164,7 +1164,7 @@ async function saveJournal() {
   document.querySelectorAll('.jCr').forEach(x => cr+=Number(x.value||0));
   const tenantId = await getTenantId();
   if (!requireTenantForWrite()) return;
-  if (Math.abs(dr-cr) > 0.01) { toast('à¦¡à§‡à¦¬à¦¿à¦Ÿ â‰  à¦•à§à¦°à§‡à¦¡à¦¿à¦Ÿ!','error'); return; }
+  if (Math.abs(dr-cr) > 0.01) { toast('ডেবিট ≠ ক্রেডিট!','error'); return; }
 
   const lines = [];
   document.querySelectorAll('#jLines .entry-line:not(.entry-line-hdr)').forEach(row => {
@@ -1174,7 +1174,7 @@ async function saveJournal() {
     if (accCode && (debit||credit)) lines.push({ account_code:accCode, debit, credit });
   });
 
-  const ref = document.getElementById('jRef').value || makeVoucherRef('à¦œà¦¾à¦°à§à¦¨à¦¾à¦²');
+  const ref = document.getElementById('jRef').value || makeVoucherRef('জার্নাল');
   const payload = {
     journal_date: document.getElementById('jDate').value,
     ref_no: ref,
@@ -1184,7 +1184,7 @@ async function saveJournal() {
   if (tenantId) payload.tenant_id = tenantId;
   let jData, jErr;
   if (S.editJournalId) {
-    if (!canEditVoucher()) { toast('Edit à¦•à¦°à¦¾à¦° à¦…à¦¨à§à¦®à¦¤à¦¿ à¦¨à§‡à¦‡à¥¤', 'error'); return; }
+    if (!canEditVoucher()) { toast('Edit করার অনুমতি নেই।', 'error'); return; }
     ({ data: jData, error: jErr } = await writeWithOptionalTenant('journals', payload, (finalPayload) =>
       sb.from('journals').update(finalPayload).eq('id', S.editJournalId).select().single()
     ));
@@ -1194,11 +1194,11 @@ async function saveJournal() {
     ));
   }
 
-  if (jErr) { toast('à¦œà¦¾à¦°à§à¦¨à¦¾à¦² à¦¸à§‡à¦­ à¦¬à§à¦¯à¦°à§à¦¥: '+jErr.message,'error'); return; }
+  if (jErr) { toast('জার্নাল সেভ ব্যর্থ: '+jErr.message,'error'); return; }
 
   if (S.editJournalId) {
     const { error: dErr } = await sb.from('journal_items').delete().eq('journal_id', S.editJournalId);
-    if (dErr) { toast('à¦ªà§à¦°à¦¨à§‹ à¦œà¦¾à¦°à§à¦¨à¦¾à¦² à¦†à¦‡à¦Ÿà§‡à¦® à¦®à§à¦›à¦¤à§‡ à¦¬à§à¦¯à¦°à§à¦¥: '+dErr.message,'error'); return; }
+    if (dErr) { toast('পুরনো জার্নাল আইটেম মুছতে ব্যর্থ: '+dErr.message,'error'); return; }
   }
   const items = lines.map(l => {
     const item = { journal_id: jData.id, account_code: l.account_code, debit: l.debit, credit: l.credit };
@@ -1208,9 +1208,9 @@ async function saveJournal() {
   const { error: iErr } = await writeWithOptionalTenant('journal_items', items, (finalPayload) =>
     sb.from('journal_items').insert(finalPayload)
   );
-  if (iErr) { toast('à¦œà¦¾à¦°à§à¦¨à¦¾à¦² à¦†à¦‡à¦Ÿà§‡à¦® à¦¸à§‡à¦­ à¦¬à§à¦¯à¦°à§à¦¥: '+iErr.message,'error'); return; }
+  if (iErr) { toast('জার্নাল আইটেম সেভ ব্যর্থ: '+iErr.message,'error'); return; }
 
-  toast(S.editJournalId ? 'à¦œà¦¾à¦°à§à¦¨à¦¾à¦² à¦†à¦ªà¦¡à§‡à¦Ÿ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤' : 'à¦œà¦¾à¦°à§à¦¨à¦¾à¦² à¦¸à§‡à¦­ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤','success');
+  toast(S.editJournalId ? 'জার্নাল আপডেট হয়েছে।' : 'জার্নাল সেভ হয়েছে।','success');
   resetJournalForm();
   await loadVoucherSummary();
   await loadDashboard();
@@ -1219,7 +1219,7 @@ async function saveJournal() {
 async function loadVoucherSummary() {
   const journalBody = document.getElementById('journalSummaryBody');
   if (!journalBody) return;
-  journalBody.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">à¦²à§‹à¦¡ à¦¹à¦šà§à¦›à§‡...</td></tr>';
+  journalBody.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
   const jRes = await readTenantRows('journals', (from) => from.select('id,journal_date,ref_no,narration,total_debit,total_credit').order('journal_date', { ascending:false }).limit(50));
   const reconciledSet = getReconciledJournals();
   const showReconciledOnly = document.getElementById('showReconciledOnly')?.checked;
@@ -1228,7 +1228,7 @@ async function loadVoucherSummary() {
   journalBody.innerHTML = journals.map(j => {
     const isReconciled = reconciledSet.has(String(j.id));
     return `<tr>
-      <td><span class="badge bg-navy">${esc(j.ref_no || 'JV')}</span>${isReconciled ? ' <span class="badge bg-green" style="font-size:9px">âœ“ Reconciled</span>' : ''}</td>
+      <td><span class="badge bg-navy">${esc(j.ref_no || 'JV')}</span>${isReconciled ? ' <span class="badge bg-green" style="font-size:9px">✓ Reconciled</span>' : ''}</td>
       <td>${esc(j.journal_date || '')}</td>
       <td>${esc(j.narration || '')}</td>
       <td class="td-g">${fmt(j.total_debit || 0)}</td>
@@ -1237,21 +1237,21 @@ async function loadVoucherSummary() {
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick="editJournal(${j.id})">Edit</button>
           <button class="btn btn-primary btn-sm" onclick="printJournalVoucher(${j.id})">Print</button>
-          <button class="btn btn-sm" style="background:${isReconciled?'var(--em-lt)':'var(--info-lt)'};border:1px solid ${isReconciled?'var(--em)':'var(--info)'};color:${isReconciled?'var(--em)':'var(--info)'}" onclick="toggleReconcile(${j.id})">${isReconciled ? 'âœ“ Reconciled' : 'â‡Œ Reconcile'}</button>
+          <button class="btn btn-sm" style="background:${isReconciled?'var(--em-lt)':'var(--info-lt)'};border:1px solid ${isReconciled?'var(--em)':'var(--info)'};color:${isReconciled?'var(--em)':'var(--info)'}" onclick="toggleReconcile(${j.id})">${isReconciled ? '✓ Reconciled' : '⇌ Reconcile'}</button>
           <button class="btn btn-danger-lt btn-sm" onclick="deleteJournal(${j.id})">Delete</button>
         </div>
       </td>
     </tr>`;
-  }).join('') || '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">à¦•à§‹à¦¨à§‹ à¦œà¦¾à¦°à§à¦¨à¦¾à¦² à¦­à¦¾à¦‰à¦šà¦¾à¦° à¦¨à§‡à¦‡</td></tr>';
+  }).join('') || '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">কোনো জার্নাল ভাউচার নেই</td></tr>';
 }
 
 async function editJournal(id) {
-  if (!canEditVoucher()) { toast('Admin/Superuser edit à¦•à¦°à¦¤à§‡ à¦ªà¦¾à¦°à¦¬à§‡à¥¤', 'error'); return; }
+  if (!canEditVoucher()) { toast('Admin/Superuser edit করতে পারবে।', 'error'); return; }
   const { data: journalRows, error } = await readTenantRows('journals', (from) => from.select('*').eq('id', id).limit(1));
   const journal = journalRows?.[0];
-  if (error || !journal) { toast('à¦œà¦¾à¦°à§à¦¨à¦¾à¦² à¦²à§‹à¦¡ à¦¬à§à¦¯à¦°à§à¦¥à¥¤', 'error'); return; }
+  if (error || !journal) { toast('জার্নাল লোড ব্যর্থ।', 'error'); return; }
   const { data: items, error: iErr } = await readTenantRows('journal_items', (from) => from.select('*').eq('journal_id', id));
-  if (iErr) { toast('à¦œà¦¾à¦°à§à¦¨à¦¾à¦² à¦†à¦‡à¦Ÿà§‡à¦® à¦²à§‹à¦¡ à¦¬à§à¦¯à¦°à§à¦¥à¥¤', 'error'); return; }
+  if (iErr) { toast('জার্নাল আইটেম লোড ব্যর্থ।', 'error'); return; }
   S.editJournalId = id;
   document.getElementById('jDate').value = journal.journal_date || '';
   document.getElementById('jRef').value = journal.ref_no || '';
@@ -1268,25 +1268,25 @@ async function editJournal(id) {
   if (!(items || []).length) { addJLine(); addJLine(); }
   updateJTotals();
   const btn = document.getElementById('saveJournalBtn');
-  if (btn) btn.textContent = 'à¦œà¦¾à¦°à§à¦¨à¦¾à¦² à¦†à¦ªà¦¡à§‡à¦Ÿ à¦•à¦°à§à¦¨';
+  if (btn) btn.textContent = 'জার্নাল আপডেট করুন';
   document.getElementById('jDate')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 async function deleteJournal(id) {
-  if (!isSuperUser()) { toast('à¦¶à§à¦§à§ Super User delete à¦•à¦°à¦¤à§‡ à¦ªà¦¾à¦°à¦¬à§‡à¥¤', 'error'); return; }
-  if (!window.confirm('à¦à¦‡ à¦œà¦¾à¦°à§à¦¨à¦¾à¦² à¦­à¦¾à¦‰à¦šà¦¾à¦° à¦®à§à¦›à§‡ à¦«à§‡à¦²à¦¤à§‡ à¦šà¦¾à¦¨?')) return;
+  if (!isSuperUser()) { toast('শুধু Super User delete করতে পারবে।', 'error'); return; }
+  if (!window.confirm('এই জার্নাল ভাউচার মুছে ফেলতে চান?')) return;
   const { error: iErr } = await sb.from('journal_items').delete().eq('journal_id', id);
-  if (iErr) { toast('à¦œà¦¾à¦°à§à¦¨à¦¾à¦² à¦†à¦‡à¦Ÿà§‡à¦® à¦¡à¦¿à¦²à¦¿à¦Ÿ à¦¬à§à¦¯à¦°à§à¦¥: '+iErr.message, 'error'); return; }
+  if (iErr) { toast('জার্নাল আইটেম ডিলিট ব্যর্থ: '+iErr.message, 'error'); return; }
   const { error } = await sb.from('journals').delete().eq('id', id);
-  if (error) { toast('à¦œà¦¾à¦°à§à¦¨à¦¾à¦² à¦¡à¦¿à¦²à¦¿à¦Ÿ à¦¬à§à¦¯à¦°à§à¦¥: '+error.message, 'error'); return; }
-  toast('à¦œà¦¾à¦°à§à¦¨à¦¾à¦² à¦­à¦¾à¦‰à¦šà¦¾à¦° à¦¡à¦¿à¦²à¦¿à¦Ÿ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤', 'success');
+  if (error) { toast('জার্নাল ডিলিট ব্যর্থ: '+error.message, 'error'); return; }
+  toast('জার্নাল ভাউচার ডিলিট হয়েছে।', 'success');
   await loadVoucherSummary();
   await loadDashboard();
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // RECONCILIATION
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 function getReconciledJournals() {
   try { return new Set(JSON.parse(localStorage.getItem('aura_reconciled') || '[]').map(String)); } catch(e) { console.error('Reconciled journals parse error:', e); return new Set(); }
 }
@@ -1296,8 +1296,8 @@ function saveReconciledJournals(set) {
 function toggleReconcile(id) {
   const set = getReconciledJournals();
   const key = String(id);
-  if (set.has(key)) { set.delete(key); toast('Reconcile à¦šà¦¿à¦¹à§à¦¨ à¦¸à¦°à¦¾à¦¨à§‹ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤', 'info'); }
-  else { set.add(key); toast('âœ“ Reconciled à¦¹à¦¿à¦¸à§‡à¦¬à§‡ à¦šà¦¿à¦¹à§à¦¨à¦¿à¦¤ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤', 'success'); }
+  if (set.has(key)) { set.delete(key); toast('Reconcile চিহ্ন সরানো হয়েছে।', 'info'); }
+  else { set.add(key); toast('✓ Reconciled হিসেবে চিহ্নিত হয়েছে।', 'success'); }
   saveReconciledJournals(set);
   loadVoucherSummary();
 }
@@ -1305,7 +1305,7 @@ function toggleReconcile(id) {
 async function printJournalVoucher(id) {
   const { data: journalRows, error } = await readTenantRows('journals', (from) => from.select('*').eq('id', id).limit(1));
   const journal = journalRows?.[0];
-  if (error || !journal) { toast('à¦ªà§à¦°à¦¿à¦¨à§à¦Ÿ à¦¡à§‡à¦Ÿà¦¾ à¦ªà¦¾à¦“à¦¯à¦¼à¦¾ à¦¯à¦¾à¦¯à¦¼à¦¨à¦¿à¥¤', 'error'); return; }
+  if (error || !journal) { toast('প্রিন্ট ডেটা পাওয়া যায়নি।', 'error'); return; }
   const { data: items } = await readTenantRows('journal_items', (from) => from.select('account_code,debit,credit').eq('journal_id', id));
   const coaMap = getCoaMap();
   const co = S.company || {};
@@ -1326,7 +1326,7 @@ async function printJournalVoucher(id) {
   const safeBin = esc(bin);
   const safePreparedBy = esc(preparedBy);
   const safeJournalRef = esc(journal.ref_no || 'Journal Voucher');
-  const safeJournalDate = esc(journal.journal_date || 'â€”');
+  const safeJournalDate = esc(journal.journal_date || '—');
   const safeNarration = esc(journal.narration || '');
   const safeInWords = esc(inWords);
   const safeLogoSrc = /^(https?:|data:image\/)/i.test(coLogo) ? coLogo : '';
@@ -1361,7 +1361,7 @@ async function printJournalVoucher(id) {
     <div>
       <div style="font-size:20px;font-weight:900;color:#080F1E">${safeCoName}</div>
       ${coSub ? `<div style="font-size:12px;color:#647188">${safeCoSub}</div>` : ''}
-      <div style="font-size:11.5px;color:#647188">${safeCoAddr}${coAddr && coPhone ? ' Â· ' : ''}${safeCoPhone}</div>
+      <div style="font-size:11.5px;color:#647188">${safeCoAddr}${coAddr && coPhone ? ' · ' : ''}${safeCoPhone}</div>
       ${bin ? `<div style="font-size:11px;color:#647188">BIN: ${safeBin}</div>` : ''}
     </div>
   </div>
@@ -1369,7 +1369,7 @@ async function printJournalVoucher(id) {
   <!-- Title -->
   <div style="text-align:center;margin:14px 0">
     <span style="border:1.5px solid #1A7A4A;border-radius:6px;padding:6px 28px;font-size:14px;font-weight:700;color:#0B1629;letter-spacing:.05em">
-      JOURNAL VOUCHER / à¦œà¦¾à¦°à§à¦¨à¦¾à¦² à¦­à¦¾à¦‰à¦šà¦¾à¦°
+      JOURNAL VOUCHER / জার্নাল ভাউচার
     </span>
   </div>
 
@@ -1391,16 +1391,16 @@ async function printJournalVoucher(id) {
       <tr style="background:#1A7A4A;color:#fff">
         <th style="padding:8px 10px;font-size:12px;text-align:left;border:1px solid #1A7A4A">A/C Code</th>
         <th style="padding:8px 10px;font-size:12px;text-align:left;border:1px solid #1A7A4A">Account Head &amp; Particulars</th>
-        <th style="padding:8px 10px;font-size:12px;text-align:right;border:1px solid #1A7A4A">Debit (à§³)</th>
-        <th style="padding:8px 10px;font-size:12px;text-align:right;border:1px solid #1A7A4A">Credit (à§³)</th>
+        <th style="padding:8px 10px;font-size:12px;text-align:right;border:1px solid #1A7A4A">Debit (৳)</th>
+        <th style="padding:8px 10px;font-size:12px;text-align:right;border:1px solid #1A7A4A">Credit (৳)</th>
       </tr>
     </thead>
     <tbody>${rowsHtml}</tbody>
     <tfoot>
       <tr style="font-weight:700;background:#F6F4EF">
         <td colspan="2" style="padding:8px 10px;border:1px solid #D0D8E8;font-size:12px">TOTAL</td>
-        <td style="padding:8px 10px;border:1px solid #D0D8E8;font-size:12px;text-align:right">à§³ ${totalDr.toFixed(2)}</td>
-        <td style="padding:8px 10px;border:1px solid #D0D8E8;font-size:12px;text-align:right">à§³ ${totalCr.toFixed(2)}</td>
+        <td style="padding:8px 10px;border:1px solid #D0D8E8;font-size:12px;text-align:right">৳ ${totalDr.toFixed(2)}</td>
+        <td style="padding:8px 10px;border:1px solid #D0D8E8;font-size:12px;text-align:right">৳ ${totalCr.toFixed(2)}</td>
       </tr>
     </tfoot>
   </table>
@@ -1418,26 +1418,26 @@ async function printJournalVoucher(id) {
 
   <!-- Footer -->
   <div style="margin-top:24px;text-align:center;font-size:10.5px;color:#647188;border-top:1px solid #E2E8F4;padding-top:8px">
-    Prepared under the double-entry system in accordance with IFRS. System-generated voucher â€” ${safeCoName}.
+    Prepared under the double-entry system in accordance with IFRS. System-generated voucher — ${safeCoName}.
   </div>
 </body></html>`;
 
   const blob = new Blob([html], { type: 'text/html' });
   const url = URL.createObjectURL(blob);
   const win = window.open(url, '_blank');
-  if (!win) { URL.revokeObjectURL(url); toast('à¦ªà¦ª-à¦†à¦ª à¦¬à§à¦²à¦• à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤', 'error'); return; }
+  if (!win) { URL.revokeObjectURL(url); toast('পপ-আপ ব্লক হয়েছে।', 'error'); return; }
   win.addEventListener('load', () => {
     win.print();
     setTimeout(() => URL.revokeObjectURL(url), 60000);
   }, { once: true });
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // DAYBOOK
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 async function loadDaybook() {
   const tb = document.getElementById('dbBody');
-  tb.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">à¦²à§‹à¦¡ à¦¹à¦šà§à¦›à§‡...</td></tr>';
+  tb.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
 
   const [colRes, vchRes, jRes] = await Promise.all([
     readTenantRows('collections', (from) => from.select('collection_date,description,amount,receipt_no').order('collection_date')),
@@ -1448,40 +1448,40 @@ async function loadDaybook() {
   const rows = [];
   (colRes.data||[]).forEach(r => rows.push({ date:r.collection_date, desc:'Collection: '+(r.description||''), dr:r.amount, cr:0, acc:'Cash in Hand', ref:r.receipt_no }));
   (vchRes.data||[]).forEach(r => {
-    const isPayment = String(r.vch_type||'').toLowerCase().includes('à¦ªà§‡à¦®à§‡à¦¨à§à¦Ÿ');
+    const isPayment = String(r.vch_type||'').toLowerCase().includes('পেমেন্ট');
     rows.push({ date:r.vch_date, desc:r.description||r.vch_type, dr:isPayment?0:r.amount, cr:isPayment?r.amount:0, acc:r.account_code, ref:'' });
   });
   (jRes.data||[]).forEach(r => rows.push({ date:r.journal_date, desc:r.narration||'Journal', dr:r.total_debit, cr:r.total_credit, acc:'Journal', ref:r.ref_no }));
 
   rows.sort((a,b) => new Date(b.date)-new Date(a.date));
 
-  if (!rows.length) { tb.innerHTML='<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">à¦•à§‹à¦¨à§‹ à¦à¦¨à§à¦Ÿà§à¦°à¦¿ à¦¨à§‡à¦‡</td></tr>'; return; }
+  if (!rows.length) { tb.innerHTML='<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">কোনো এন্ট্রি নেই</td></tr>'; return; }
   tb.innerHTML = rows.map(r => `
     <tr>
       <td>${esc(r.date||'')}</td>
       <td>${esc(r.desc||'')}</td>
-      <td class="${r.dr?'td-g':'td-m'}">${r.dr?fmt(r.dr):'â€”'}</td>
-      <td class="${r.cr?'td-r':'td-m'}">${r.cr?fmt(r.cr):'â€”'}</td>
+      <td class="${r.dr?'td-g':'td-m'}">${r.dr?fmt(r.dr):'—'}</td>
+      <td class="${r.cr?'td-r':'td-m'}">${r.cr?fmt(r.cr):'—'}</td>
       <td class="td-m">${esc(r.acc||'')}</td>
       <td class="td-m">${esc(r.ref||'')}</td>
     </tr>`).join('');
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // LEDGER
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 async function loadLedger() {
   const accCode = document.getElementById('ledAcc').value;
   if (!accCode) return;
   const tb = document.getElementById('ledBody');
-  tb.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">à¦²à§‹à¦¡ à¦¹à¦šà§à¦›à§‡...</td></tr>';
+  tb.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
 
   const { data, error } = await readJournalItemsWithContext((from) => from
     .select('journal_id,debit,credit,account_code')
     .eq('account_code', accCode)
     .order('journal_id'));
 
-  if (error || !data.length) { tb.innerHTML='<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">à¦•à§‹à¦¨à§‹ à¦à¦¨à§à¦Ÿà§à¦°à¦¿ à¦¨à§‡à¦‡</td></tr>'; return; }
+  if (error || !data.length) { tb.innerHTML='<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">কোনো এন্ট্রি নেই</td></tr>'; return; }
 
   let tDr=0, tCr=0, bal=0;
   tb.innerHTML = data.map(r => {
@@ -1492,8 +1492,8 @@ async function loadLedger() {
       <td>${esc(j.journal_date||'')}</td>
       <td>${esc(j.narration||'')}</td>
       <td class="td-m">${esc(j.ref_no||'')}</td>
-      <td class="${dr?'td-g':'td-m'}">${dr?fmt(dr):'â€”'}</td>
-      <td class="${cr?'td-r':'td-m'}">${cr?fmt(cr):'â€”'}</td>
+      <td class="${dr?'td-g':'td-m'}">${dr?fmt(dr):'—'}</td>
+      <td class="${cr?'td-r':'td-m'}">${cr?fmt(cr):'—'}</td>
       <td style="font-weight:600">${fmt(bal)}</td>
     </tr>`;
   }).join('');
@@ -1503,17 +1503,17 @@ async function loadLedger() {
   document.getElementById('ledBal').textContent = fmt(tDr-tCr);
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // TRIAL BALANCE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 async function loadTrialBalance() {
   const tb = document.getElementById('tbBody');
-  tb.innerHTML = '<tr><td colspan="4" class="td-m" style="text-align:center;padding:20px">à¦²à§‹à¦¡ à¦¹à¦šà§à¦›à§‡...</td></tr>';
+  tb.innerHTML = '<tr><td colspan="4" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
 
   const { data, error } = await readJournalItemsWithContext((from) => from
     .select('journal_id,account_code,debit,credit'));
 
-  if (error) { tb.innerHTML='<tr><td colspan="4" class="td-m" style="text-align:center">à¦à¦°à¦°: '+error.message+'</td></tr>'; return; }
+  if (error) { tb.innerHTML='<tr><td colspan="4" class="td-m" style="text-align:center">এরর: '+error.message+'</td></tr>'; return; }
 
   const accs = {};
   (data||[]).forEach(r => {
@@ -1531,27 +1531,27 @@ async function loadTrialBalance() {
     return `<tr>
       <td>${esc(a.name)}</td>
       <td class="td-m">${esc(a.group)}</td>
-      <td class="${dr?'td-g':'td-m'}">${dr?fmt(dr):'â€”'}</td>
-      <td class="${cr?'td-r':'td-m'}">${cr?fmt(cr):'â€”'}</td>
+      <td class="${dr?'td-g':'td-m'}">${dr?fmt(dr):'—'}</td>
+      <td class="${cr?'td-r':'td-m'}">${cr?fmt(cr):'—'}</td>
     </tr>`;
   });
 
-  if (!rows.length) { tb.innerHTML='<tr><td colspan="4" class="td-m" style="text-align:center;padding:20px">à¦•à§‹à¦¨à§‹ à¦à¦¨à§à¦Ÿà§à¦°à¦¿ à¦¨à§‡à¦‡</td></tr>'; return; }
+  if (!rows.length) { tb.innerHTML='<tr><td colspan="4" class="td-m" style="text-align:center;padding:20px">কোনো এন্ট্রি নেই</td></tr>'; return; }
 
   const balanced = Math.abs(tDr-tCr) < 1;
   tb.innerHTML = rows.join('') + `<tr style="background:var(--navy2)">
-    <td style="color:#fff;font-weight:700;padding:10px 16px">à¦®à§‹à¦Ÿ</td>
+    <td style="color:#fff;font-weight:700;padding:10px 16px">মোট</td>
     <td></td>
     <td style="color:var(--gold-lt);font-weight:700;padding:10px 16px">${fmt(tDr)}</td>
     <td style="color:var(--gold-lt);font-weight:700;padding:10px 16px">${fmt(tCr)}</td>
   </tr>`;
   document.getElementById('tbBadge').className = `badge ${balanced?'bg-green':'bg-danger'}`;
-  document.getElementById('tbBadge').textContent = balanced?'âœ“ Balanced':'âœ— Unbalanced';
+  document.getElementById('tbBadge').textContent = balanced?'✓ Balanced':'✗ Unbalanced';
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // BALANCE SHEET
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 async function loadBalanceSheet() {
   const { data } = await readJournalItemsWithContext((from) => from.select('journal_id,account_code,debit,credit'));
   const accs = {};
@@ -1569,24 +1569,24 @@ async function loadBalanceSheet() {
   document.getElementById('bsF').textContent = fmt(assets - liab);
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // REPORTS (basic)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // REPORTS ENGINE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 var currentReportName  = '';
 var currentReportTitle = '';
 
 const RPT_TITLES = {
-  collection:'à¦®à¦¾à¦¸à¦¿à¦• à¦•à¦¾à¦²à§‡à¦•à¦¶à¦¨ à¦°à¦¿à¦ªà§‹à¦°à§à¦Ÿ',
-  daybook:'à¦¡à§‡ à¦¬à§à¦• (General Ledger)',
-  trial:'à¦Ÿà§à¦°à¦¾à¦¯à¦¼à¦¾à¦² à¦¬à§à¦¯à¦¾à¦²à§‡à¦¨à§à¦¸',
+  collection:'মাসিক কালেকশন রিপোর্ট',
+  daybook:'ডে বুক (General Ledger)',
+  trial:'ট্রায়াল ব্যালেন্স',
   pl:'Income & Expenditure Statement',
   bs:'Statement of Financial Position',
-  cashbank:'à¦•à§à¦¯à¦¾à¦¶ à¦“ à¦¬à§à¦¯à¦¾à¦‚à¦• à¦¬à§à¦•',
+  cashbank:'ক্যাশ ও ব্যাংক বুক',
   receiptpayment:'Receipt & Payment Statement',
 };
 
@@ -1600,7 +1600,7 @@ function getReportDateRange() {
 function getReportRangeLabel() {
   const { from, to } = getReportDateRange();
   if (!from && !to) return '';
-  if (from && to) return `${from} â†’ ${to}`;
+  if (from && to) return `${from} → ${to}`;
   if (from) return `From: ${from}`;
   return `To: ${to}`;
 }
@@ -1624,8 +1624,8 @@ function withDateRange(query, column) {
 
 function applyReportDateRange() {
   const { from, to } = getReportDateRange();
-  if (from && to && from > to) { toast('From Date, To Date à¦¥à§‡à¦•à§‡ à¦¬à§œ à¦¹à¦¤à§‡ à¦ªà¦¾à¦°à¦¬à§‡ à¦¨à¦¾à¥¤', 'warning'); return; }
-  if (!currentReportName) { toast('à¦†à¦—à§‡ à¦à¦•à¦Ÿà¦¿ à¦°à¦¿à¦ªà§‹à¦°à§à¦Ÿ à¦¨à¦¿à¦°à§à¦¬à¦¾à¦šà¦¨ à¦•à¦°à§à¦¨à¥¤', 'info'); return; }
+  if (from && to && from > to) { toast('From Date, To Date থেকে বড় হতে পারবে না।', 'warning'); return; }
+  if (!currentReportName) { toast('আগে একটি রিপোর্ট নির্বাচন করুন।', 'info'); return; }
   loadReport(currentReportName);
 }
 
@@ -1649,14 +1649,14 @@ function setActiveRptBtn(name) {
 
 async function loadReport(name) {
   const { from, to } = getReportDateRange();
-  if (from && to && from > to) { toast('From Date, To Date à¦¥à§‡à¦•à§‡ à¦¬à§œ à¦¹à¦¤à§‡ à¦ªà¦¾à¦°à¦¬à§‡ à¦¨à¦¾à¥¤', 'warning'); return; }
+  if (from && to && from > to) { toast('From Date, To Date থেকে বড় হতে পারবে না।', 'warning'); return; }
   currentReportName  = name;
   currentReportTitle = RPT_TITLES[name]||name;
   const resultEl  = document.getElementById('reportResult');
   const card      = document.getElementById('reportCard');
   const titleEl   = document.getElementById('rptTitle');
   const subEl     = document.getElementById('rptSubtitle');
-  resultEl.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">â³ à¦²à§‹à¦¡ à¦¹à¦šà§à¦›à§‡...</div>';
+  resultEl.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">⏳ লোড হচ্ছে...</div>';
   card.classList.remove('hidden');
   titleEl.textContent = currentReportTitle;
   const rangeLabel = getReportRangeLabel();
@@ -1670,7 +1670,7 @@ async function loadReport(name) {
   else if (name==='bs')         html=await buildBSReport();
   else if (name==='cashbank')   html=await buildCashBankReport();
   else if (name==='receiptpayment') html=await buildReceiptPaymentReport();
-  resultEl.innerHTML = html||'<div class="alert alert-warning">à¦•à§‹à¦¨à§‹ à¦¡à§‡à¦Ÿà¦¾ à¦¨à§‡à¦‡à¥¤</div>';
+  resultEl.innerHTML = html||'<div class="alert alert-warning">কোনো ডেটা নেই।</div>';
   card.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
@@ -1699,8 +1699,8 @@ function rptTable(headers, rows, totals) {
   return `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr>${th}</tr></thead><tbody>${tbody}${tfoot}</tbody></table></div>`;
 }
 
-function rptFmt(n) { return 'à§³ '+Number(n||0).toLocaleString('en-IN'); }
-function rptDash() { return rptTrusted('<span style="color:#BCC5D4">â€”</span>'); }
+function rptFmt(n) { return '৳ '+Number(n||0).toLocaleString('en-IN'); }
+function rptDash() { return rptTrusted('<span style="color:#BCC5D4">—</span>'); }
 function rptHdr(label,sub='') {
   return `<div style="background:linear-gradient(135deg,#0F1F3D,#1A3260);color:#fff;padding:14px 16px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:0">${esc(label)}<div style="font-weight:400;color:#C7D3E6;font-size:11px;letter-spacing:0;text-transform:none;margin-top:4px">${esc(sub || getReportRangeLabel() || 'Professional ERP Format')}</div></div>`;
 }
@@ -1723,11 +1723,11 @@ async function buildCollectionReport() {
   Object.keys(monthly).sort().reverse().forEach(m=>{
     const mT=monthly[m].reduce((s,r)=>s+Number(r.amount||0),0);
     rows.push({cells:[{val:m,color:'#0F1F3D'},{val:''},{val:''},{val:rptFmt(mT),color:'#1A7A4A'},{val:''}],_section:true,_bold:true});
-    monthly[m].forEach(r=>rows.push({cells:[{val:r.collection_date||rptDash()},{val:rptTrusted(`<span style="background:#FDF8EC;border:1px solid rgba(212,160,23,.3);padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;color:#7A5500">${esc(r.receipt_no||'â€”')}</span>`)},{val:r.payer_name||'â€”'},{val:rptFmt(r.amount),color:'#1A7A4A'},{val:r.description||'â€”'}],_indent:1}));
+    monthly[m].forEach(r=>rows.push({cells:[{val:r.collection_date||rptDash()},{val:rptTrusted(`<span style="background:#FDF8EC;border:1px solid rgba(212,160,23,.3);padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;color:#7A5500">${esc(r.receipt_no||'—')}</span>`)},{val:r.payer_name||'—'},{val:rptFmt(r.amount),color:'#1A7A4A'},{val:r.description||'—'}],_indent:1}));
   });
-  if (!rows.length) rows.push({cells:[{val:rptDash()},{val:'â€”'},{val:'No collection yet',color:'#647188'},{val:rptFmt(0),color:'#1A7A4A'},{val:'Professional empty report format'}]});
-  return wrapReportShell('à¦®à¦¾à¦¸à¦¿à¦• à¦•à¦¾à¦²à§‡à¦•à¦¶à¦¨','Monthly Collection Summary',
-    rptTable(['à¦¤à¦¾à¦°à¦¿à¦–','à¦°à¦¿à¦¸à¦¿à¦Ÿ à¦¨à¦‚','à¦¦à¦¾à¦¤à¦¾à¦° à¦¨à¦¾à¦®','à¦ªà¦°à¦¿à¦®à¦¾à¦£ (BDT)','à¦¬à¦¿à¦¬à¦°à¦£'],rows,['à¦®à§‹à¦Ÿ',`${(data||[]).length} à¦Ÿà¦¿`,'',rptFmt(grand),''])
+  if (!rows.length) rows.push({cells:[{val:rptDash()},{val:'—'},{val:'No collection yet',color:'#647188'},{val:rptFmt(0),color:'#1A7A4A'},{val:'Professional empty report format'}]});
+  return wrapReportShell('মাসিক কালেকশন','Monthly Collection Summary',
+    rptTable(['তারিখ','রিসিট নং','দাতার নাম','পরিমাণ (BDT)','বিবরণ'],rows,['মোট',`${(data||[]).length} টি`,'',rptFmt(grand),''])
   );
 }
 
@@ -1739,13 +1739,13 @@ async function buildDaybookReport() {
   ]);
   const all=[];
   (colRes.data||[]).forEach(r=>all.push({date:r.collection_date,desc:'Collection: '+(r.description||r.receipt_no||''),dr:Number(r.amount||0),cr:0,acc:'Cash in Hand',ref:r.receipt_no}));
-  (vchRes.data||[]).forEach(r=>{ const ip=String(r.vch_type||'').includes('à¦ªà§‡à¦®à§‡à¦¨à§à¦Ÿ')||String(r.vch_type||'').toLowerCase().includes('payment'); all.push({date:r.vch_date,desc:(r.vch_type||'')+': '+(r.description||''),dr:ip?0:Number(r.amount||0),cr:ip?Number(r.amount||0):0,acc:r.account_code||'',ref:''}); });
+  (vchRes.data||[]).forEach(r=>{ const ip=String(r.vch_type||'').includes('পেমেন্ট')||String(r.vch_type||'').toLowerCase().includes('payment'); all.push({date:r.vch_date,desc:(r.vch_type||'')+': '+(r.description||''),dr:ip?0:Number(r.amount||0),cr:ip?Number(r.amount||0):0,acc:r.account_code||'',ref:''}); });
   (jRes.data||[]).forEach(r=>all.push({date:r.journal_date,desc:r.narration||'Journal Voucher',dr:Number(r.total_debit||0),cr:Number(r.total_credit||0),acc:'Journal Voucher',ref:r.ref_no}));
   all.sort((a,b)=>new Date(a.date)-new Date(b.date));
   let tDr=0,tCr=0;
-  const rows=(all.length?all:[{date:'',ref:'',desc:'No transaction posted yet',acc:'â€”',dr:0,cr:0}]).map(r=>{ tDr+=r.dr; tCr+=r.cr; return {cells:[{val:r.date||rptDash()},{val:r.ref||'',color:'#647188'},{val:r.desc||''},{val:r.acc||'',color:'#647188'},{val:r.dr?rptFmt(r.dr):rptDash(),color:r.dr?'#1A7A4A':'#BCC5D4'},{val:r.cr?rptFmt(r.cr):rptDash(),color:r.cr?'#C0392B':'#BCC5D4'}]}; });
-  return wrapReportShell('à¦¡à§‡ à¦¬à§à¦•','General Ledger â€” All Transactions',
-    rptTable(['à¦¤à¦¾à¦°à¦¿à¦–','à¦°à§‡à¦«','à¦¬à¦¿à¦¬à¦°à¦£','à¦…à§à¦¯à¦¾à¦•à¦¾à¦‰à¦¨à§à¦Ÿ','à¦¡à§‡à¦¬à¦¿à¦Ÿ (BDT)','à¦•à§à¦°à§‡à¦¡à¦¿à¦Ÿ (BDT)'],rows,['','','à¦®à§‹à¦Ÿ','',rptFmt(tDr),rptFmt(tCr)])
+  const rows=(all.length?all:[{date:'',ref:'',desc:'No transaction posted yet',acc:'—',dr:0,cr:0}]).map(r=>{ tDr+=r.dr; tCr+=r.cr; return {cells:[{val:r.date||rptDash()},{val:r.ref||'',color:'#647188'},{val:r.desc||''},{val:r.acc||'',color:'#647188'},{val:r.dr?rptFmt(r.dr):rptDash(),color:r.dr?'#1A7A4A':'#BCC5D4'},{val:r.cr?rptFmt(r.cr):rptDash(),color:r.cr?'#C0392B':'#BCC5D4'}]}; });
+  return wrapReportShell('ডে বুক','General Ledger — All Transactions',
+    rptTable(['তারিখ','রেফ','বিবরণ','অ্যাকাউন্ট','ডেবিট (BDT)','ক্রেডিট (BDT)'],rows,['','','মোট','',rptFmt(tDr),rptFmt(tCr)])
   );
 }
 
@@ -1756,11 +1756,11 @@ async function buildTrialReport() {
   (data||[]).filter(r=>isWithinDateRange(r.journals?.journal_date, range)).forEach(r=>{ if(!accs[r.account_code])accs[r.account_code]={name:r.coa?.account_name||r.account_code,group:r.coa?.account_group||'',dr:0,cr:0}; accs[r.account_code].dr+=Number(r.debit||0); accs[r.account_code].cr+=Number(r.credit||0); });
   let tDr=0,tCr=0;
   const rows=Object.keys(accs).map(code=>{ const a=accs[code]; const dr=a.dr>a.cr?a.dr-a.cr:0,cr=a.cr>a.dr?a.cr-a.dr:0; tDr+=dr; tCr+=cr; return {cells:[{val:code,color:'#647188'},{val:a.name},{val:a.group,color:'#647188'},{val:dr?rptFmt(dr):rptDash(),color:dr?'#1A7A4A':'#BCC5D4'},{val:cr?rptFmt(cr):rptDash(),color:cr?'#C0392B':'#BCC5D4'}]}; });
-  if(!rows.length) rows.push({cells:[{val:'â€”',color:'#647188'},{val:'Opening / no activity'},{val:'Asset',color:'#647188'},{val:rptFmt(0),color:'#1A7A4A'},{val:rptFmt(0),color:'#C0392B'}]});
+  if(!rows.length) rows.push({cells:[{val:'—',color:'#647188'},{val:'Opening / no activity'},{val:'Asset',color:'#647188'},{val:rptFmt(0),color:'#1A7A4A'},{val:rptFmt(0),color:'#C0392B'}]});
   const bal=Math.abs(tDr-tCr)<1;
-  const check=`<div class="report-highlight"><span style="font-weight:700;color:${bal?'#135A36':'#C0392B'}">${bal?'âœ“ Trial Balance agrees â€” Debit = Credit':'âœ— Trial Balance does NOT agree â€” please review'}</span><strong>${rptFmt(Math.abs(tDr-tCr))}</strong></div>`;
-  return wrapReportShell('à¦Ÿà§à¦°à¦¾à¦¯à¦¼à¦¾à¦² à¦¬à§à¦¯à¦¾à¦²à§‡à¦¨à§à¦¸','As at '+new Date().toLocaleDateString('en-GB'),
-    rptTable(['à¦•à§‹à¦¡','à¦…à§à¦¯à¦¾à¦•à¦¾à¦‰à¦¨à§à¦Ÿ','à¦—à§à¦°à§à¦ª','à¦¡à§‡à¦¬à¦¿à¦Ÿ (BDT)','à¦•à§à¦°à§‡à¦¡à¦¿à¦Ÿ (BDT)'],rows,['','à¦®à§‹à¦Ÿ','',rptFmt(tDr),rptFmt(tCr)])+check
+  const check=`<div class="report-highlight"><span style="font-weight:700;color:${bal?'#135A36':'#C0392B'}">${bal?'✓ Trial Balance agrees — Debit = Credit':'✗ Trial Balance does NOT agree — please review'}</span><strong>${rptFmt(Math.abs(tDr-tCr))}</strong></div>`;
+  return wrapReportShell('ট্রায়াল ব্যালেন্স','As at '+new Date().toLocaleDateString('en-GB'),
+    rptTable(['কোড','অ্যাকাউন্ট','গ্রুপ','ডেবিট (BDT)','ক্রেডিট (BDT)'],rows,['','মোট','',rptFmt(tDr),rptFmt(tCr)])+check
   );
 }
 
@@ -1771,18 +1771,18 @@ async function buildPLReport() {
   (data||[]).filter(r=>isWithinDateRange(r.journals?.journal_date, range)).forEach(r=>{ const g=r.coa?.account_group||''; const net=Number(r.debit||0)-Number(r.credit||0); if(g==='Income')inc[r.coa?.account_name||r.account_code]=(inc[r.coa?.account_name||r.account_code]||0)+(-net); if(g==='Expense')exp[r.coa?.account_name||r.account_code]=(exp[r.coa?.account_name||r.account_code]||0)+net; });
   const tI=Object.values(inc).reduce((s,v)=>s+v,0), tE=Object.values(exp).reduce((s,v)=>s+v,0), sur=tI-tE;
   const rows=[];
-  rows.push({cells:[{val:'à¦†à¦¯à¦¼ (INCOME)',color:'#0F1F3D'},{val:''}],_section:true,_bold:true});
+  rows.push({cells:[{val:'আয় (INCOME)',color:'#0F1F3D'},{val:''}],_section:true,_bold:true});
   Object.keys(inc).forEach(k=>rows.push({cells:[{val:k},{val:rptFmt(inc[k]),color:'#1A7A4A'}],_indent:1}));
   if(!Object.keys(inc).length) rows.push({cells:[{val:'Subscription / Donation',color:'#BCC5D4'},{val:rptFmt(0),color:'#1A7A4A'}],_indent:1});
-  rows.push({cells:[{val:'à¦®à§‹à¦Ÿ à¦†à¦¯à¦¼',color:'#1A7A4A'},{val:rptFmt(tI),color:'#1A7A4A'}],_bold:true});
+  rows.push({cells:[{val:'মোট আয়',color:'#1A7A4A'},{val:rptFmt(tI),color:'#1A7A4A'}],_bold:true});
   rows.push({cells:[{val:''},{val:''}]});
-  rows.push({cells:[{val:'à¦¬à§à¦¯à¦¯à¦¼ (EXPENDITURE)',color:'#0F1F3D'},{val:''}],_section:true,_bold:true});
+  rows.push({cells:[{val:'ব্যয় (EXPENDITURE)',color:'#0F1F3D'},{val:''}],_section:true,_bold:true});
   Object.keys(exp).forEach(k=>rows.push({cells:[{val:k},{val:rptFmt(exp[k]),color:'#C0392B'}],_indent:1}));
   if(!Object.keys(exp).length) rows.push({cells:[{val:'Administrative expenses',color:'#BCC5D4'},{val:rptFmt(0),color:'#C0392B'}],_indent:1});
-  rows.push({cells:[{val:'à¦®à§‹à¦Ÿ à¦¬à§à¦¯à¦¯à¦¼',color:'#C0392B'},{val:rptFmt(tE),color:'#C0392B'}],_bold:true});
+  rows.push({cells:[{val:'মোট ব্যয়',color:'#C0392B'},{val:rptFmt(tE),color:'#C0392B'}],_bold:true});
   rows.push({cells:[{val:''},{val:''}]});
-  rows.push({cells:[{val:sur>=0?'à¦¨à¦¿à¦Ÿ à¦‰à¦¦à§à¦¬à§ƒà¦¤à§à¦¤ (NET SURPLUS)':'à¦¨à¦¿à¦Ÿ à¦˜à¦¾à¦Ÿà¦¤à¦¿ (NET DEFICIT)',color:sur>=0?'#1A7A4A':'#C0392B'},{val:rptFmt(Math.abs(sur)),color:sur>=0?'#1A7A4A':'#C0392B'}],_bold:true});
-  return wrapReportShell('Income & Expenditure','For the selected period', rptTable(['à¦¬à¦¿à¦¬à¦°à¦£','à¦ªà¦°à¦¿à¦®à¦¾à¦£ (BDT)'],rows,null));
+  rows.push({cells:[{val:sur>=0?'নিট উদ্বৃত্ত (NET SURPLUS)':'নিট ঘাটতি (NET DEFICIT)',color:sur>=0?'#1A7A4A':'#C0392B'},{val:rptFmt(Math.abs(sur)),color:sur>=0?'#1A7A4A':'#C0392B'}],_bold:true});
+  return wrapReportShell('Income & Expenditure','For the selected period', rptTable(['বিবরণ','পরিমাণ (BDT)'],rows,null));
 }
 
 async function buildBSReport() {
@@ -1793,23 +1793,23 @@ async function buildBSReport() {
   const sg=g=>Object.values(grps[g]||{}).reduce((s,v)=>s+v,0);
   const tA=sg('Asset'),tL=sg('Liability'),tE=sg('Equity'),sur=sg('Income')-sg('Expense');
   const rows=[];
-  rows.push({cells:[{val:'à¦¸à¦®à§à¦ªà¦¦ (ASSETS)',color:'#0F1F3D'},{val:''}],_section:true,_bold:true});
+  rows.push({cells:[{val:'সম্পদ (ASSETS)',color:'#0F1F3D'},{val:''}],_section:true,_bold:true});
   Object.keys(grps.Asset).forEach(k=>rows.push({cells:[{val:k},{val:rptFmt(grps.Asset[k]),color:'#1A7A4A'}],_indent:1}));
   if(!Object.keys(grps.Asset).length) rows.push({cells:[{val:'Cash and equivalents',color:'#BCC5D4'},{val:rptFmt(0),color:'#1A7A4A'}],_indent:1});
-  rows.push({cells:[{val:'à¦®à§‹à¦Ÿ à¦¸à¦®à§à¦ªà¦¦',color:'#1558B0'},{val:rptFmt(tA),color:'#1558B0'}],_bold:true});
+  rows.push({cells:[{val:'মোট সম্পদ',color:'#1558B0'},{val:rptFmt(tA),color:'#1558B0'}],_bold:true});
   rows.push({cells:[{val:''},{val:''}]});
-  rows.push({cells:[{val:'à¦¦à¦¾à¦¯à¦¼ (LIABILITIES)',color:'#0F1F3D'},{val:''}],_section:true,_bold:true});
+  rows.push({cells:[{val:'দায় (LIABILITIES)',color:'#0F1F3D'},{val:''}],_section:true,_bold:true});
   Object.keys(grps.Liability).forEach(k=>rows.push({cells:[{val:k},{val:rptFmt(grps.Liability[k]),color:'#C0392B'}],_indent:1}));
   if(!Object.keys(grps.Liability).length) rows.push({cells:[{val:'Accounts payable',color:'#BCC5D4'},{val:rptFmt(0),color:'#C0392B'}],_indent:1});
-  rows.push({cells:[{val:'à¦®à§‹à¦Ÿ à¦¦à¦¾à¦¯à¦¼',color:'#C0392B'},{val:rptFmt(tL),color:'#C0392B'}],_bold:true});
+  rows.push({cells:[{val:'মোট দায়',color:'#C0392B'},{val:rptFmt(tL),color:'#C0392B'}],_bold:true});
   rows.push({cells:[{val:''},{val:''}]});
-  rows.push({cells:[{val:'à¦¤à¦¹à¦¬à¦¿à¦² (FUND/EQUITY)',color:'#0F1F3D'},{val:''}],_section:true,_bold:true});
+  rows.push({cells:[{val:'তহবিল (FUND/EQUITY)',color:'#0F1F3D'},{val:''}],_section:true,_bold:true});
   Object.keys(grps.Equity).forEach(k=>rows.push({cells:[{val:k},{val:rptFmt(grps.Equity[k]),color:'#1A7A4A'}],_indent:1}));
-  rows.push({cells:[{val:'à¦šà¦²à¦¤à¦¿ à¦¬à¦›à¦°à§‡à¦° à¦‰à¦¦à§à¦¬à§ƒà¦¤à§à¦¤',color:'#1A7A4A'},{val:rptFmt(sur),color:'#1A7A4A'}],_indent:1});
-  rows.push({cells:[{val:'à¦®à§‹à¦Ÿ à¦¤à¦¹à¦¬à¦¿à¦²',color:'#1A7A4A'},{val:rptFmt(tE+sur),color:'#1A7A4A'}],_bold:true});
+  rows.push({cells:[{val:'চলতি বছরের উদ্বৃত্ত',color:'#1A7A4A'},{val:rptFmt(sur),color:'#1A7A4A'}],_indent:1});
+  rows.push({cells:[{val:'মোট তহবিল',color:'#1A7A4A'},{val:rptFmt(tE+sur),color:'#1A7A4A'}],_bold:true});
   const bal=Math.abs(tA-(tL+tE+sur))<1;
-  const check=`<div class="report-highlight"><span style="font-weight:700;color:${bal?'#135A36':'#C0392B'}">${bal?'âœ“ Balance Sheet balances':'âœ— Does NOT balance â€” please review'}</span><strong>${rptFmt(Math.abs(tA-(tL+tE+sur)))}</strong></div>`;
-  return wrapReportShell('Statement of Financial Position','As at selected period end', rptTable(['à¦¬à¦¿à¦¬à¦°à¦£','à¦ªà¦°à¦¿à¦®à¦¾à¦£ (BDT)'],rows,null)+check);
+  const check=`<div class="report-highlight"><span style="font-weight:700;color:${bal?'#135A36':'#C0392B'}">${bal?'✓ Balance Sheet balances':'✗ Does NOT balance — please review'}</span><strong>${rptFmt(Math.abs(tA-(tL+tE+sur)))}</strong></div>`;
+  return wrapReportShell('Statement of Financial Position','As at selected period end', rptTable(['বিবরণ','পরিমাণ (BDT)'],rows,null)+check);
 }
 
 async function buildCashBankReport() {
@@ -1819,14 +1819,14 @@ async function buildCashBankReport() {
   const openingBalances = deriveOpeningBalances(reportFrom);
   const all=[];
   source.collections.forEach(r=>all.push({date:r.collection_date,ref:r.receipt_no||'',desc:(getReceiptMeta(r.receipt_no).head || 'Collection') + ': ' + (r.description||''),acc:'Cash in Hand',dr:Number(r.amount||0),cr:0}));
-  source.vouchers.forEach(r=>{ const payment=String(r.vch_type||'').includes('à¦ªà§‡à¦®à§‡à¦¨à§à¦Ÿ')||String(r.vch_type||'').toLowerCase().includes('payment'); all.push({date:r.vch_date,ref:getReceiptMeta(`voucher-${r.id || ''}`).voucher_no || '',desc:r.description||r.vch_type||'Voucher',acc:source.coaMap[r.account_code]?.account_name||r.account_code||'',dr:payment?0:Number(r.amount||0),cr:payment?Number(r.amount||0):0}); });
+  source.vouchers.forEach(r=>{ const payment=String(r.vch_type||'').includes('পেমেন্ট')||String(r.vch_type||'').toLowerCase().includes('payment'); all.push({date:r.vch_date,ref:getReceiptMeta(`voucher-${r.id || ''}`).voucher_no || '',desc:r.description||r.vch_type||'Voucher',acc:source.coaMap[r.account_code]?.account_name||r.account_code||'',dr:payment?0:Number(r.amount||0),cr:payment?Number(r.amount||0):0}); });
   source.journals.forEach(r=>{ const j=r.journals||{}; all.push({date:j.journal_date,ref:j.ref_no||'',desc:j.narration||'',acc:r.coa?.account_name||r.account_code||'',dr:Number(r.debit||0),cr:Number(r.credit||0)}); });
   all.sort((a,b)=>new Date(a.date||'1970-01-01')-new Date(b.date||'1970-01-01'));
   let runBal=Object.values(openingBalances).reduce((s,v)=>s+Number(v||0),0);
   const rows=[{cells:[{val:reportFrom,color:'#647188'},{val:'OPEN',color:'#647188'},{val:'Opening Balance'},{val:'Cash / Bank / Current Assets',color:'#647188'},{val:rptDash(),color:'#BCC5D4'},{val:rptDash(),color:'#BCC5D4'},{val:rptFmt(runBal),color:'#1558B0'}],_section:true,_bold:true}];
   all.forEach(r=>{ runBal+=Number(r.dr||0)-Number(r.cr||0); rows.push({cells:[{val:r.date||''},{val:r.ref||'',color:'#647188'},{val:r.desc||''},{val:r.acc||'',color:'#647188'},{val:r.dr?rptFmt(r.dr):rptDash(),color:r.dr?'#1A7A4A':'#BCC5D4'},{val:r.cr?rptFmt(r.cr):rptDash(),color:r.cr?'#C0392B':'#BCC5D4'},{val:rptFmt(runBal),color:runBal>=0?'#1558B0':'#C0392B'}]}); });
   const closing=`<div class="report-highlight"><span style="font-weight:700;color:#1558B0">Closing Balance</span><strong style="color:${runBal>=0?'#1A7A4A':'#C0392B'}">${rptFmt(runBal)}</strong></div>`;
-  return wrapReportShell('à¦•à§à¦¯à¦¾à¦¶ à¦“ à¦¬à§à¦¯à¦¾à¦‚à¦• à¦¬à§à¦•','Opening to closing movement summary', rptTable(['à¦¤à¦¾à¦°à¦¿à¦–','à¦°à§‡à¦«','à¦¬à¦¿à¦¬à¦°à¦£','à¦…à§à¦¯à¦¾à¦•à¦¾à¦‰à¦¨à§à¦Ÿ','à¦ªà§à¦°à¦¾à¦ªà§à¦¤à¦¿ (BDT)','à¦ªà§à¦°à¦¦à¦¾à¦¨ (BDT)','à¦¬à§à¦¯à¦¾à¦²à§‡à¦¨à§à¦¸'],rows,null)+closing);
+  return wrapReportShell('ক্যাশ ও ব্যাংক বুক','Opening to closing movement summary', rptTable(['তারিখ','রেফ','বিবরণ','অ্যাকাউন্ট','প্রাপ্তি (BDT)','প্রদান (BDT)','ব্যালেন্স'],rows,null)+closing);
 }
 
 async function buildReceiptPaymentReport() {
@@ -1854,7 +1854,7 @@ async function buildReceiptPaymentReport() {
 
 function printReport() {
   const org=S.company?.name||"Challengers of 90's";
-  const title=currentReportTitle||'à¦°à¦¿à¦ªà§‹à¦°à§à¦Ÿ';
+  const title=currentReportTitle||'রিপোর্ট';
   const today=new Date().toLocaleDateString('bn-BD');
   const body=document.getElementById('reportResult').innerHTML;
   const win=window.open('','_blank');
@@ -1868,13 +1868,13 @@ function printReport() {
   </head><body>
   <h1>${org}</h1><h2>${title} &nbsp;|&nbsp; ${today}</h2>
   ${body}
-  <div class="footer">Generated by Aura Unity ERP &nbsp;|&nbsp; Â© 2026 Aura Stay</div>
+  <div class="footer">Generated by Aura Unity ERP &nbsp;|&nbsp; © 2026 Aura Stay</div>
   <script>window.onload=()=>window.print();<\/script></body></html>`);
   win.document.close();
 }
 
 function exportPDF() {
-  toast('à¦ªà§à¦°à¦¿à¦¨à§à¦Ÿ à¦¡à¦¾à¦¯à¦¼à¦¾à¦²à¦— à¦¥à§‡à¦•à§‡ "Save as PDF" à¦¨à¦¿à¦°à§à¦¬à¦¾à¦šà¦¨ à¦•à¦°à§à¦¨à¥¤','info');
+  toast('প্রিন্ট ডায়ালগ থেকে "Save as PDF" নির্বাচন করুন।','info');
   setTimeout(printReport, 400);
 }
 
@@ -1882,7 +1882,7 @@ function exportExcel() {
   const title=currentReportTitle||'report';
   const body=document.getElementById('reportResult');
   const tables=body.querySelectorAll('table');
-  if(!tables.length){ toast('à¦°à¦¿à¦ªà§‹à¦°à§à¦Ÿ à¦†à¦—à§‡ à¦²à§‹à¦¡ à¦•à¦°à§à¦¨à¥¤','warning'); return; }
+  if(!tables.length){ toast('রিপোর্ট আগে লোড করুন।','warning'); return; }
   const org=S.company?.name||"Challengers of 90's";
   const today=new Date().toISOString().slice(0,10);
   let csv='\uFEFF';
@@ -1901,12 +1901,12 @@ function exportExcel() {
   const a=document.createElement('a');
   a.href=url; a.download=`${title.replace(/\s+/g,'_')}_${today}.csv`; a.click();
   URL.revokeObjectURL(url);
-  toast('Excel (CSV) à¦¡à¦¾à¦‰à¦¨à¦²à§‹à¦¡ à¦¶à§à¦°à§ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤ âœ…','success');
+  toast('Excel (CSV) ডাউনলোড শুরু হয়েছে। ✅','success');
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // RECEIPT
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 var sigState = { drawing:false, dataUrl:null };
 
 function initSignaturePad() {
@@ -1948,7 +1948,7 @@ function genReceiptPreview() {
   const date = draft.date;
   const name = draft.name;
   const amount = Number(draft.amount || 0);
-  const amt  = 'à§³ '+amount.toLocaleString('en-IN');
+  const amt  = '৳ '+amount.toLocaleString('en-IN');
   const desc = draft.desc;
   const head = draft.head;
   const mode = draft.mode;
@@ -1991,31 +1991,31 @@ function printReceipt() {
   },300);
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // CHARTS
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 var charts={};
 function initDashChart() {
   const ctx=document.getElementById('dashChart'); if(!ctx)return;
   if(charts.d) charts.d.destroy();
-  charts.d=new Chart(ctx,{type:'bar',data:{labels:['à¦•à¦¾à¦²à§‡à¦•à¦¶à¦¨','à¦­à¦¾à¦‰à¦šà¦¾à¦°','à¦œà¦¾à¦°à§à¦¨à¦¾à¦²','à¦¬à§à¦¯à¦¾à¦²à§‡à¦¨à§à¦¸'],datasets:[{data:[0,0,0,0],backgroundColor:['rgba(212,160,23,.85)','rgba(26,122,74,.85)','rgba(21,88,176,.85)','rgba(192,57,43,.75)'],borderRadius:8,borderSkipped:false}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>'à§³'+Number(v).toLocaleString()},grid:{color:'rgba(0,0,0,.04)'}},x:{grid:{display:false}}}}});
+  charts.d=new Chart(ctx,{type:'bar',data:{labels:['কালেকশন','ভাউচার','জার্নাল','ব্যালেন্স'],datasets:[{data:[0,0,0,0],backgroundColor:['rgba(212,160,23,.85)','rgba(26,122,74,.85)','rgba(21,88,176,.85)','rgba(192,57,43,.75)'],borderRadius:8,borderSkipped:false}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>'৳'+Number(v).toLocaleString()},grid:{color:'rgba(0,0,0,.04)'}},x:{grid:{display:false}}}}});
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // HELPERS
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-function fmt(n) { return 'à§³ '+Number(n||0).toLocaleString('en-IN'); }
+// ══════════════════════════════════════════
+function fmt(n) { return '৳ '+Number(n||0).toLocaleString('en-IN'); }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // USER MANAGEMENT
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 
 // Password visibility toggle
 function togglePassVis() {
   const inp = document.getElementById('nuPass');
   const btn = document.getElementById('passToggle');
-  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'ðŸ™ˆ'; }
-  else { inp.type = 'password'; btn.textContent = 'ðŸ‘'; }
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+  else { inp.type = 'password'; btn.textContent = '👁'; }
 }
 
 // Password strength checker
@@ -2030,11 +2030,11 @@ function checkPassStrength(val) {
   if (/[0-9]/.test(val)) score++;
   if (/[^A-Za-z0-9]/.test(val)) score++;
   const levels = [
-    { pct:'20%', color:'#C0392B', text:'à¦–à§à¦¬ à¦¦à§à¦°à§à¦¬à¦²' },
-    { pct:'40%', color:'#E67E22', text:'à¦¦à§à¦°à§à¦¬à¦²' },
-    { pct:'60%', color:'#F1C40F', text:'à¦®à¦¾à¦à¦¾à¦°à¦¿' },
-    { pct:'80%', color:'#27AE60', text:'à¦¶à¦•à§à¦¤à¦¿à¦¶à¦¾à¦²à§€' },
-    { pct:'100%',color:'#1A7A4A', text:'à¦–à§à¦¬ à¦¶à¦•à§à¦¤à¦¿à¦¶à¦¾à¦²à§€ âœ…' },
+    { pct:'20%', color:'#C0392B', text:'খুব দুর্বল' },
+    { pct:'40%', color:'#E67E22', text:'দুর্বল' },
+    { pct:'60%', color:'#F1C40F', text:'মাঝারি' },
+    { pct:'80%', color:'#27AE60', text:'শক্তিশালী' },
+    { pct:'100%',color:'#1A7A4A', text:'খুব শক্তিশালী ✅' },
   ];
   const l = levels[Math.min(score, 4)];
   bar.style.width  = l.pct;
@@ -2048,7 +2048,7 @@ function mapUiRoleToDbRole(uiRole) {
   const r = String(uiRole || '').toLowerCase();
   if (r.includes('owner'))                               return 'owner';
   if (r.includes('super') || r.includes('admin'))        return 'superuser';
-  if (r.includes('manager') || r.includes('à¦®à§à¦¯à¦¾à¦¨à§‡à¦œà¦¾à¦°')) return 'manager';
+  if (r.includes('manager') || r.includes('ম্যানেজার')) return 'manager';
   return 'user';
 }
 
@@ -2063,10 +2063,10 @@ async function addUser() {
 
   errEl.classList.add('hidden'); okEl.classList.add('hidden');
 
-  if (!username) { errEl.textContent='à¦‡à¦‰à¦œà¦¾à¦°à¦¨à§‡à¦® à¦¦à¦¿à¦¨à¥¤'; errEl.classList.remove('hidden'); return; }
-  if (password.length < 8) { errEl.textContent='à¦ªà¦¾à¦¸à¦“à¦¯à¦¼à¦¾à¦°à§à¦¡ à¦•à¦®à¦ªà¦•à§à¦·à§‡ à§® à¦…à¦•à§à¦·à¦° à¦¹à¦¤à§‡ à¦¹à¦¬à§‡à¥¤'; errEl.classList.remove('hidden'); return; }
+  if (!username) { errEl.textContent='ইউজারনেম দিন।'; errEl.classList.remove('hidden'); return; }
+  if (password.length < 8) { errEl.textContent='পাসওয়ার্ড কমপক্ষে ৮ অক্ষর হতে হবে।'; errEl.classList.remove('hidden'); return; }
 
-  btn.disabled = true; btn.textContent = 'â³ à¦¯à§‹à¦— à¦¹à¦šà§à¦›à§‡...';
+  btn.disabled = true; btn.textContent = '⏳ যোগ হচ্ছে...';
 
   try {
     // Get current session token
@@ -2085,10 +2085,10 @@ async function addUser() {
 
     const data = await res.json();
     btn.disabled = false;
-    btn.innerHTML = 'ï¼‹ <span>à¦‡à¦‰à¦œà¦¾à¦° à¦¯à§‹à¦— à¦•à¦°à§à¦¨</span>';
+    btn.innerHTML = '＋ <span>ইউজার যোগ করুন</span>';
 
     if (!data.ok) {
-      errEl.textContent = data.message || 'à¦‡à¦‰à¦œà¦¾à¦° à¦¯à§‹à¦— à¦¬à§à¦¯à¦°à§à¦¥à¥¤';
+      errEl.textContent = data.message || 'ইউজার যোগ ব্যর্থ।';
       errEl.classList.remove('hidden');
       return;
     }
@@ -2108,30 +2108,30 @@ async function addUser() {
       }
     }
 
-    okEl.textContent = `âœ… "${username}" à¦¸à¦«à¦²à¦­à¦¾à¦¬à§‡ à¦¯à§‹à¦— à¦¹à¦¯à¦¼à§‡à¦›à§‡! Email: ${data.user.email}`;
+    okEl.textContent = `✅ "${username}" সফলভাবে যোগ হয়েছে! Email: ${data.user.email}`;
     okEl.classList.remove('hidden');
 
     // Reset form
     document.getElementById('nuName').value = '';
     document.getElementById('nuPass').value = '';
-    document.getElementById('nuRole').value = 'à¦‡à¦‰à¦œà¦¾à¦°';
+    document.getElementById('nuRole').value = 'ইউজার';
     document.getElementById('passStrengthBar').style.width = '0%';
     document.getElementById('passStrengthLabel').textContent = '';
 
-    toast(`à¦‡à¦‰à¦œà¦¾à¦° "${username}" à¦¯à§‹à¦— à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤`, 'success');
+    toast(`ইউজার "${username}" যোগ হয়েছে।`, 'success');
     await loadUsers();
 
   } catch (e) {
     btn.disabled = false;
-    btn.innerHTML = 'ï¼‹ <span>à¦‡à¦‰à¦œà¦¾à¦° à¦¯à§‹à¦— à¦•à¦°à§à¦¨</span>';
-    errEl.textContent = 'à¦¸à¦‚à¦¯à§‹à¦— à¦¬à§à¦¯à¦°à§à¦¥: ' + e.message;
+    btn.innerHTML = '＋ <span>ইউজার যোগ করুন</span>';
+    errEl.textContent = 'সংযোগ ব্যর্থ: ' + e.message;
     errEl.classList.remove('hidden');
   }
 }
-// Load user list â€” tenant-scoped when tenant is resolved, falls back to public.users
+// Load user list — tenant-scoped when tenant is resolved, falls back to public.users
 async function loadUsers() {
   const tb = document.getElementById('userTable');
-  tb.innerHTML = '<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">à¦²à§‹à¦¡ à¦¹à¦šà§à¦›à§‡...</td></tr>';
+  tb.innerHTML = '<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
 
   // When tenant is resolved, show members of the current tenant from tenant_members
   if (S.tenantId) {
@@ -2142,19 +2142,19 @@ async function loadUsers() {
       .order('created_at', { ascending: false });
 
     if (error || !data?.length) {
-      tb.innerHTML = '<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">à¦•à§‹à¦¨à§‹ à¦‡à¦‰à¦œà¦¾à¦° à¦¨à§‡à¦‡</td></tr>';
+      tb.innerHTML = '<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">কোনো ইউজার নেই</td></tr>';
       return;
     }
 
     tb.innerHTML = data.map(m => {
-      const uname     = m.users?.username || m.users?.email?.split('@')[0] || 'â€”';
-      const roleLabel = MEMBER_ROLE_LABELS[m.role] || m.role || 'à¦‡à¦‰à¦œà¦¾à¦°';
+      const uname     = m.users?.username || m.users?.email?.split('@')[0] || '—';
+      const roleLabel = MEMBER_ROLE_LABELS[m.role] || m.role || 'ইউজার';
       const badgeCls  = MEMBER_ROLE_BADGES[m.role] || 'bg-green';
       const statusCls = m.status === 'active' ? 'bg-green' : m.status === 'invited' ? 'bg-gold' : 'bg-danger';
-      const date      = m.created_at ? m.created_at.slice(0,10) : 'â€”';
+      const date      = m.created_at ? m.created_at.slice(0,10) : '—';
       return `<tr>
         <td><strong>${esc(uname)}</strong></td>
-        <td class="td-m">${esc(m.users?.email || 'â€”')}</td>
+        <td class="td-m">${esc(m.users?.email || '—')}</td>
         <td><span class="badge ${badgeCls}">${esc(roleLabel)}</span></td>
         <td class="td-m">${esc(date)}</td>
         <td><span class="badge ${statusCls}">${esc(m.status || 'active')}</span></td>
@@ -2170,19 +2170,19 @@ async function loadUsers() {
     .order('created_at', { ascending: false });
 
   if (error || !data?.length) {
-    tb.innerHTML = '<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">à¦•à§‹à¦¨à§‹ à¦‡à¦‰à¦œà¦¾à¦° à¦¨à§‡à¦‡</td></tr>';
+    tb.innerHTML = '<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">কোনো ইউজার নেই</td></tr>';
     return;
   }
 
   const roleMap = { 'superuser': 'Super User' };
   tb.innerHTML = data.map(u => {
-    const uname = u.username || u.email?.split('@')[0] || 'â€”';
-    const role  = roleMap[uname.toLowerCase()] || 'à¦‡à¦‰à¦œà¦¾à¦°';
-    const badgeCls = role === 'Super User' ? 'bg-gold' : role === 'à¦®à§à¦¯à¦¾à¦¨à§‡à¦œà¦¾à¦°' ? 'bg-navy' : 'bg-green';
-    const date  = u.created_at ? u.created_at.slice(0,10) : 'â€”';
+    const uname = u.username || u.email?.split('@')[0] || '—';
+    const role  = roleMap[uname.toLowerCase()] || 'ইউজার';
+    const badgeCls = role === 'Super User' ? 'bg-gold' : role === 'ম্যানেজার' ? 'bg-navy' : 'bg-green';
+    const date  = u.created_at ? u.created_at.slice(0,10) : '—';
     return `<tr>
       <td><strong>${esc(uname)}</strong></td>
-      <td class="td-m">${esc(u.email || 'â€”')}</td>
+      <td class="td-m">${esc(u.email || '—')}</td>
       <td><span class="badge ${badgeCls}">${esc(role)}</span></td>
       <td class="td-m">${esc(date)}</td>
       <td><span class="badge bg-green">Active</span></td>
@@ -2190,9 +2190,9 @@ async function loadUsers() {
   }).join('');
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// AUTH STATE CHANGE â€” auto-restore session
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
+// AUTH STATE CHANGE — auto-restore session
+// ══════════════════════════════════════════
 sb.auth.onAuthStateChange(async (event, session) => {
   if (event==='SIGNED_IN' && session) {
     S.user=session.user; S.session=session; S.tenantId=null; S.tenantSlug=getRouteTenantSlug(); S.tenantResolved=false; S.welcomeShown=false; S.activeMemberRole=null;
@@ -2200,9 +2200,9 @@ sb.auth.onAuthStateChange(async (event, session) => {
   }
 });
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 // DOM READY
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('colRno').value = genRno();
   genReceiptPreview();
@@ -2243,7 +2243,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('loginModal').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
       document.getElementById('mobBottomNav').classList.remove('hidden');
-      // Username display only â€” tenant and role are resolved inside initApp via getTenantId
+      // Username display only — tenant and role are resolved inside initApp via getTenantId
       const { data: pub } = await sb.from('users').select('username').eq('email', session.user.email).limit(1).maybeSingle();
       document.getElementById('sbUname').textContent = pub?.username || session.user.email?.split('@')[0] || 'user';
       _resetIdleTimer();
