@@ -103,7 +103,14 @@ const UI_TEXT = {
   roleUpdateDenied: { bn:'শুধু Owner/Super User role update করতে পারবে।', en:'Only Owner/Super User can update roles.' },
   tenantNotResolved: { bn:'Tenant resolve হয়নি।', en:'Tenant is not resolved.' },
   roleUpdated: { bn:'User role update হয়েছে।', en:'User role updated.' },
-  xlsxDownloaded: { bn:'XLSX download শুরু হয়েছে।', en:'XLSX download started.' }
+  xlsxDownloaded: { bn:'XLSX download শুরু হয়েছে।', en:'XLSX download started.' },
+  deleteDenied: { bn:'শুধু Super User delete করতে পারবে।', en:'Only Super User can delete data.' },
+  wipeDenied: { bn:'শুধু Super User data wipe করতে পারবে।', en:'Only Super User can wipe data.' },
+  wipeTenantMissing: { bn:'Tenant resolve হয়নি, wipe করা যাবে না।', en:'Tenant is not resolved, data wipe is blocked.' },
+  wipeConfirmPrompt: { bn:'ডাটা ওয়াইপ করতে tenant slug/name লিখুন:', en:'Type the tenant slug/name to wipe accounting data:' },
+  wipeConfirmMismatch: { bn:'Confirmation মেলেনি। Data wipe cancel হয়েছে।', en:'Confirmation did not match. Data wipe cancelled.' },
+  wipeDone: { bn:'Tenant accounting data wipe হয়েছে।', en:'Tenant accounting data wiped.' },
+  wipeFailed: { bn:'Data wipe ব্যর্থ: ', en:'Data wipe failed: ' }
 };
 const ROLE_LABELS_I18N = {
   owner: { bn:'Owner', en:'Owner' },
@@ -240,6 +247,7 @@ function syncSidebarRole() {
   if (S.activeMemberRole) {
     roleEl.textContent = roleText(S.activeMemberRole);
   }
+  updateDestructiveControls();
 }
 
 function isSuperUser() {
@@ -443,6 +451,15 @@ function canManageMasterData() {
 
 function canManageUsers() {
   return ['owner', 'superuser'].includes(S.activeMemberRole) || isSuperUser();
+}
+
+function canDeleteData() {
+  return isSuperUser();
+}
+
+function updateDestructiveControls() {
+  const wipeCard = document.getElementById('dataWipeCard');
+  if (wipeCard) wipeCard.classList.toggle('hidden', !S.session || !canDeleteData());
 }
 
 function normalizeRole(role) {
@@ -703,6 +720,7 @@ function setLang(lang) {
   const title = document.getElementById('topTitle');
   if (title) title.textContent = TT[lang]?.[activeModule] || activeModule;
   syncSidebarRole();
+  updateDestructiveControls();
   refreshActiveLanguageContent(activeModule);
 }
 
@@ -1356,7 +1374,7 @@ async function loadCollections() {
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <button class="btn btn-ghost btn-sm" onclick='editCollection(${JSON.stringify(r.receipt_no || '')})'>${esc(t('edit'))}</button>
           <button class="btn btn-primary btn-sm" onclick='printCollectionReceipt(${JSON.stringify(r.receipt_no || '')})'>${esc(t('print'))}</button>
-          <button class="btn btn-danger-lt btn-sm" onclick='deleteCollection(${JSON.stringify(r.receipt_no || '')})'>${esc(t('delete'))}</button>
+          ${canDeleteData() ? `<button class="btn btn-danger-lt btn-sm" onclick='deleteCollection(${JSON.stringify(r.receipt_no || '')})'>${esc(t('delete'))}</button>` : ''}
         </div>
       </td>
     </tr>`).join('');
@@ -1402,13 +1420,42 @@ async function printCollectionReceipt(receiptNo) {
 }
 
 async function deleteCollection(receiptNo) {
-  if (!isSuperUser()) { toast(t('collectionDeleteDenied'), 'error'); return; }
+  if (!canDeleteData()) { toast(t('deleteDenied'), 'error'); return; }
   if (!window.confirm(`Delete collection ${receiptNo}?`)) return;
   let query = sb.from('collections').delete().eq('receipt_no', receiptNo);
   if (S.tenantId) query = query.eq('tenant_id', S.tenantId);
   const { error } = await query;
   if (error) { toast('Collection delete failed: ' + error.message, 'error'); return; }
   toast(t('collectionDeleted'), 'success');
+  await loadCollections();
+  await loadDashboard();
+}
+
+async function wipeTenantAccountingData() {
+  if (!canDeleteData()) { toast(t('wipeDenied'), 'error'); return; }
+  await getTenantId();
+  if (!S.tenantId) { toast(t('wipeTenantMissing'), 'error'); return; }
+  const expected = S.tenantSlug || getRouteTenantSlug() || S.company?.name || '';
+  const typed = window.prompt(`${t('wipeConfirmPrompt')}\n${expected}`);
+  if (!typed || typed.trim().toLowerCase() !== String(expected).trim().toLowerCase()) {
+    toast(t('wipeConfirmMismatch'), 'warning');
+    return;
+  }
+  const tables = ['journal_items', 'journals', 'vouchers', 'collections', 'coa'];
+  for (const table of tables) {
+    const { error } = await sb.from(table).delete().eq('tenant_id', S.tenantId);
+    if (error) { toast(t('wipeFailed') + error.message, 'error'); return; }
+  }
+  updateLocalState((state) => {
+    state.receiptMeta = {};
+    state.daySessions = {};
+  });
+  S.coa = [];
+  S.lastReceipt = null;
+  S.editCollectionId = null;
+  S.editJournalId = null;
+  toast(t('wipeDone'), 'success');
+  await loadCOA();
   await loadCollections();
   await loadDashboard();
 }
@@ -1567,7 +1614,7 @@ async function loadVoucherSummary() {
           <button class="btn btn-ghost btn-sm" onclick="editJournal(${j.id})">Edit</button>
           <button class="btn btn-primary btn-sm" onclick="printJournalVoucher(${j.id})">Print</button>
           <button class="btn btn-sm" style="background:${isReconciled?'var(--em-lt)':'var(--info-lt)'};border:1px solid ${isReconciled?'var(--em)':'var(--info)'};color:${isReconciled?'var(--em)':'var(--info)'}" onclick="toggleReconcile(${j.id})">${isReconciled ? '✓ Reconciled' : '⇌ Reconcile'}</button>
-          <button class="btn btn-danger-lt btn-sm" onclick="deleteJournal(${j.id})">Delete</button>
+          ${canDeleteData() ? `<button class="btn btn-danger-lt btn-sm" onclick="deleteJournal(${j.id})">${esc(t('delete'))}</button>` : ''}
         </div>
       </td>
     </tr>`;
@@ -1602,7 +1649,7 @@ async function editJournal(id) {
 }
 
 async function deleteJournal(id) {
-  if (!isSuperUser()) { toast('শুধু Super User delete করতে পারবে।', 'error'); return; }
+  if (!canDeleteData()) { toast(t('deleteDenied'), 'error'); return; }
   if (!window.confirm('এই জার্নাল ভাউচার মুছে ফেলতে চান?')) return;
   const { error: iErr } = await sb.from('journal_items').delete().eq('journal_id', id);
   if (iErr) { toast('জার্নাল আইটেম ডিলিট ব্যর্থ: '+iErr.message, 'error'); return; }

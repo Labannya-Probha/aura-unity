@@ -10,7 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <link rel="stylesheet" href="/assets/css/index.css?v=20260630-i18n1">
+  <link rel="stylesheet" href="/assets/css/index.css?v=20260630-wipe1">
 
 </head>
 <body>
@@ -538,6 +538,18 @@
             <button class="btn btn-gold" onclick="saveCompany()">সেভ করুন</button>
           </div>
         </div>
+        <div id="dataWipeCard" class="card hidden" style="border-color:rgba(192,57,43,.28)">
+          <div class="card-header">
+            <div>
+              <div class="card-title" data-bn="ডাটা ওয়াইপ" data-en="Data Wipe">Data Wipe</div>
+              <div class="card-sub" data-bn="শুধু Super User: এই tenant-এর accounting data মুছে যাবে, company/users থাকবে।" data-en="Super User only: clears this tenant's accounting data while keeping company and users.">Super User only: clears this tenant's accounting data while keeping company and users.</div>
+            </div>
+            <span class="badge bg-danger">Super User</span>
+          </div>
+          <div class="card-body">
+            <button class="btn btn-danger-lt" onclick="wipeTenantAccountingData()" data-bn="Tenant Accounting Data Wipe" data-en="Wipe Tenant Accounting Data">Wipe Tenant Accounting Data</button>
+          </div>
+        </div>
       </div>
 
       <!-- USERS -->
@@ -652,7 +664,7 @@
   </div>
 </div>
 
-  <script src="/assets/js/index.js?v=20260630-i18n1"></script>
+  <script src="/assets/js/index.js?v=20260630-wipe1"></script>
 
 </body>
 </html>
