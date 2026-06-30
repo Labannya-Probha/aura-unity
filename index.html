@@ -10,7 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <link rel="stylesheet" href="/assets/css/index.css?v=20260630-enterprise1">
+  <link rel="stylesheet" href="/assets/css/index.css?v=20260630-i18n1">
 
 </head>
 <body>
@@ -64,6 +64,7 @@
       </div>
     </div>
     <div class="lang-toggle">
+      <button class="lang-btn" id="langBn" onclick="setLang('bn')">বাংলা</button>
       <button class="lang-btn active" id="langEn" onclick="setLang('en')">English</button>
     </div>
     <div class="sb-user">
@@ -161,8 +162,8 @@
         <div class="card">
           <div class="card-header"><div class="card-title">সাম্প্রতিক কালেকশন</div></div>
           <div class="card-body np"><div class="table-wrap"><table>
-            <thead><tr><th>Receipt No</th><th>Date</th><th>Name</th><th>Amount</th><th>Description</th><th>Actions</th></tr></thead>
-            <tbody id="colList"><tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">Loading...</td></tr></tbody>
+            <thead><tr><th data-bn="রিসিট নং" data-en="Receipt No">Receipt No</th><th data-bn="তারিখ" data-en="Date">Date</th><th data-bn="নাম" data-en="Name">Name</th><th data-bn="পরিমাণ" data-en="Amount">Amount</th><th data-bn="বিবরণ" data-en="Description">Description</th><th data-bn="অ্যাকশন" data-en="Actions">Actions</th></tr></thead>
+            <tbody id="colList"><tr><td colspan="6" class="td-m" style="text-align:center;padding:20px" data-bn="লোড হচ্ছে..." data-en="Loading...">Loading...</td></tr></tbody>
           </table></div></div>
         </div>
       </div>
@@ -442,8 +443,8 @@
               <input type="date" id="ledFrom" class="form-control" style="width:auto" onchange="loadLedger()">
               <input type="date" id="ledTo" class="form-control" style="width:auto" onchange="loadLedger()">
               <select id="ledAcc" class="form-control" style="width:auto;min-width:180px" onchange="loadLedger()"><option value="">-- অ্যাকাউন্ট নির্বাচন --</option></select>
-              <button class="btn btn-ghost btn-sm" onclick="clearLedgerRange()">Clear</button>
-              <button class="btn btn-ghost btn-sm" onclick="loadLedger()">Load</button>
+              <button class="btn btn-ghost btn-sm" onclick="clearLedgerRange()" data-bn="ক্লিয়ার" data-en="Clear">Clear</button>
+              <button class="btn btn-ghost btn-sm" onclick="loadLedger()" data-bn="লোড" data-en="Load">Load</button>
             </div>
           </div>
           <div class="card-body">
@@ -497,15 +498,15 @@
         <div class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">Chart of Accounts</div>
-              <div class="card-sub">Import opening balances from XLSX or export the current tenant COA.</div>
+              <div class="card-title" data-bn="চার্ট অব অ্যাকাউন্টস" data-en="Chart of Accounts">Chart of Accounts</div>
+              <div class="card-sub" data-bn="XLSX থেকে ওপেনিং ব্যালেন্স ইমপোর্ট করুন অথবা বর্তমান COA এক্সপোর্ট করুন।" data-en="Import opening balances from XLSX or export the current tenant COA.">Import opening balances from XLSX or export the current tenant COA.</div>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
               <input id="coaImportFile" type="file" accept=".xlsx,.xls" class="hidden" onchange="importCOAOpeningBalances(event)">
-              <button class="btn btn-ghost btn-sm" onclick="downloadCOATemplate()">Download Template</button>
-              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('coaImportFile').click()">Import XLSX</button>
-              <button class="btn btn-ghost btn-sm" onclick="exportCOAXLSX()">Export XLSX</button>
-              <button class="btn btn-gold btn-sm" onclick="showAccModal()">+ Add Account</button>
+              <button class="btn btn-ghost btn-sm" onclick="downloadCOATemplate()" data-bn="টেমপ্লেট ডাউনলোড" data-en="Download Template">Download Template</button>
+              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('coaImportFile').click()" data-bn="XLSX ইমপোর্ট" data-en="Import XLSX">Import XLSX</button>
+              <button class="btn btn-ghost btn-sm" onclick="exportCOAXLSX()" data-bn="XLSX এক্সপোর্ট" data-en="Export XLSX">Export XLSX</button>
+              <button class="btn btn-gold btn-sm" onclick="showAccModal()" data-bn="+ অ্যাকাউন্ট যোগ" data-en="+ Add Account">+ Add Account</button>
             </div>
           </div>
           <div class="card-body np"><div class="table-wrap"><table>
@@ -594,8 +595,8 @@
           </div>
           <div class="card-body np">
             <div class="table-wrap"><table>
-              <thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
-              <tbody id="userTable"><tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">Loading...</td></tr></tbody>
+              <thead><tr><th data-bn="ইউজারনেম" data-en="Username">Username</th><th data-bn="ইমেইল" data-en="Email">Email</th><th data-bn="রোল" data-en="Role">Role</th><th data-bn="যোগের তারিখ" data-en="Joined">Joined</th><th data-bn="স্ট্যাটাস" data-en="Status">Status</th><th data-bn="অ্যাকশন" data-en="Actions">Actions</th></tr></thead>
+              <tbody id="userTable"><tr><td colspan="6" class="td-m" style="text-align:center;padding:20px" data-bn="লোড হচ্ছে..." data-en="Loading...">Loading...</td></tr></tbody>
             </table></div>
           </div>
         </div>
@@ -651,7 +652,7 @@
   </div>
 </div>
 
-  <script src="/assets/js/index.js?v=20260630-enterprise1"></script>
+  <script src="/assets/js/index.js?v=20260630-i18n1"></script>
 
 </body>
 </html>

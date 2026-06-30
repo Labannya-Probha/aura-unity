@@ -77,6 +77,109 @@ const LOCAL_STATE_KEY = 'aura-unity-local-state-v2';
 // Maps tenant_members.role values to display labels (Bengali/English)
 const MEMBER_ROLE_LABELS = { owner: 'Owner', superuser: 'Super User', manager: 'Manager', user: 'User' };
 const MEMBER_ROLE_BADGES = { owner: 'bg-danger', superuser: 'bg-gold', manager: 'bg-navy', user: 'bg-green' };
+const UI_TEXT = {
+  loading: { bn:'লোড হচ্ছে...', en:'Loading...' },
+  noCollection: { bn:'কোনো কালেকশন নেই', en:'No collection found' },
+  edit: { bn:'এডিট', en:'Edit' },
+  print: { bn:'প্রিন্ট', en:'Print' },
+  delete: { bn:'ডিলিট', en:'Delete' },
+  active: { bn:'Active', en:'Active' },
+  roleBasedAccess: { bn:'রোল ভিত্তিক অ্যাক্সেস', en:'Role based access' },
+  readOnly: { bn:'শুধু দেখা যাবে', en:'Read only' },
+  tenantRequired: { bn:'Tenant দরকার', en:'Tenant required' },
+  noUser: { bn:'কোনো ইউজার নেই', en:'No user found' },
+  noLedger: { bn:'নির্বাচিত সময়সীমায় কোনো লেজার এন্ট্রি নেই', en:'No ledger entry found for selected range' },
+  dateRangeInvalid: { bn:'From Date, To Date থেকে বড় হতে পারবে না।', en:'From date cannot be after To date.' },
+  xlsxMissing: { bn:'XLSX library load হয়নি। Page refresh করে আবার চেষ্টা করুন।', en:'XLSX library did not load. Refresh and try again.' },
+  masterDataDenied: { bn:'শুধু Owner, Super User অথবা Manager ওপেনিং ব্যালেন্স ইমপোর্ট করতে পারবে।', en:'Only Owner, Super User or Manager can import opening balances.' },
+  validCoaMissing: { bn:'Valid COA row পাওয়া যায়নি।', en:'No valid COA rows were found.' },
+  coaImported: { bn:'COA row ইমপোর্ট/আপডেট হয়েছে।', en:'COA rows imported/updated.' },
+  collectionEditDenied: { bn:'শুধু Owner, Super User অথবা Manager collection edit করতে পারবে।', en:'Only Owner, Super User or Manager can edit collections.' },
+  collectionMissing: { bn:'Collection row পাওয়া যায়নি।', en:'Collection row not found.' },
+  collectionLoaded: { bn:'Collection edit করার জন্য লোড হয়েছে।', en:'Collection loaded for editing.' },
+  receiptMissing: { bn:'Receipt data পাওয়া যায়নি।', en:'Receipt data not found.' },
+  collectionDeleteDenied: { bn:'শুধু Owner/Super User collection delete করতে পারবে।', en:'Only Owner/Super User can delete collections.' },
+  collectionDeleted: { bn:'Collection delete হয়েছে।', en:'Collection deleted.' },
+  roleUpdateDenied: { bn:'শুধু Owner/Super User role update করতে পারবে।', en:'Only Owner/Super User can update roles.' },
+  tenantNotResolved: { bn:'Tenant resolve হয়নি।', en:'Tenant is not resolved.' },
+  roleUpdated: { bn:'User role update হয়েছে।', en:'User role updated.' },
+  xlsxDownloaded: { bn:'XLSX download শুরু হয়েছে।', en:'XLSX download started.' }
+};
+const ROLE_LABELS_I18N = {
+  owner: { bn:'Owner', en:'Owner' },
+  superuser: { bn:'Super User', en:'Super User' },
+  manager: { bn:'ম্যানেজার', en:'Manager' },
+  user: { bn:'ইউজার', en:'User' }
+};
+const STATIC_TEXT_PAIRS = [
+  ['তারিখ', 'Date'],
+  ['রিসিট নং (অটো)', 'Receipt No (Auto)'],
+  ['সদস্য / দাতার নাম', 'Member / Donor Name'],
+  ['পরিমাণ (টাকা)', 'Amount (BDT)'],
+  ['রিসিট হেড', 'Receipt Head'],
+  ['পেমেন্ট মোড', 'Payment Mode'],
+  ['বিবরণ / Purpose', 'Description / Purpose'],
+  ['সাম্প্রতিক কালেকশন', 'Recent Collections'],
+  ['কোড', 'Code'],
+  ['নাম', 'Name'],
+  ['গ্রুপ', 'Group'],
+  ['টাইপ', 'Type'],
+  ['ওপেনিং', 'Opening'],
+  ['লেজার বুক', 'Ledger Book'],
+  ['মোট ডেবিট', 'Total Debit'],
+  ['মোট ক্রেডিট', 'Total Credit'],
+  ['ব্যালেন্স', 'Balance'],
+  ['লোড', 'Load'],
+  ['কোম্পানি তথ্য', 'Company Info'],
+  ['কোম্পানির নাম', 'Company Name'],
+  ['সাব টাইটেল', 'Subtitle'],
+  ['ফোন', 'Phone'],
+  ['ঠিকানা', 'Address'],
+  ['লোগো আপলোড', 'Logo Upload'],
+  ['সেভ করুন', 'Save'],
+  ['ইউজারনেম', 'Username'],
+  ['রোল', 'Role'],
+  ['পাসওয়ার্ড', 'Password'],
+  ['বর্তমান ইউজার তালিকা', 'Current Users'],
+  ['জার্নাল নং', 'Journal No'],
+  ['বিবরণ', 'Description'],
+  ['ডেবিট', 'Debit'],
+  ['ক্রেডিট', 'Credit'],
+  ['অ্যাকশন', 'Actions'],
+  ['ডে বুক', 'Day Book'],
+  ['ট্রায়াল ব্যালেন্স', 'Trial Balance'],
+  ['ব্যালেন্স শীট', 'Balance Sheet'],
+  ['আর্থিক রিপোর্টস', 'Financial Reports'],
+  ['From Date', 'From Date'],
+  ['To Date', 'To Date']
+];
+const STATIC_TEXT_LOOKUP = STATIC_TEXT_PAIRS.reduce((acc, [bn, en]) => {
+  acc.bn[en] = bn;
+  acc.bn[bn] = bn;
+  acc.en[bn] = en;
+  acc.en[en] = en;
+  return acc;
+}, { bn:{}, en:{} });
+
+function t(key) {
+  return UI_TEXT[key]?.[S.lang] || UI_TEXT[key]?.en || key;
+}
+
+function roleText(role) {
+  const normalized = normalizeRole(role);
+  return ROLE_LABELS_I18N[normalized]?.[S.lang] || MEMBER_ROLE_LABELS[normalized] || normalized;
+}
+
+function applyStaticTextDictionary(lang) {
+  document.querySelectorAll('label, th, button, option, .card-title, .card-sub, .ledger-box-lbl, .rcp-key').forEach(el => {
+    if (el.hasAttribute('data-bn') && el.hasAttribute('data-en')) return;
+    if (['INPUT','SELECT','TEXTAREA'].includes(el.tagName)) return;
+    if (el.children.length) return;
+    const current = el.textContent.trim();
+    const next = STATIC_TEXT_LOOKUP[lang]?.[current];
+    if (next) el.textContent = next;
+  });
+}
 
 function getRouteTenantSlug() {
   const parts = window.location.pathname.split('/').filter(Boolean);
@@ -135,7 +238,7 @@ function syncSidebarRole() {
     return;
   }
   if (S.activeMemberRole) {
-    roleEl.textContent = MEMBER_ROLE_LABELS[S.activeMemberRole] || S.activeMemberRole;
+    roleEl.textContent = roleText(S.activeMemberRole);
   }
 }
 
@@ -586,6 +689,7 @@ function showWelcomePopover(name = '') {
 // ══════════════════════════════════════════
 function setLang(lang) {
   S.lang = lang;
+  localStorage.setItem('aura_lang', lang);
   document.documentElement.setAttribute('data-lang', lang);
   document.getElementById('langBn')?.classList.toggle('active', lang==='bn');
   document.getElementById('langEn')?.classList.toggle('active', lang==='en');
@@ -594,9 +698,21 @@ function setLang(lang) {
     const val = el.getAttribute('data-'+lang);
     if (val) el.textContent = val;
   });
+  applyStaticTextDictionary(lang);
   const activeModule = document.querySelector('.module.active')?.id || 'dashboard';
   const title = document.getElementById('topTitle');
   if (title) title.textContent = TT[lang]?.[activeModule] || activeModule;
+  syncSidebarRole();
+  refreshActiveLanguageContent(activeModule);
+}
+
+function refreshActiveLanguageContent(activeModule) {
+  if (activeModule === 'coa') renderCOA(S.coa || []);
+  if (activeModule === 'collection') loadCollections();
+  if (activeModule === 'users') loadUsers();
+  if (activeModule === 'ledger') loadLedger();
+  if (activeModule === 'receipt') genReceiptPreview();
+  if (activeModule === 'dashboard') loadDashboard();
 }
 
 // ══════════════════════════════════════════
@@ -855,7 +971,7 @@ async function loadCOA() {
 
 function renderCOA(rows) {
   const tb = document.getElementById('coaBody');
-  if (!rows.length) { tb.innerHTML='<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">কোনো অ্যাকাউন্ট নেই</td></tr>'; return; }
+  if (!rows.length) { tb.innerHTML=`<tr><td colspan="5" class="td-m" style="text-align:center;padding:20px">${S.lang === 'bn' ? 'কোনো অ্যাকাউন্ট নেই' : 'No account found'}</td></tr>`; return; }
   tb.innerHTML = rows.map(r => `
     <tr>
       <td><strong>${esc(r.account_code)}</strong></td>
@@ -868,7 +984,7 @@ function renderCOA(rows) {
 
 function requireXLSX() {
   if (typeof XLSX === 'undefined') {
-    toast('XLSX library load হয়নি। Page refresh করে আবার চেষ্টা করুন।', 'error');
+    toast(t('xlsxMissing'), 'error');
     return false;
   }
   return true;
@@ -939,7 +1055,7 @@ async function importCOAOpeningBalances(event) {
   const file = event.target.files?.[0];
   event.target.value = '';
   if (!file || !requireXLSX()) return;
-  if (!canManageMasterData()) { toast('Only Owner, Super User or Manager can import opening balances.', 'error'); return; }
+  if (!canManageMasterData()) { toast(t('masterDataDenied'), 'error'); return; }
   await getTenantId();
   if (!requireTenantForWrite()) return;
   try {
@@ -955,12 +1071,12 @@ async function importCOAOpeningBalances(event) {
         opening_balance: Number(pick(row, 'Opening Balance', 'Opening', 'opening_balance') || 0)
       });
     }).filter(Boolean);
-    if (!payload.length) { toast('Valid COA rows পাওয়া যায়নি।', 'warning'); return; }
+    if (!payload.length) { toast(t('validCoaMissing'), 'warning'); return; }
     const { error } = await writeWithOptionalTenant('coa', payload, (finalPayload) =>
       sb.from('coa').upsert(finalPayload, { onConflict: S.tenantId ? 'tenant_id,account_code' : 'account_code' })
     );
     if (error) { toast('COA import failed: ' + error.message, 'error'); return; }
-    toast(`${payload.length} COA rows imported/updated.`, 'success');
+    toast(`${payload.length} ${t('coaImported')}`, 'success');
     await loadCOA();
     await loadDashboard();
   } catch (error) {
@@ -1226,9 +1342,9 @@ async function saveCollection() {
 
 async function loadCollections() {
   const tb = document.getElementById('colList');
-  tb.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">Loading...</td></tr>';
+  tb.innerHTML = `<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">${esc(t('loading'))}</td></tr>`;
   const { data, error } = await readTenantRows('collections', (from) => from.select('*').order('created_at', { ascending:false }).limit(20));
-  if (error || !data.length) { tb.innerHTML='<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">No collection found</td></tr>'; return; }
+  if (error || !data.length) { tb.innerHTML=`<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">${esc(t('noCollection'))}</td></tr>`; return; }
   tb.innerHTML = data.map(r => `
     <tr>
       <td><span class="badge bg-gold">${esc(r.receipt_no||'—')}</span></td>
@@ -1238,9 +1354,9 @@ async function loadCollections() {
       <td class="td-m">${esc(r.description||'')}</td>
       <td>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-sm" onclick='editCollection(${JSON.stringify(r.receipt_no || '')})'>Edit</button>
-          <button class="btn btn-primary btn-sm" onclick='printCollectionReceipt(${JSON.stringify(r.receipt_no || '')})'>Print</button>
-          <button class="btn btn-danger-lt btn-sm" onclick='deleteCollection(${JSON.stringify(r.receipt_no || '')})'>Delete</button>
+          <button class="btn btn-ghost btn-sm" onclick='editCollection(${JSON.stringify(r.receipt_no || '')})'>${esc(t('edit'))}</button>
+          <button class="btn btn-primary btn-sm" onclick='printCollectionReceipt(${JSON.stringify(r.receipt_no || '')})'>${esc(t('print'))}</button>
+          <button class="btn btn-danger-lt btn-sm" onclick='deleteCollection(${JSON.stringify(r.receipt_no || '')})'>${esc(t('delete'))}</button>
         </div>
       </td>
     </tr>`).join('');
@@ -1253,9 +1369,9 @@ async function findCollectionByReceipt(receiptNo) {
 }
 
 async function editCollection(receiptNo) {
-  if (!canEditVoucher()) { toast('Only Owner, Super User or Manager can edit collections.', 'error'); return; }
+  if (!canEditVoucher()) { toast(t('collectionEditDenied'), 'error'); return; }
   const row = await findCollectionByReceipt(receiptNo);
-  if (!row) { toast('Collection row not found.', 'error'); return; }
+  if (!row) { toast(t('collectionMissing'), 'error'); return; }
   const meta = getReceiptMeta(row.receipt_no);
   S.editCollectionId = row.id;
   document.getElementById('colDate').value = row.collection_date || '';
@@ -1266,12 +1382,12 @@ async function editCollection(receiptNo) {
   document.getElementById('colHead').value = meta.head || 'General Collection';
   document.getElementById('colMode').value = meta.mode || 'Cash';
   document.getElementById('colDate')?.scrollIntoView({ behavior:'smooth', block:'center' });
-  toast('Collection loaded for editing.', 'info');
+  toast(t('collectionLoaded'), 'info');
 }
 
 async function printCollectionReceipt(receiptNo) {
   const row = await findCollectionByReceipt(receiptNo);
-  if (!row) { toast('Receipt data not found.', 'error'); return; }
+  if (!row) { toast(t('receiptMissing'), 'error'); return; }
   const meta = getReceiptMeta(row.receipt_no);
   S.lastReceipt = {
     rno: row.receipt_no,
@@ -1286,13 +1402,13 @@ async function printCollectionReceipt(receiptNo) {
 }
 
 async function deleteCollection(receiptNo) {
-  if (!isSuperUser()) { toast('Only Owner/Super User can delete collections.', 'error'); return; }
+  if (!isSuperUser()) { toast(t('collectionDeleteDenied'), 'error'); return; }
   if (!window.confirm(`Delete collection ${receiptNo}?`)) return;
   let query = sb.from('collections').delete().eq('receipt_no', receiptNo);
   if (S.tenantId) query = query.eq('tenant_id', S.tenantId);
   const { error } = await query;
   if (error) { toast('Collection delete failed: ' + error.message, 'error'); return; }
-  toast('Collection deleted.', 'success');
+  toast(t('collectionDeleted'), 'success');
   await loadCollections();
   await loadDashboard();
 }
@@ -1688,7 +1804,7 @@ async function loadLedger() {
   if (!accCode) return;
   const fromDate = document.getElementById('ledFrom')?.value || '';
   const toDate = document.getElementById('ledTo')?.value || '';
-  if (fromDate && toDate && fromDate > toDate) { toast('Ledger From date cannot be after To date.', 'warning'); return; }
+  if (fromDate && toDate && fromDate > toDate) { toast(t('dateRangeInvalid'), 'warning'); return; }
   const tb = document.getElementById('ledBody');
   tb.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
 
@@ -1705,7 +1821,7 @@ async function loadLedger() {
     return true;
   });
 
-  if (error || !rows.length) { tb.innerHTML='<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">No ledger entry found for selected range</td></tr>'; return; }
+  if (error || !rows.length) { tb.innerHTML=`<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">${esc(t('noLedger'))}</td></tr>`; return; }
 
   let tDr=0, tCr=0, bal=0;
   tb.innerHTML = rows.map(r => {
@@ -2132,7 +2248,7 @@ function exportExcel() {
   const ws = XLSX.utils.aoa_to_sheet(rows);
   XLSX.utils.book_append_sheet(wb, ws, 'Report');
   XLSX.writeFile(wb, `${title.replace(/[^\w]+/g,'_')}_${today}.xlsx`);
-  toast('XLSX download started.', 'success');
+  toast(t('xlsxDownloaded'), 'success');
 }
 
 // ══════════════════════════════════════════
@@ -2362,7 +2478,7 @@ async function addUser() {
 // Load user list — tenant-scoped when tenant is resolved, falls back to public.users
 async function loadUsers() {
   const tb = document.getElementById('userTable');
-  tb.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">Loading...</td></tr>';
+  tb.innerHTML = `<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">${esc(t('loading'))}</td></tr>`;
 
   // When tenant is resolved, show tenant-scoped app users directly. The
   // tenant_members.user_id column points at auth.users, so PostgREST cannot
@@ -2378,7 +2494,7 @@ async function loadUsers() {
     ]);
 
     if (error || !data?.length) {
-      tb.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">No user found</td></tr>';
+      tb.innerHTML = `<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">${esc(t('noUser'))}</td></tr>`;
       return;
     }
 
@@ -2390,12 +2506,12 @@ async function loadUsers() {
       const uname     = u.username || u.email?.split('@')[0] || '—';
       const member    = memberByUserId[u.id] || {};
       const roleValue = normalizeRole(member.role || (uname.toLowerCase() === 'superuser' ? 'owner' : 'user'));
-      const roleLabel = MEMBER_ROLE_LABELS[roleValue] || roleValue;
+      const roleLabel = roleText(roleValue);
       const badgeCls  = roleBadge(roleValue);
       const date      = u.created_at ? u.created_at.slice(0,10) : '—';
       const roleControl = canManageUsers()
         ? `<select class="form-control" style="min-width:130px" onchange="updateUserRole('${esc(u.id)}', this.value)" ${roleValue === 'owner' && uname.toLowerCase() === 'superuser' ? 'disabled' : ''}>
-            ${['owner','superuser','manager','user'].map(role => `<option value="${role}" ${role===roleValue?'selected':''}>${MEMBER_ROLE_LABELS[role]}</option>`).join('')}
+            ${['owner','superuser','manager','user'].map(role => `<option value="${role}" ${role===roleValue?'selected':''}>${esc(roleText(role))}</option>`).join('')}
           </select>`
         : `<span class="badge ${badgeCls}">${esc(roleLabel)}</span>`;
       return `<tr>
@@ -2403,8 +2519,8 @@ async function loadUsers() {
         <td class="td-m">${esc(u.email || '—')}</td>
         <td>${roleControl}</td>
         <td class="td-m">${esc(date)}</td>
-        <td><span class="badge bg-green">Active</span></td>
-        <td>${canManageUsers() ? '<span class="td-m">Role based access</span>' : '<span class="td-m">Read only</span>'}</td>
+        <td><span class="badge bg-green">${esc(t('active'))}</span></td>
+        <td><span class="td-m">${esc(canManageUsers() ? t('roleBasedAccess') : t('readOnly'))}</span></td>
       </tr>`;
     }).join('');
     return;
@@ -2417,7 +2533,7 @@ async function loadUsers() {
     .order('created_at', { ascending: false });
 
   if (error || !data?.length) {
-    tb.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">No user found</td></tr>';
+    tb.innerHTML = `<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">${esc(t('noUser'))}</td></tr>`;
     return;
   }
 
@@ -2432,21 +2548,21 @@ async function loadUsers() {
       <td class="td-m">${esc(u.email || '—')}</td>
       <td><span class="badge ${badgeCls}">${esc(role)}</span></td>
       <td class="td-m">${esc(date)}</td>
-      <td><span class="badge bg-green">Active</span></td>
-      <td><span class="td-m">Tenant required</span></td>
+      <td><span class="badge bg-green">${esc(t('active'))}</span></td>
+      <td><span class="td-m">${esc(t('tenantRequired'))}</span></td>
     </tr>`;
   }).join('');
 }
 
 async function updateUserRole(userId, role) {
-  if (!canManageUsers()) { toast('Only Owner/Super User can update roles.', 'error'); return; }
-  if (!S.tenantId) { toast('Tenant is not resolved.', 'error'); return; }
+  if (!canManageUsers()) { toast(t('roleUpdateDenied'), 'error'); return; }
+  if (!S.tenantId) { toast(t('tenantNotResolved'), 'error'); return; }
   const normalized = normalizeRole(role);
   const { error } = await sb
     .from('tenant_members')
     .upsert({ tenant_id: S.tenantId, user_id: userId, role: normalized, status: 'active', is_active: true }, { onConflict:'tenant_id,user_id' });
   if (error) { toast('Role update failed: ' + error.message, 'error'); await loadUsers(); return; }
-  toast('User role updated.', 'success');
+  toast(t('roleUpdated'), 'success');
   await loadUsers();
 }
 
@@ -2464,7 +2580,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
 // DOM READY
 // ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
-  setLang('en');
+  setLang(localStorage.getItem('aura_lang') || 'en');
   document.getElementById('colRno').value = genRno();
   genReceiptPreview();
 
