@@ -59,6 +59,9 @@ var S = {
   tenantResolved: false,
   tenantResolveError: null,
   tenantWarningShown: false,
+  welcomeShown: false,
+  welcomeTimer: null,
+  welcomeHideTimer: null,
   activeMemberRole: null,
   tenantColumnSupport: {}
 };
@@ -496,22 +499,44 @@ function getBadgeInitial(safeName = '') {
   return (Array.from(safeName)[0] || '').toUpperCase();
 }
 
+function applyWelcomeBrand(pop, badge, safeName) {
+  const company = S.company || {};
+  const primary = company.primary_color || company.primaryColor || company.brand_primary || company.brandPrimary || '';
+  const secondary = company.secondary_color || company.secondaryColor || company.brand_secondary || company.brandSecondary || '';
+  const accent = company.accent_color || company.accentColor || company.brand_accent || company.brandAccent || '';
+  if (primary) pop.style.setProperty('--welcome-primary', primary);
+  if (secondary) pop.style.setProperty('--welcome-secondary', secondary);
+  if (accent) pop.style.setProperty('--welcome-accent', accent);
+
+  const logo = company.logo || '';
+  if (logo) {
+    badge.style.backgroundImage = `url(${logo})`;
+    badge.textContent = '';
+    return;
+  }
+  badge.style.backgroundImage = '';
+  badge.textContent = getBadgeInitial(company.name || safeName) || 'A';
+}
+
 function showWelcomePopover(name = '') {
   const POPOVER_TRANSITION_MS = 260;
   const POPOVER_DISPLAY_MS = 3200;
-  const DEFAULT_BADGE_INITIAL = 'A';
   const pop = document.getElementById('welcomePopover');
   const badge = document.getElementById('welcomeBadge');
   const text = document.getElementById('welcomeText');
+  if (!pop || !badge || !text || S.welcomeShown) return;
+  S.welcomeShown = true;
+  clearTimeout(S.welcomeTimer);
+  clearTimeout(S.welcomeHideTimer);
   const safeName = normalizeWelcomeName(name);
-  badge.textContent = getBadgeInitial(safeName) || DEFAULT_BADGE_INITIAL;
+  applyWelcomeBrand(pop, badge, safeName);
   text.textContent = getWelcomeText(safeName);
   pop.classList.remove('hidden');
   pop.setAttribute('aria-hidden', 'false');
   requestAnimationFrame(() => requestAnimationFrame(() => pop.classList.add('show')));
-  setTimeout(() => {
+  S.welcomeTimer = setTimeout(() => {
     pop.classList.remove('show');
-    setTimeout(() => {
+    S.welcomeHideTimer = setTimeout(() => {
       pop.classList.add('hidden');
       pop.setAttribute('aria-hidden', 'true');
     }, POPOVER_TRANSITION_MS);
@@ -646,6 +671,7 @@ async function login() {
     S.tenantId = null;
     S.tenantSlug = getRouteTenantSlug();
     S.tenantResolved = false;
+    S.welcomeShown = false;
     S.activeMemberRole = null;
 
     document.getElementById('loginModal').classList.add('hidden');
@@ -658,7 +684,6 @@ async function login() {
     await initApp();
     const welcomeName = normalizeWelcomeName(data.user.name || username);
     showWelcomePopover(welcomeName);
-    toast(getWelcomeText(welcomeName), 'success');
 
   } catch (e) {
     btn.disabled = false;
@@ -670,7 +695,7 @@ async function login() {
 
 async function logout() {
   await sb.auth.signOut();
-  S.user = null; S.session = null; S.tenantId = null; S.tenantSlug = getRouteTenantSlug(); S.tenantResolved = false; S.activeMemberRole = null;
+  S.user = null; S.session = null; S.tenantId = null; S.tenantSlug = getRouteTenantSlug(); S.tenantResolved = false; S.welcomeShown = false; S.activeMemberRole = null;
   document.getElementById('app').classList.add('hidden');
   document.getElementById('mobBottomNav').classList.add('hidden');
   document.getElementById('loginModal').classList.remove('hidden');
@@ -2170,7 +2195,7 @@ async function loadUsers() {
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 sb.auth.onAuthStateChange(async (event, session) => {
   if (event==='SIGNED_IN' && session) {
-    S.user=session.user; S.session=session; S.tenantId=null; S.tenantSlug=getRouteTenantSlug(); S.tenantResolved=false; S.activeMemberRole=null;
+    S.user=session.user; S.session=session; S.tenantId=null; S.tenantSlug=getRouteTenantSlug(); S.tenantResolved=false; S.welcomeShown=false; S.activeMemberRole=null;
     // Already handled by login()
   }
 });
@@ -2214,7 +2239,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Check existing session
   sb.auth.getSession().then(async ({ data:{ session } }) => {
     if (session) {
-      S.user = session.user; S.session = session; S.tenantSlug = getRouteTenantSlug();
+      S.user = session.user; S.session = session; S.tenantSlug = getRouteTenantSlug(); S.welcomeShown = false;
       document.getElementById('loginModal').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
       document.getElementById('mobBottomNav').classList.remove('hidden');

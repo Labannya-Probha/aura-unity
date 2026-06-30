@@ -162,9 +162,9 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
 .t-info{border-left:4px solid var(--info)}
 .t-warning{border-left:4px solid var(--gold)}
 /* WELCOME POPOVER */
-.welcome-popover{position:fixed;top:14px;right:24px;transform:translateY(-14px);background:linear-gradient(135deg,var(--navy2),var(--navy3));border:1px solid rgba(212,160,23,.34);color:#fff;padding:10px 14px;border-radius:12px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;z-index:10001;opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
+.welcome-popover{--welcome-primary:var(--navy2);--welcome-secondary:var(--navy3);--welcome-accent:var(--gold);position:fixed;top:14px;right:24px;transform:translateY(-14px);background:linear-gradient(135deg,var(--welcome-primary),var(--welcome-secondary));border:1px solid color-mix(in srgb,var(--welcome-accent) 46%,transparent);color:#fff;padding:10px 14px;border-radius:12px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;z-index:10001;opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
 .welcome-popover.show{opacity:1;transform:translateY(0)}
-.welcome-badge{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,var(--gold),#B8860B);display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--navy)}
+.welcome-badge{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--welcome-accent),#B8860B);background-position:center;background-size:cover;background-repeat:no-repeat;display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--navy);box-shadow:inset 0 0 0 1px rgba(255,255,255,.32)}
 .welcome-text{font-size:12.5px;font-weight:600;white-space:nowrap}
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(8,15,30,.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:3000;padding:16px}
