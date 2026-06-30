@@ -6,6 +6,17 @@ A static HTML web application.
 
 The main app remains a static site with entry point `index.html` at the repository root.
 
+## Supabase migrations
+
+Database migrations run automatically from GitHub Actions when files under `supabase/migrations/` are pushed to `main`.
+
+Required repository secrets:
+
+- `SUPABASE_ACCESS_TOKEN`: Supabase personal access token.
+- `SUPABASE_DB_PASSWORD`: database password for project `ltcjgbhjkfvlzzvvulhz`.
+
+The workflow can also be run manually from GitHub Actions: **Supabase Migrations**.
+
 ## Migration sandbox
 
 The React migration sandbox is served from:
@@ -15,7 +26,7 @@ The React migration sandbox is served from:
 This includes:
 
 - `Login.jsx` route
-- Basic client-side routing (`/`, `/dashboard`, `/reports` via hash routing)
+- Tenant-aware routes (`/login`, `/<tenantSlug>/login`, `/<tenantSlug>/dashboard`, `/<tenantSlug>/reports`)
 - Separate page components in `migration-app/src/pages`
 - Reusable UI primitives in `migration-app/src/components/ui`
 - Vite-based source app in `migration-app`
