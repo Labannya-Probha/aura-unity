@@ -125,6 +125,19 @@ function getCurrentRole() {
   return S.user?.role || document.getElementById('sbRole')?.textContent || 'ইউজার';
 }
 
+function syncSidebarRole() {
+  const roleEl = document.getElementById('sbRole');
+  const userName = (document.getElementById('sbUname')?.textContent || '').trim().toLowerCase();
+  if (!roleEl) return;
+  if (userName === 'superuser') {
+    roleEl.textContent = 'Owner';
+    return;
+  }
+  if (S.activeMemberRole) {
+    roleEl.textContent = MEMBER_ROLE_LABELS[S.activeMemberRole] || S.activeMemberRole;
+  }
+}
+
 function isSuperUser() {
   if (S.activeMemberRole === 'owner' || S.activeMemberRole === 'superuser') return true;
   return /super\s*user/i.test(getCurrentRole());
@@ -723,9 +736,7 @@ async function initApp() {
 
   await getTenantId();
   // Reflect the resolved tenant member role in the sidebar
-  if (S.activeMemberRole) {
-    document.getElementById('sbRole').textContent = MEMBER_ROLE_LABELS[S.activeMemberRole] || S.activeMemberRole;
-  }
+  syncSidebarRole();
   await loadVoucherSummary();
   await loadCompany();
   await loadCOA();
