@@ -21,8 +21,10 @@ export default defineConfig([
       // Context files export both the Provider component and a hook.
       // Allowing non-component exports avoids per-file disable comments.
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
-      // Destructured-away variables named _ are intentionally unused.
-      'no-unused-vars': ['error', { destructuredArrayIgnorePattern: '^_', ignoreRestSiblings: true }],
+      // Variables/destructured slots named _ are intentionally unused.
+      // varsIgnorePattern covers object destructuring ({ tenant_id: _, ...rest });
+      // destructuredArrayIgnorePattern covers array patterns ([_, second]).
+      'no-unused-vars': ['error', { varsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_', ignoreRestSiblings: true }],
     },
   },
 ])

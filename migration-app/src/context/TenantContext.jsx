@@ -42,22 +42,24 @@ export function TenantProvider({ children }) {
   const { user } = useAuth()
   const [state, dispatch] = useReducer(tenantReducer, RESET_STATE)
 
-  const loadCompany = useCallback(async (tid) => {
+  const loadCompany = useCallback(async (tid, signal) => {
     const { data } = await readTenantRows(
       'company_info',
       (from) => from.select('setting_key,setting_value'),
       tid,
     )
+    if (signal?.aborted) return
     if (!data?.length) return
     dispatch({ type: 'COMPANY', company: Object.fromEntries(data.map((r) => [r.setting_key, r.setting_value])) })
   }, [])
 
-  const loadCoa = useCallback(async (tid) => {
+  const loadCoa = useCallback(async (tid, signal) => {
     const { data } = await readTenantRows(
       'coa',
       (from) => from.select('*').order('account_code'),
       tid,
     )
+    if (signal?.aborted) return
     dispatch({ type: 'COA', coa: data || [] })
   }, [])
 
@@ -67,17 +69,18 @@ export function TenantProvider({ children }) {
       return
     }
 
-    let cancelled = false
+    const controller = new AbortController()
+    const { signal } = controller
     dispatch({ type: 'RESOLVING' })
 
     async function resolve() {
       // Primary path: tenant_members (mirrors assets/js/index.js:803-838)
       const membership = await resolveTenantFromMembership(user.id)
-      if (cancelled) return
+      if (signal.aborted) return
 
       if (membership) {
         dispatch({ type: 'RESOLVED', tenantId: membership.tenantId, role: membership.role })
-        await Promise.all([loadCompany(membership.tenantId), loadCoa(membership.tenantId)])
+        await Promise.all([loadCompany(membership.tenantId, signal), loadCoa(membership.tenantId, signal)])
         return
       }
 
@@ -85,18 +88,18 @@ export function TenantProvider({ children }) {
       const metaTenant = user.app_metadata?.tenant_id || user.user_metadata?.tenant_id
       if (metaTenant) {
         dispatch({ type: 'RESOLVED', tenantId: metaTenant, role: null })
-        await Promise.all([loadCompany(metaTenant), loadCoa(metaTenant)])
+        await Promise.all([loadCompany(metaTenant, signal), loadCoa(metaTenant, signal)])
         return
       }
 
       // No tenant found — mark resolved so UI can render appropriately
-      if (!cancelled) {
+      if (!signal.aborted) {
         dispatch({ type: 'RESOLVED', tenantId: null, role: null })
       }
     }
 
     resolve()
-    return () => { cancelled = true }
+    return () => { controller.abort() }
   }, [user, loadCompany, loadCoa])
 
   async function saveCompany(updates) {
