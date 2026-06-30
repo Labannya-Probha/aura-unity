@@ -93,6 +93,10 @@ function getTenantSlugCandidates(slug) {
   return [...new Set([decoded, decoded.toLowerCase(), decoded.replace(/['’]/g, ''), compact, dashed].filter(Boolean))];
 }
 
+function isDefaultTenantSlug(slug) {
+  return getTenantSlugCandidates(slug).some((candidate) => candidate === 'challangersof90s');
+}
+
 function safeJsonParse(value, fallback) {
   try { return value ? JSON.parse(value) : fallback; }
   catch (error) { console.warn('Local state parse failed:', error); return fallback; }
@@ -923,6 +927,15 @@ async function getTenantId() {
 
   // Primary: resolve from tenant_members (proper multi-tenant model)
   if (await resolveTenantFromMembership(userId)) {
+    return S.tenantId;
+  }
+
+  if (S.tenantSlug && isDefaultTenantSlug(S.tenantSlug)) {
+    S.tenantId = '00000000-0000-0000-0000-000000000001';
+    S.tenantSlug = 'challangersof90s';
+    S.activeMemberRole = S.activeMemberRole || 'owner';
+    S.tenantResolved = true;
+    S.tenantResolveError = null;
     return S.tenantId;
   }
 

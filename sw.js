@@ -1,7 +1,7 @@
 // Aura Unity ERP service worker
 // Keeps offline support while making deployed HTML/CSS/JS updates visible quickly.
 
-const CACHE_NAME = 'aura-unity-v5';
+const CACHE_NAME = 'aura-unity-v6';
 const APP_SHELL = [
   '/',
   '/index.html',
