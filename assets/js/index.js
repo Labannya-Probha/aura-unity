@@ -74,7 +74,7 @@ var TT = {
 const LOCAL_STATE_KEY = 'aura-unity-local-state-v2';
 
 // Maps tenant_members.role values to display labels (Bengali/English)
-const MEMBER_ROLE_LABELS = { owner: 'Owner', superuser: 'Super User', manager: 'ম্যানেজার', user: 'ইউজার' };
+const MEMBER_ROLE_LABELS = { owner: 'Owner', superuser: 'Super User', manager: 'Manager', user: 'User' };
 const MEMBER_ROLE_BADGES = { owner: 'bg-danger', superuser: 'bg-gold', manager: 'bg-navy', user: 'bg-green' };
 
 function getRouteTenantSlug() {
@@ -768,7 +768,7 @@ function applyCompany() {
   if (c.logo) {
     ['sbLogo','rcpLogo','rcpLogo2','coLogoPreview'].forEach(id => {
       const el = document.getElementById(id);
-      if (el) { el.style.backgroundImage=`url(${c.logo})`; el.style.backgroundSize='cover'; el.textContent=''; }
+      if (el) { el.style.backgroundImage=`url("${c.logo}")`; el.style.backgroundSize='cover'; el.textContent=''; }
     });
   }
   document.getElementById('coName').value  = c.name    || '';
