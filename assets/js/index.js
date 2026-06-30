@@ -46,7 +46,7 @@ const sb = createClient(SUPA_URL, SUPA_ANON);
 // APP STATE
 // ══════════════════════════════════════════
 var S = {
-  lang: 'bn',
+  lang: 'en',
   user: null,
   session: null,
   company: { name:"Challengers of 90's", sub:"Non Profit Krira Songothon ERP", address:"Victoria School Field, Sreemangal", phone:"01XXXXXXXXX", logo:"" },
@@ -553,13 +553,16 @@ function showWelcomePopover(name = '') {
 function setLang(lang) {
   S.lang = lang;
   document.documentElement.setAttribute('data-lang', lang);
-  document.getElementById('langBn').classList.toggle('active', lang==='bn');
-  document.getElementById('langEn').classList.toggle('active', lang==='en');
+  document.getElementById('langBn')?.classList.toggle('active', lang==='bn');
+  document.getElementById('langEn')?.classList.toggle('active', lang==='en');
   document.querySelectorAll('[data-bn][data-en]').forEach(el => {
     if (el.tagName==='INPUT'||el.tagName==='SELECT'||el.tagName==='TEXTAREA') return;
     const val = el.getAttribute('data-'+lang);
     if (val) el.textContent = val;
   });
+  const activeModule = document.querySelector('.module.active')?.id || 'dashboard';
+  const title = document.getElementById('topTitle');
+  if (title) title.textContent = TT[lang]?.[activeModule] || activeModule;
 }
 
 // ══════════════════════════════════════════
@@ -2219,36 +2222,14 @@ sb.auth.onAuthStateChange(async (event, session) => {
 // DOM READY
 // ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
+  setLang('en');
   document.getElementById('colRno').value = genRno();
   genReceiptPreview();
 
-  // Register PWA service worker and activate fresh deploys promptly.
   if ('serviceWorker' in navigator) {
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (refreshing) return;
-      refreshing = true;
-      window.location.reload();
-    });
-
-    navigator.serviceWorker.register('/sw.js').then((registration) => {
-      registration.update().catch(() => {});
-
-      registration.addEventListener('updatefound', () => {
-        const worker = registration.installing;
-        if (!worker) return;
-
-        worker.addEventListener('statechange', () => {
-          if (worker.state === 'installed' && navigator.serviceWorker.controller) {
-            worker.postMessage({ type: 'SKIP_WAITING' });
-          }
-        });
-      });
-
-      if (registration.waiting) {
-        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-      }
-    }).catch((e) => console.debug('[SW] Registration failed:', e));
+    navigator.serviceWorker.getRegistrations()
+      .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
+      .catch((e) => console.debug('[SW] Unregister failed:', e));
   }
 
   // Check existing session

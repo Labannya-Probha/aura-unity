@@ -1,22 +1,15 @@
 <!DOCTYPE html>
-<html lang="bn" data-lang="bn">
+<html lang="en" data-lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Aura Unity ERP</title>
-<!-- PWA -->
-<link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#D4A017">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Aura Unity">
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
 <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link rel="stylesheet" href="/assets/css/index.css?v=20260630-usersfix">
+  <link rel="stylesheet" href="/assets/css/index.css?v=20260630-englishnav">
 
 </head>
 <body>
@@ -70,8 +63,7 @@
       </div>
     </div>
     <div class="lang-toggle">
-      <button class="lang-btn active" id="langBn" onclick="setLang('bn')">বাংলা</button>
-      <button class="lang-btn" id="langEn" onclick="setLang('en')">English</button>
+      <button class="lang-btn active" id="langEn" onclick="setLang('en')">English</button>
     </div>
     <div class="sb-user">
       <div id="sbRole" class="sb-role">Super User</div>
@@ -110,6 +102,8 @@
         <button class="btn btn-ghost btn-sm" onclick="openModule('company')">⚙</button>
         <button class="btn btn-gold btn-sm" onclick="openModule('collection')"><span data-bn="+ কালেকশন" data-en="+ Collection">+ কালেকশন</span></button>
         <button class="btn btn-ghost btn-sm" onclick="openModule('voucher')"><span data-bn="+ ভাউচার / জার্নাল" data-en="+ Voucher / Journal">+ ভাউচার / জার্নাল</span></button>
+        <button class="btn btn-ghost btn-sm" onclick="openModule('receipt')"><span data-bn="মানি রিসিট" data-en="Money Receipt">Money Receipt</span></button>
+        <button class="btn btn-ghost btn-sm" onclick="openModule('coa')"><span data-bn="চার্ট অব অ্যাকাউন্টস" data-en="Chart of Accounts">Chart of Accounts</span></button>
       </div>
     </div>
     <div class="content">
@@ -640,7 +634,7 @@
   </div>
 </div>
 
-  <script src="/assets/js/index.js?v=20260630-usersfix"></script>
+  <script src="/assets/js/index.js?v=20260630-englishnav"></script>
 
 </body>
 </html>
