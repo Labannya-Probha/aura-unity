@@ -454,7 +454,8 @@ function canManageUsers() {
 }
 
 function canDeleteData() {
-  return isSuperUser();
+  const uname = (document.getElementById('sbUname')?.textContent || S.user?.name || '').trim().toLowerCase();
+  return uname === 'superuser' || ['owner', 'superuser'].includes(S.activeMemberRole) || /super\s*user|owner/i.test(getCurrentRole());
 }
 
 function updateDestructiveControls() {
@@ -756,6 +757,7 @@ document.querySelectorAll('.nav-item').forEach(el => {
 });
 function openModule(id) {
   if (id==='journal') id = 'voucher';
+  updateDestructiveControls();
   document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
   const t = document.getElementById(id);
   if (t) t.classList.add('active');
