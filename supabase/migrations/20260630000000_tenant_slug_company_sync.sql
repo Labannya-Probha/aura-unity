@@ -1,5 +1,58 @@
 -- Tenant slug routing + tenant-isolated company/account sync fixes.
 
+create table if not exists public.tenants (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  slug text unique not null,
+  created_by uuid references auth.users(id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.tenant_members (
+  id uuid primary key default gen_random_uuid(),
+  tenant_id uuid not null references public.tenants(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  role text not null check (role in ('owner','superuser','manager','user')),
+  status text not null default 'active' check (status in ('active','invited','disabled')),
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  unique (tenant_id, user_id)
+);
+
+create index if not exists tenant_members_tenant_id_idx on public.tenant_members (tenant_id);
+create index if not exists tenant_members_user_id_idx on public.tenant_members (user_id);
+
+do $$
+declare
+  tbl_name text;
+begin
+  foreach tbl_name in array array[
+    'company_info',
+    'coa',
+    'collections',
+    'vouchers',
+    'journals',
+    'journal_items'
+  ]
+  loop
+    if to_regclass(format('public.%I', tbl_name)) is not null
+      and not exists (
+        select 1
+        from information_schema.columns
+        where table_schema = 'public'
+          and table_name = tbl_name
+          and column_name = 'tenant_id'
+      )
+    then
+      execute format(
+        'alter table public.%I add column tenant_id uuid references public.tenants(id) on delete cascade',
+        tbl_name
+      );
+    end if;
+  end loop;
+end $$;
+
 create or replace function public.is_active_tenant_member(check_tenant_id uuid)
 returns boolean language sql stable security definer as $$
   select exists (
