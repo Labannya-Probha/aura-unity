@@ -3,15 +3,16 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { useAuth } from '@/context/AuthContext'
 import { useTenant } from '@/context/TenantContext'
+import { getTenantPath } from '@/lib/tenant'
 
 export default function DashboardPage() {
   const navigate = useNavigate()
   const { logout, user } = useAuth()
-  const { company, roleLabel, tenantId, tenantResolved, coa } = useTenant()
+  const { company, roleLabel, tenantId, tenantSlug, tenantResolved, coa } = useTenant()
 
   async function handleLogout() {
     await logout()
-    navigate('/', { replace: true })
+    navigate(getTenantPath(tenantSlug, '/login'), { replace: true })
   }
 
   const companyName = company.name || 'Aura Unity ERP'
@@ -76,7 +77,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="au-row" style={{ marginTop: 16 }}>
-        <Button onClick={() => navigate('/reports')}>View Chart of Accounts</Button>
+        <Button onClick={() => navigate(getTenantPath(tenantSlug, '/reports'))}>View Chart of Accounts</Button>
       </div>
     </main>
   )

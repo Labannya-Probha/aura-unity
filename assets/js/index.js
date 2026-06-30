@@ -55,6 +55,7 @@ var S = {
   lastReceipt: null,
   editJournalId: null,
   tenantId: null,
+  tenantSlug: null,
   tenantResolved: false,
   activeMemberRole: null,
   tenantColumnSupport: {}
@@ -70,6 +71,12 @@ const LOCAL_STATE_KEY = 'aura-unity-local-state-v2';
 // Maps tenant_members.role values to display labels (Bengali/English)
 const MEMBER_ROLE_LABELS = { owner: 'Owner', superuser: 'Super User', manager: 'ম্যানেজার', user: 'ইউজার' };
 const MEMBER_ROLE_BADGES = { owner: 'bg-danger', superuser: 'bg-gold', manager: 'bg-navy', user: 'bg-green' };
+
+function getRouteTenantSlug() {
+  const parts = window.location.pathname.split('/').filter(Boolean);
+  if (parts.length >= 2 && ['login', 'dashboard', 'reports'].includes(parts[1])) return parts[0];
+  return null;
+}
 
 function safeJsonParse(value, fallback) {
   try { return value ? JSON.parse(value) : fallback; }
@@ -606,6 +613,7 @@ async function login() {
 
     S.user = data.user;
     S.tenantId = null;
+    S.tenantSlug = getRouteTenantSlug();
     S.tenantResolved = false;
     S.activeMemberRole = null;
 
@@ -631,7 +639,7 @@ async function login() {
 
 async function logout() {
   await sb.auth.signOut();
-  S.user = null; S.session = null; S.tenantId = null; S.tenantResolved = false; S.activeMemberRole = null;
+  S.user = null; S.session = null; S.tenantId = null; S.tenantSlug = getRouteTenantSlug(); S.tenantResolved = false; S.activeMemberRole = null;
   document.getElementById('app').classList.add('hidden');
   document.getElementById('mobBottomNav').classList.add('hidden');
   document.getElementById('loginModal').classList.remove('hidden');
@@ -719,7 +727,7 @@ async function saveCompany() {
   await getTenantId();
   const rows = tenantInsertPayload(Object.keys(c).map(k => ({ setting_key:k, setting_value:c[k], updated_at: new Date().toISOString() })));
   const { error } = await writeWithOptionalTenant('company_info', rows, (finalPayload) =>
-    sb.from('company_info').upsert(finalPayload, { onConflict:'setting_key' })
+    sb.from('company_info').upsert(finalPayload, { onConflict: S.tenantId ? 'tenant_id,setting_key' : 'setting_key' })
   );
   if (error) { toast('সেভ ব্যর্থ: '+error.message,'error'); return; }
   applyCompany();
@@ -782,7 +790,7 @@ async function saveAccount() {
   await getTenantId();
   const payload = tenantInsertPayload({ account_code:code, account_name:name, account_group:grp, account_type:typ, opening_balance:op });
   const { error } = await writeWithOptionalTenant('coa', payload, (finalPayload) =>
-    sb.from('coa').upsert(finalPayload, { onConflict:'account_code' })
+    sb.from('coa').upsert(finalPayload, { onConflict: S.tenantId ? 'tenant_id,account_code' : 'account_code' })
   );
   if (error) { toast('সেভ ব্যর্থ: '+error.message,'error'); return; }
   closeModal('accModal');
@@ -803,16 +811,19 @@ function firstUUID(...values) {
 async function resolveTenantFromMembership(userId) {
   if (!isUUID(userId)) return false;
   try {
-    const { data, error } = await sb
+    const tenantSlug = S.tenantSlug || getRouteTenantSlug();
+    let query = sb
       .from('tenant_members')
-      .select('tenant_id, role')
+      .select(tenantSlug ? 'tenant_id, role, tenants!inner(slug)' : 'tenant_id, role')
       .eq('user_id', userId)
       .eq('is_active', true)
       .eq('status', 'active')
-      .limit(1)
-      .maybeSingle();
+      .limit(1);
+    if (tenantSlug) query = query.eq('tenants.slug', tenantSlug);
+    const { data, error } = await query.maybeSingle();
     if (!error && data?.tenant_id) {
       S.tenantId = data.tenant_id;
+      S.tenantSlug = data.tenants?.slug || tenantSlug || null;
       S.activeMemberRole = data.role || (() => { console.warn('[tenant] tenant_members role missing for user', userId); return 'user'; })();
       S.tenantResolved = true;
       return true;
@@ -823,6 +834,7 @@ async function resolveTenantFromMembership(userId) {
 
 async function getTenantId() {
   if (S.tenantResolved) return S.tenantId;
+  S.tenantSlug = S.tenantSlug || getRouteTenantSlug();
 
   const { data: { session } } = await sb.auth.getSession();
   if (session?.user) {
@@ -835,6 +847,11 @@ async function getTenantId() {
   // Primary: resolve from tenant_members (proper multi-tenant model)
   if (await resolveTenantFromMembership(userId)) {
     return S.tenantId;
+  }
+
+  if (S.tenantSlug) {
+    S.tenantResolved = true;
+    return null;
   }
 
   // Legacy fallback: check user metadata and users table (transition compatibility)
@@ -2078,7 +2095,7 @@ async function loadUsers() {
 // ══════════════════════════════════════════
 sb.auth.onAuthStateChange(async (event, session) => {
   if (event==='SIGNED_IN' && session) {
-    S.user=session.user; S.session=session; S.tenantId=null; S.tenantResolved=false; S.activeMemberRole=null;
+    S.user=session.user; S.session=session; S.tenantId=null; S.tenantSlug=getRouteTenantSlug(); S.tenantResolved=false; S.activeMemberRole=null;
     // Already handled by login()
   }
 });
@@ -2122,7 +2139,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Check existing session
   sb.auth.getSession().then(async ({ data:{ session } }) => {
     if (session) {
-      S.user = session.user; S.session = session;
+      S.user = session.user; S.session = session; S.tenantSlug = getRouteTenantSlug();
       document.getElementById('loginModal').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
       document.getElementById('mobBottomNav').classList.remove('hidden');

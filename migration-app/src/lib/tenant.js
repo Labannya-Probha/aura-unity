@@ -4,27 +4,40 @@ function isUUID(v) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v || ''))
 }
 
+export function getTenantPath(tenantSlug, path = '') {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+  return tenantSlug ? `/${tenantSlug}${normalizedPath}` : normalizedPath
+}
+
 /**
  * Query tenant_members to find the caller's active tenant and role.
- * Returns { tenantId, role } on success, null if no membership found.
- * Mirrors resolveTenantFromMembership() in assets/js/index.js:803-822.
+ * When tenantSlug is provided, the URL tenant wins and no other tenant is used.
  */
-export async function resolveTenantFromMembership(userId) {
+export async function resolveTenantFromMembership(userId, tenantSlug) {
   if (!isUUID(userId)) return null
   try {
-    const { data, error } = await sb
+    let query = sb
       .from('tenant_members')
-      .select('tenant_id, role')
+      .select(tenantSlug ? 'tenant_id, role, tenants!inner(slug)' : 'tenant_id, role')
       .eq('user_id', userId)
       .eq('is_active', true)
       .eq('status', 'active')
       .order('created_at', { ascending: true })
       .limit(1)
-      .maybeSingle()
+
+    if (tenantSlug) query = query.eq('tenants.slug', tenantSlug)
+
+    const { data, error } = await query.maybeSingle()
     if (!error && data?.tenant_id) {
-      return { tenantId: data.tenant_id, role: data.role || 'user' }
+      return {
+        tenantId: data.tenant_id,
+        role: data.role || 'user',
+        tenantSlug: data.tenants?.slug || tenantSlug || null,
+      }
     }
-  } catch { /* swallow — caller receives null */ }
+  } catch {
+    // Caller receives null and can decide whether to allow legacy fallback.
+  }
   return null
 }
 
@@ -58,7 +71,6 @@ const tenantColumnSupport = {}
 /**
  * Execute a Supabase query scoped to tenantId when available.
  * Falls back to an unscoped query if the table lacks tenant_id.
- * Mirrors readTenantRows() in assets/js/index.js:901-911.
  */
 export async function readTenantRows(table, buildQuery, tenantId) {
   if (tenantId && tenantColumnSupport[table] !== false) {
@@ -72,7 +84,6 @@ export async function readTenantRows(table, buildQuery, tenantId) {
 /**
  * Execute a write, automatically retrying without tenant_id when the table
  * does not have that column.
- * Mirrors writeWithOptionalTenant() in assets/js/index.js:885-899.
  */
 export async function writeWithOptionalTenant(table, payload, executor) {
   const canRetry = Array.isArray(payload)

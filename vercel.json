@@ -2,6 +2,11 @@
   "buildCommand": null,
   "outputDirectory": ".",
   "framework": null,
+  "rewrites": [
+    { "source": "/:tenantSlug/login", "destination": "/index.html" },
+    { "source": "/:tenantSlug/dashboard", "destination": "/index.html" },
+    { "source": "/:tenantSlug/reports", "destination": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/sw.js",

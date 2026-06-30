@@ -7,7 +7,9 @@ import ReportsPage from '@/pages/Reports'
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<LoginPage />} />
+      <Route path="/" element={<Navigate replace to="/login" />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/:tenantSlug/login" element={<LoginPage />} />
       <Route
         path="/dashboard"
         element={
@@ -17,7 +19,23 @@ export default function App() {
         }
       />
       <Route
+        path="/:tenantSlug/dashboard"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/reports"
+        element={
+          <ProtectedRoute>
+            <ReportsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:tenantSlug/reports"
         element={
           <ProtectedRoute>
             <ReportsPage />

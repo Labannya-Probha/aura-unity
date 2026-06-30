@@ -2,12 +2,13 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { useTenant } from '@/context/TenantContext'
+import { getTenantPath } from '@/lib/tenant'
 
 const GROUP_ORDER = ['Asset', 'Liability', 'Equity', 'Income', 'Expense']
 
 export default function ReportsPage() {
   const navigate = useNavigate()
-  const { coa, company } = useTenant()
+  const { coa, company, tenantSlug } = useTenant()
 
   // Group accounts by account_group for a structured view
   const groups = {}
@@ -27,7 +28,7 @@ export default function ReportsPage() {
       <div className="page-header">
         <h1 className="au-title au-title--page">Chart of Accounts</h1>
         <div className="au-row">
-          <Button variant="ghost" onClick={() => navigate('/dashboard')}>Dashboard</Button>
+          <Button variant="ghost" onClick={() => navigate(getTenantPath(tenantSlug, '/dashboard'))}>Dashboard</Button>
         </div>
       </div>
 

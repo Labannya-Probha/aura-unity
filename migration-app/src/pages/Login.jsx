@@ -1,12 +1,14 @@
 import { useState } from 'react'
-import { useNavigate, Navigate } from 'react-router-dom'
+import { useNavigate, Navigate, useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { useAuth } from '@/context/AuthContext'
+import { getTenantPath } from '@/lib/tenant'
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const { tenantSlug } = useParams()
   const { login, session } = useAuth()
 
   const [email, setEmail] = useState('')
@@ -16,7 +18,7 @@ export default function LoginPage() {
 
   // Already signed in — redirect immediately (pure render, no side-effect)
   if (session) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to={getTenantPath(tenantSlug, '/dashboard')} replace />
   }
 
   async function onSubmit(event) {
@@ -26,7 +28,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await login(email.trim(), password)
-      navigate('/dashboard', { replace: true })
+      navigate(getTenantPath(tenantSlug, '/dashboard'), { replace: true })
     } catch (err) {
       setError(err.message || 'Login failed. Check your email and password.')
     } finally {
