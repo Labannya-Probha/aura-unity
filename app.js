@@ -2492,12 +2492,13 @@ function genReceiptPreview() {
 }
 
 function printReceipt() {
-  genReceiptPreview();
-  setTimeout(()=>{
-    const pa=document.getElementById('printArea');
-    pa.innerHTML=document.getElementById('receiptPreview').outerHTML;
-    pa.style.display='block'; window.print(); pa.style.display='none'; pa.innerHTML='';
-  },300);
+  const draft = getReceiptDraft();
+  const url = `money-receipt.html?receipt_no=${encodeURIComponent(draft.rno)}&payer=${encodeURIComponent(draft.name)}&amount=${draft.amount}&mode=${encodeURIComponent(draft.mode)}&head=${encodeURIComponent(draft.head)}&description=${encodeURIComponent(draft.desc)}&lang=${S.lang}`;
+  window.open(url, '_blank');
+}
+
+async function printCollectionReceipt(receiptNo) {
+  window.open(`money-receipt.html?receipt_no=${encodeURIComponent(receiptNo)}&lang=${S.lang}`, '_blank');
 }
 
 // ══════════════════════════════════════════
