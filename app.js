@@ -1348,39 +1348,25 @@ function genRno() {
 // Head → Income account mapping (adjust/extend as needed)
 const COLLECTION_HEAD_ACCOUNT_MAP = {
   'general collection': '4102',
-  'membership fee': '4102',
-  'মাসিক প্রদেয়': '4102',
-  'সাধারণ কালেকশন': '4102',
+  'subscription': '4102',
+  'sponsorship': '4301',
   'admission fee': '4101',
-  'ভর্তি ফি': '4101',
-  'tournament registration fee': '4201',
-  'টুর্নামেন্ট রেজিস্ট্রেশন': '4201',
-  'ground rental': '4204',
-  'মাঠ ভাড়া': '4204',
-  'swimming pool income': '4206',
-  'সুইমিং পুল': '4206',
-  'sponsorship income': '4301',
-  'স্পনসরশিপ': '4301',
-  'merchandise sales': '4305',
-  'মার্চেন্ডাইজ': '4305',
-  'donation': '4401',
-  'অনুদান': '4401'
+  'donation': '4401'
 };
 function resolveIncomeAccountForHead(head) {
   const key = String(head || '').trim().toLowerCase();
-  return COLLECTION_HEAD_ACCOUNT_MAP[key] || '4102'; // default: Membership Fee
+  return COLLECTION_HEAD_ACCOUNT_MAP[key] || '4102';
 }
 
-// Payment mode → Asset (Cash/Bank/bKash/Nagad) account mapping
 const COLLECTION_MODE_ASSET_MAP = {
-  cash: '1101', 'ক্যাশ': '1101',
-  bank: '1103', 'ব্যাংক': '1103',
-  bkash: '1104', 'বিকাশ': '1104',
-  nagad: '1105', 'নগদ': '1105'
+  'cash': '1101',
+  'bank transfer': '1103',
+  'mobile banking': '1103',   // bKash/Nagad merged under Bank-Operating — see note below
+  'cheque': '1103'
 };
 function resolveAssetAccountForMode(mode) {
   const key = String(mode || '').trim().toLowerCase();
-  return COLLECTION_MODE_ASSET_MAP[key] || '1101'; // default: Cash on Hand
+  return COLLECTION_MODE_ASSET_MAP[key] || '1101';
 }
 
 // Create or update the journal + journal_items linked to a collection
