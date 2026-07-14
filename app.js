@@ -1356,7 +1356,17 @@ async function genRno() {
   const { data, error } = await sb.rpc('next_voucher_number', { p_tenant_id: tenantId, p_seq_type: 'money_receipt' });
   if (error || data == null) return genRnoFallback();
   const yr = String(new Date().getFullYear()).slice(-2);
-  return 'MR-' + yr + '-' + String(data).padStart(4, '0');
+  return 'MR-' + yr + '-' + String(data).padStart(8, '0');
+}
+
+async function makeVoucherRef(type) {
+  const tenantId = await getTenantId();
+  const prefix = getVoucherPrefix(type);
+  const yr = new Date().getFullYear();
+  if (!tenantId) return makeVoucherRefFallback(type);
+  const { data, error } = await sb.rpc('next_voucher_number', { p_tenant_id: tenantId, p_seq_type: prefix });
+  if (error || data == null) return makeVoucherRefFallback(type);
+  return `${prefix}-${yr}-${String(data).padStart(8, '0')}`;
 }
 
 // ══════════════════════════════════════════
@@ -1687,12 +1697,13 @@ async function saveJournal() {
 
   const ref = document.getElementById('jRef').value || makeVoucherRef('জার্নাল');
   const payload = {
-    journal_date: document.getElementById('jDate').value,
-    ref_no: ref,
-    narration: document.getElementById('jNar').value,
-    total_debit: dr, total_credit: cr
+  journal_date: document.getElementById('jDate').value,
+  ref_no: ref,
+  narration: document.getElementById('jNar').value,
+  total_debit: dr, total_credit: cr
   };
   if (tenantId) payload.tenant_id = tenantId;
+  if (!S.editJournalId) payload.status = 'draft';
   let jData, jErr;
   if (S.editJournalId) {
     if (!canEditVoucher()) { toast('Edit করার অনুমতি নেই।', 'error'); return; }
@@ -1731,27 +1742,35 @@ async function loadVoucherSummary() {
   const journalBody = document.getElementById('journalSummaryBody');
   if (!journalBody) return;
   journalBody.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
-  const jRes = await readTenantRows('journals', (from) => from.select('id,journal_date,ref_no,narration,total_debit,total_credit').order('journal_date', { ascending:false }).limit(50));
+  const jRes = await readTenantRows('journals', (from) => from.select('id,journal_date,ref_no,narration,total_debit,total_credit,status').order('journal_date', { ascending:false }).limit(50));
   const reconciledSet = getReconciledJournals();
   const showReconciledOnly = document.getElementById('showReconciledOnly')?.checked;
   let journals = jRes.data || [];
   if (showReconciledOnly) journals = journals.filter(j => reconciledSet.has(String(j.id)));
   journalBody.innerHTML = journals.map(j => {
     const isReconciled = reconciledSet.has(String(j.id));
+    const status = j.status || 'posted';
+    const statusBadge = status === 'draft'
+      ? '<span class="badge bg-gold" style="font-size:9px">DRAFT</span>'
+      : status === 'cancelled'
+        ? '<span class="badge bg-danger" style="font-size:9px">CANCELLED</span>'
+        : '<span class="badge bg-green" style="font-size:9px">POSTED</span>';
+    const actions = status === 'draft'
+      ? `<button class="btn btn-ghost btn-sm" onclick="editJournal(${j.id})">Edit</button>
+         <button class="btn btn-gold btn-sm" onclick="postJournal(${j.id})">✓ Post</button>
+         ${canDeleteData() ? `<button class="btn btn-danger-lt btn-sm" onclick="deleteJournal(${j.id})">${esc(t('delete'))}</button>` : ''}`
+      : status === 'posted'
+        ? `<button class="btn btn-primary btn-sm" onclick="printJournalVoucher(${j.id})">Print</button>
+           <button class="btn btn-sm" style="background:${isReconciled?'var(--em-lt)':'var(--info-lt)'};border:1px solid ${isReconciled?'var(--em)':'var(--info)'};color:${isReconciled?'var(--em)':'var(--info)'}" onclick="toggleReconcile(${j.id})">${isReconciled ? '✓ Reconciled' : '⇌ Reconcile'}</button>
+           ${canDeleteData() ? `<button class="btn btn-danger-lt btn-sm" onclick="cancelJournal(${j.id})">Cancel</button>` : ''}`
+        : `<button class="btn btn-ghost btn-sm" onclick="printJournalVoucher(${j.id})">Print</button>`;
     return `<tr>
-      <td><span class="badge bg-navy">${esc(j.ref_no || 'JV')}</span>${isReconciled ? ' <span class="badge bg-green" style="font-size:9px">✓ Reconciled</span>' : ''}</td>
+      <td><span class="badge bg-navy">${esc(j.ref_no || 'JV')}</span> ${statusBadge}</td>
       <td>${esc(j.journal_date || '')}</td>
       <td>${esc(j.narration || '')}</td>
       <td class="td-g">${fmt(j.total_debit || 0)}</td>
       <td class="td-r">${fmt(j.total_credit || 0)}</td>
-      <td>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-sm" onclick="editJournal(${j.id})">Edit</button>
-          <button class="btn btn-primary btn-sm" onclick="printJournalVoucher(${j.id})">Print</button>
-          <button class="btn btn-sm" style="background:${isReconciled?'var(--em-lt)':'var(--info-lt)'};border:1px solid ${isReconciled?'var(--em)':'var(--info)'};color:${isReconciled?'var(--em)':'var(--info)'}" onclick="toggleReconcile(${j.id})">${isReconciled ? '✓ Reconciled' : '⇌ Reconcile'}</button>
-          ${canDeleteData() ? `<button class="btn btn-danger-lt btn-sm" onclick="deleteJournal(${j.id})">${esc(t('delete'))}</button>` : ''}
-        </div>
-      </td>
+      <td><div style="display:flex;gap:6px;flex-wrap:wrap">${actions}</div></td>
     </tr>`;
   }).join('') || '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">কোনো জার্নাল ভাউচার নেই</td></tr>';
 }
@@ -1785,6 +1804,8 @@ async function editJournal(id) {
 
 async function deleteJournal(id) {
   if (!canDeleteData()) { toast(t('deleteDenied'), 'error'); return; }
+  const { data: rows } = await readTenantRows('journals', (from) => from.select('status').eq('id', id).limit(1));
+  if (rows?.[0]?.status === 'posted') { toast('Posted journal ডিলিট করা যাবে না — Cancel করুন।', 'error'); return; }
   if (!window.confirm('এই জার্নাল ভাউচার মুছে ফেলতে চান?')) return;
   const { error: iErr } = await sb.from('journal_items').delete().eq('journal_id', id);
   if (iErr) { toast('জার্নাল আইটেম ডিলিট ব্যর্থ: '+iErr.message, 'error'); return; }
@@ -1794,7 +1815,6 @@ async function deleteJournal(id) {
   await loadVoucherSummary();
   await loadDashboard();
 }
-
 // ══════════════════════════════════════════
 // RECONCILIATION
 // ══════════════════════════════════════════
@@ -1803,6 +1823,30 @@ function getReconciledJournals() {
 }
 function saveReconciledJournals(set) {
   localStorage.setItem('aura_reconciled', JSON.stringify([...set]));
+}
+async function postJournal(id) {
+  if (!canEditVoucher()) { toast('Post করার অনুমতি নেই।', 'error'); return; }
+  const { data: { session } } = await sb.auth.getSession();
+  const { error } = await sb.from('journals')
+    .update({ status: 'posted', posted_by: session?.user?.id || null, posted_at: new Date().toISOString() })
+    .eq('id', id).eq('status', 'draft');
+  if (error) { toast('Post ব্যর্থ: ' + error.message, 'error'); return; }
+  toast('জার্নাল Post হয়েছে — এখন লক করা।', 'success');
+  await loadVoucherSummary();
+  await loadDashboard();
+}
+
+async function cancelJournal(id) {
+  if (!canDeleteData()) { toast('শুধু Superuser cancel করতে পারবে।', 'error'); return; }
+  if (!window.confirm('এই posted জার্নাল cancel করতে চান? এটি ডিলিট হবে না, শুধু Reports থেকে বাদ যাবে।')) return;
+  const { data: { session } } = await sb.auth.getSession();
+  const { error } = await sb.from('journals')
+    .update({ status: 'cancelled', cancelled_by: session?.user?.id || null, cancelled_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) { toast('Cancel ব্যর্থ: ' + error.message, 'error'); return; }
+  toast('জার্নাল Cancelled।', 'success');
+  await loadVoucherSummary();
+  await loadDashboard();
 }
 function toggleReconcile(id) {
   const set = getReconciledJournals();
@@ -2037,7 +2081,9 @@ function clearLedgerRange() {
 async function loadTrialBalance() {
   const tb = document.getElementById('tbBody');
   tb.innerHTML = '<tr><td colspan="4" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
-
+  const { data: rawData, error } = await readJournalItemsWithContext((from) => from.select('journal_id,account_code,debit,credit'));
+  if (error) { tb.innerHTML='<tr><td colspan="4" class="td-m" style="text-align:center">এরর: '+error.message+'</td></tr>'; return; }
+  const data = rawData.filter(isPostedJournalRow);
   const { data, error } = await readJournalItemsWithContext((from) => from
     .select('journal_id,account_code,debit,credit'));
 
