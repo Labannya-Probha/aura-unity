@@ -2511,42 +2511,10 @@ function applySignature() {
 
 function genReceiptPreview() {
   const draft = getReceiptDraft();
-  const rno  = draft.rno;
-  const date = draft.date;
-  const name = draft.name;
-  const amount = Number(draft.amount || 0);
-  const amt  = '৳ '+amount.toLocaleString('en-IN');
-  const desc = draft.desc;
-  const head = draft.head;
-  const mode = draft.mode;
-  const org  = S.company.name || "Challengers of 90's";
-  const addr = S.company.address || '';
-  const prepared = getCurrentUserName();
-
-  const set = (id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
-  set('rcpNo',rno); set('rcpNo2',rno);
-  set('rcpDate',date); set('rcpDate2',date);
-  set('rcpPayer',name); set('rcpPayer2',name);
-  set('rcpAmt',amt); set('rcpAmt2',amt);
-  set('rcpAmtWords',amountToWords(amount)); set('rcpAmtWords2',amountToWords(amount));
-  set('rcpHead',head); set('rcpHead2',head);
-  set('rcpMode',mode); set('rcpMode2',mode);
-  set('rcpPrepared',prepared); set('rcpPrepared2',prepared);
-  set('rcpDesc',desc); set('rcpDesc2',desc);
-  set('rcpName',org); set('rcpName2',org);
-  set('rcpAddr',addr); set('rcpAddr2',addr);
-
-  const qrText = `Receipt: ${rno}\nDate: ${date}\nFrom: ${name}\nHead: ${head}\nMode: ${mode}\nAmount: ${amt}\nOrg: ${org}`;
-  setTimeout(()=>{
-    if(typeof QRCode!=='undefined'){
-      ['qrCanvas1','qrCanvas2'].forEach(id=>{
-        const c=document.getElementById(id);
-        if(c) QRCode.toCanvas(c,qrText,{width:56,margin:1,color:{dark:'#0F1F3D',light:'#ffffff'}},()=>{});
-      });
-    }
-  },100);
-  if(sigState.dataUrl) applySignature();
-  initSignaturePad();
+  const frame = document.getElementById('receiptFrame');
+  if (!frame) return;
+  const url = `money-receipt.html?receipt_no=${encodeURIComponent(draft.rno)}&payer=${encodeURIComponent(draft.name)}&amount=${draft.amount}&mode=${encodeURIComponent(draft.mode)}&head=${encodeURIComponent(draft.head)}&description=${encodeURIComponent(draft.desc)}&lang=${S.lang}`;
+  frame.src = url;
 }
 
 function printReceipt() {
