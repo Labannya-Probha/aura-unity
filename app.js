@@ -2523,6 +2523,10 @@ function printReceipt() {
   window.open(url, '_blank');
 }
 
+async function printCollectionReceipt(receiptNo) {
+  window.open(`money-receipt.html?receipt_no=${encodeURIComponent(receiptNo)}&lang=${S.lang}`, '_blank');
+}
+
 // ══════════════════════════════════════════
 // CHARTS
 // ══════════════════════════════════════════
