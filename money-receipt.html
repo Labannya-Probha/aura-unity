@@ -46,7 +46,7 @@ const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const params=new URLSearchParams(location.search);
 const money=n=>Number(n||0).toLocaleString("en-BD",{minimumFractionDigits:2,maximumFractionDigits:2});
-function numberWords(n){const a=["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"],b=["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];function p(x){if(x<20)return a[x];if(x<100)return b[Math.floor(x/10)]+(x%10?" "+a[x%10]:"");if(x<1000)return a[Math.floor(x/100)]+" Hundred"+(x%100?" "+p(x%100):"");if(x<100000)return p(Math.floor(x/1000))+" Thousand"+(x%1000?" "+p(x%1000):"");if(x<10000000)return p(Math.floor(x/100000))+" Lakh"+(x%100000?" "+p(x%100000):"");return p(Math.floor(x/10000000))+" Crore"+(x%10000000?" "+p(x%10000000):"")}return (p(Math.floor(Number(n)||0))||"Zero")+" Taka Only"}
+function numberWords(n){const a=["Zero","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"],b=["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];function p(x){if(x===0)return"";if(x<20)return a[x];if(x<100)return b[Math.floor(x/10)]+(x%10?" "+a[x%10]:"");if(x<1000)return a[Math.floor(x/100)]+" Hundred"+(x%100?" "+p(x%100):"");if(x<100000)return p(Math.floor(x/1000))+" Thousand"+(x%1000?" "+p(x%1000):"");if(x<10000000)return p(Math.floor(x/100000))+" Lakh"+(x%100000?" "+p(x%100000):"");return p(Math.floor(x/10000000))+" Crore"+(x%10000000?" "+p(x%10000000):"")}const whole=Math.floor(Number(n)||0);return (whole===0?"Zero":p(whole))+" Taka Only"}
 function copyTemplate(label,r){
  const verify=location.origin+location.pathname+"?receipt_no="+encodeURIComponent(r.receipt_no||"");
  return `<section class="copy">
@@ -57,7 +57,11 @@ function copyTemplate(label,r){
  <div class="grid"><section class="panel"><h3>RECEIVED FROM</h3><dl><div><dt>Member/Donor Name</dt><dd>${r.payer_name||"—"}</dd></div><div><dt>Member/Donor Code</dt><dd>${r.payer_code||"—"}</dd></div><div><dt>Contact No.</dt><dd>${r.payer_phone||"—"}</dd></div><div><dt>Address</dt><dd>${r.payer_address||"—"}</dd></div></dl></section>
  <section class="panel"><h3>PAYMENT INFORMATION</h3><dl><div><dt>Payment Against</dt><dd>${r.payment_against||"Member/Donor Collection"}</dd></div><div><dt>Payment Method</dt><dd>${r.payment_mode||"Cash"}</dd></div><div><dt>Transaction/Ref No.</dt><dd>${r.transaction_id||"—"}</dd></div><div><dt>Receipt Head</dt><dd>${r.receipt_head||"General Collection"}</dd></div></dl></section></div>
  <section class="amount"><h3>AMOUNT DETAILS</h3><table><thead><tr><th>Description</th><th>Amount (BDT)</th></tr></thead><tbody><tr><td>${r.description||"Member/Donor contribution"}</td><td>${money(r.amount)}</td></tr></tbody><tfoot><tr><th>TOTAL RECEIVED</th><th>${money(r.amount)}</th></tr></tfoot></table><div class="words"><strong>AMOUNT IN WORDS:</strong> ${numberWords(r.amount)}</div></section>
- <footer class="footer">${["Prepared By","Received By","Checked By","Authorized Signatory"].map(x=>`<div class="sign"><i></i><strong>${x}</strong></div>`).join("")}</footer></section>`;
+ <footer class="footer">${["Prepared By","Received By","Checked By","Authorized Signatory"].map(x=>`<div class="sign"><i></i><strong>${x}</strong></div>`).join("")}</footer>
+ <div style="text-align:center;margin-top:8px;font-size:8px;color:#94a1b3;display:flex;justify-content:space-between">
+   <span>&copy; 2026 Aura Stay</span><strong style="color:#13243d">Powered by Aura Stay</strong>
+ </div>
+ </section>`;
 }
 async function load(){
  let r={receipt_no:params.get("receipt_no")||"MR-2026-000001",collection_date:new Date().toISOString().slice(0,10),payer_name:params.get("payer")||"Member / Donor Name",amount:Number(params.get("amount")||0),description:params.get("description")||"Member/Donor contribution",payment_mode:params.get("mode")||"Cash"};
