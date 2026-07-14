@@ -279,99 +279,20 @@
       </div>
 
       <!-- RECEIPT -->
-      <div id="receipt" class="module">
-        <div class="card">
-          <div class="card-header">
-            <div><div class="card-title">মানি রিসিট</div></div>
-            <div style="display:flex;gap:8px">
-              <button class="btn btn-ghost btn-sm" onclick="genReceiptPreview()">🔄 রিফ্রেশ</button>
-              <button class="btn btn-success btn-sm" onclick="printReceipt()">🖨️ প্রিন্ট</button>
-            </div>
-          </div>
-          <div class="card-body">
-            <!-- Signature Pad -->
-            <div class="card" style="margin-bottom:16px;border:1.5px solid var(--gold);background:var(--gold-bg)">
-              <div class="card-body" style="padding:14px 18px">
-                <div style="font-size:12px;font-weight:700;color:#7A5500;margin-bottom:8px">✍️ ডিজিটাল স্বাক্ষর</div>
-                <canvas id="sigCanvas" class="sig-pad" width="460" height="80"></canvas>
-                <div style="display:flex;gap:8px;margin-top:6px">
-                  <button class="sig-btn" onclick="clearSignature()">Clear</button>
-                  <button class="sig-btn primary" onclick="genReceiptPreview()">Apply</button>
-                </div>
-              </div>
-            </div>
-            <!-- Dual Receipt -->
-            <div id="receiptPreview" class="receipt-sheet">
-              <div class="receipt-grid">
-                <div class="receipt-copy professional">
-                  <div class="receipt-copy-label">Donor Copy</div>
-                  <div class="receipt-top">
-                    <div style="display:flex;align-items:center;gap:10px">
-                      <div id="rcpLogo" class="rcp-logo">A</div>
-                      <div><div id="rcpName" class="rcp-oname">Challengers of 90's</div><div id="rcpAddr" class="rcp-osub">Organization Address</div></div>
-                    </div>
-                    <div style="text-align:right"><div class="rcp-tag-t">Money Receipt</div><div id="rcpNo" class="rcp-no">MR-0001</div></div>
-                  </div>
-                  <div class="receipt-body">
-                    <div class="rcp-abox"><div class="rcp-alabel">Received Amount</div><div id="rcpAmt" class="rcp-avalue">৳ 0</div></div>
-                    <div class="receipt-words"><strong>In Words:</strong> <span id="rcpAmtWords">Zero Taka Only</span></div>
-                    <div class="receipt-meta-grid">
-                      <div class="receipt-meta-item"><div class="k">Date</div><div id="rcpDate" class="v">--</div></div>
-                      <div class="receipt-meta-item"><div class="k">Payment Mode</div><div id="rcpMode" class="v">Cash</div></div>
-                      <div class="receipt-meta-item"><div class="k">Received From</div><div id="rcpPayer" class="v">---</div></div>
-                      <div class="receipt-meta-item"><div class="k">Receipt Head</div><div id="rcpHead" class="v">General Collection</div></div>
-                    </div>
-                    <div class="rcp-row"><div class="rcp-key">Purpose / Particulars</div><div id="rcpDesc" class="rcp-val">---</div></div>
-                    <div class="rcp-row" style="border-bottom:none"><div class="rcp-key">Prepared By</div><div id="rcpPrepared" class="rcp-val">Accounts Dept.</div></div>
-                    <div class="qr-section">
-                      <canvas id="qrCanvas1" width="56" height="56"></canvas>
-                      <div style="flex:1">
-                        <div class="rcp-sigs" style="padding-top:0;margin-top:0;border-top:none">
-                          <div style="text-align:center"><div id="sigImg1Auth" style="height:32px;border-bottom:1.5px solid #0F1F3D;width:110px;margin:0 auto 4px"></div><div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase">Authorized Sign</div></div>
-                          <div style="text-align:center"><div style="height:32px;border-bottom:1.5px solid #0F1F3D;width:110px;margin:0 auto 4px"></div><div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase">Receiver Sign</div></div>
-                        </div>
-                      </div>
-                    </div>
-                    <div style="font-size:9px;color:var(--muted);text-align:center;margin-top:8px">Powered by Aura Stay</div>
-                  </div>
-                </div>
-                <div class="receipt-copy professional">
-                  <div class="receipt-copy-label">Office Copy</div>
-                  <div class="receipt-top">
-                    <div style="display:flex;align-items:center;gap:10px">
-                      <div id="rcpLogo2" class="rcp-logo">A</div>
-                      <div><div id="rcpName2" class="rcp-oname">Challengers of 90's</div><div id="rcpAddr2" class="rcp-osub">Organization Address</div></div>
-                    </div>
-                    <div style="text-align:right"><div class="rcp-tag-t">Office Copy</div><div id="rcpNo2" class="rcp-no">MR-0001</div></div>
-                  </div>
-                  <div class="receipt-body">
-                    <div class="rcp-abox"><div class="rcp-alabel">Received Amount</div><div id="rcpAmt2" class="rcp-avalue">৳ 0</div></div>
-                    <div class="receipt-words"><strong>In Words:</strong> <span id="rcpAmtWords2">Zero Taka Only</span></div>
-                    <div class="receipt-meta-grid">
-                      <div class="receipt-meta-item"><div class="k">Date</div><div id="rcpDate2" class="v">--</div></div>
-                      <div class="receipt-meta-item"><div class="k">Payment Mode</div><div id="rcpMode2" class="v">Cash</div></div>
-                      <div class="receipt-meta-item"><div class="k">Received From</div><div id="rcpPayer2" class="v">---</div></div>
-                      <div class="receipt-meta-item"><div class="k">Receipt Head</div><div id="rcpHead2" class="v">General Collection</div></div>
-                    </div>
-                    <div class="rcp-row"><div class="rcp-key">Purpose / Particulars</div><div id="rcpDesc2" class="rcp-val">---</div></div>
-                    <div class="rcp-row" style="border-bottom:none"><div class="rcp-key">Prepared By</div><div id="rcpPrepared2" class="rcp-val">Accounts Dept.</div></div>
-                    <div class="qr-section">
-                      <canvas id="qrCanvas2" width="56" height="56"></canvas>
-                      <div style="flex:1">
-                        <div class="rcp-sigs" style="padding-top:0;margin-top:0;border-top:none">
-                          <div style="text-align:center"><div id="sigImg2Auth" style="height:32px;border-bottom:1.5px solid #0F1F3D;width:110px;margin:0 auto 4px"></div><div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase">Authorized Sign</div></div>
-                          <div style="text-align:center"><div style="height:32px;border-bottom:1.5px solid #0F1F3D;width:110px;margin:0 auto 4px"></div><div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase">Accounts Copy</div></div>
-                        </div>
-                      </div>
-                    </div>
-                    <div style="font-size:9px;color:var(--muted);text-align:center;margin-top:8px">Powered by Aura Stay</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+<div id="receipt" class="module">
+  <div class="card">
+    <div class="card-header">
+      <div><div class="card-title">মানি রিসিট</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="genReceiptPreview()">🔄 রিফ্রেশ</button>
+        <button class="btn btn-success btn-sm" onclick="printReceipt()">🖨️ নতুন ট্যাবে প্রিন্ট</button>
       </div>
+    </div>
+    <div class="card-body np">
+      <iframe id="receiptFrame" style="width:100%;height:80vh;border:none;display:block" title="Money Receipt Preview"></iframe>
+    </div>
+  </div>
+</div>
 
       <!-- REPORTS -->
       <div id="reports" class="module">
