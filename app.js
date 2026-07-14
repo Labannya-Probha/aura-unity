@@ -484,10 +484,19 @@ function getVoucherPrefix(type) {
   return 'JV';
 }
 
-function makeVoucherRef(type) {
+function makeVoucherRefFallback(type) {
   return `${getVoucherPrefix(type)}-${new Date().getFullYear()}-${String(Math.floor(1000+Math.random()*9000))}`;
 }
 
+async function makeVoucherRef(type) {
+  const tenantId = await getTenantId();
+  const prefix = getVoucherPrefix(type);
+  const yr = new Date().getFullYear();
+  if (!tenantId) return makeVoucherRefFallback(type);
+  const { data, error } = await sb.rpc('next_voucher_number', { p_tenant_id: tenantId, p_seq_type: prefix });
+  if (error || data == null) return makeVoucherRefFallback(type);
+  return `${prefix}-${yr}-${String(data).padStart(4, '0')}`;
+}
 function refreshVoucherRef() {
   const type = document.getElementById('vchType')?.value || 'পেমেন্ট';
   const noEl = document.getElementById('vchNo');
@@ -904,8 +913,8 @@ async function initApp() {
     const el = document.getElementById(id);
     if (el && !el.value) el.value = today;
   });
-  document.getElementById('jRef').value = makeVoucherRef('জার্নাল');
-  document.getElementById('colRno').value = genRno();
+  document.getElementById('jRef').value = await makeVoucherRef('জার্নাল');
+  document.getElementById('colRno').value = await genRno();
   refreshVoucherRef();
 
   await getTenantId();
@@ -1336,9 +1345,18 @@ function requireTenantForWrite() {
 // ══════════════════════════════════════════
 // COLLECTION
 // ══════════════════════════════════════════
-function genRno() {
+function genRnoFallback() {
   const yr = String(new Date().getFullYear()).slice(-2);
   return 'MR-' + yr + '-' + String(Math.floor(1000+Math.random()*9000));
+}
+
+async function genRno() {
+  const tenantId = await getTenantId();
+  if (!tenantId) return genRnoFallback();
+  const { data, error } = await sb.rpc('next_voucher_number', { p_tenant_id: tenantId, p_seq_type: 'money_receipt' });
+  if (error || data == null) return genRnoFallback();
+  const yr = String(new Date().getFullYear()).slice(-2);
+  return 'MR-' + yr + '-' + String(data).padStart(4, '0');
 }
 
 // ══════════════════════════════════════════
