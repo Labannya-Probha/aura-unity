@@ -268,7 +268,7 @@ function getCoaMap() {
 async function readJournalItemsWithContext(buildQuery) {
   const [itemsRes, journalsRes] = await Promise.all([
     readTenantRows('journal_items', buildQuery),
-    readTenantRows('journals', (from) => from.select('id,journal_date,ref_no,narration')),
+    readTenantRows('journals', (from) => from.select('id,journal_date,ref_no,narration,status')),
   ]);
   const journalMap = (journalsRes.data || []).reduce((acc, row) => {
     acc[row.id] = row;
@@ -283,6 +283,12 @@ async function readJournalItemsWithContext(buildQuery) {
     })),
     error: itemsRes.error || journalsRes.error || null,
   };
+}
+
+// Only rows whose parent journal is 'posted' should affect financial statements.
+// Rows with no status recorded (legacy) default to 'posted' for backward compatibility.
+function isPostedJournalRow(row) {
+  return (row.journals?.status || 'posted') === 'posted';
 }
 
 function getCurrentAssetAccounts() {
@@ -430,7 +436,7 @@ function getReceiptDraft() {
   const last = S.lastReceipt || {};
   const amount = Number(document.getElementById('colAmt')?.value || last.amount || meta.amount || 0);
   return {
-    rno: document.getElementById('colRno')?.value || last.rno || meta.rno || genRno(),
+    rno: document.getElementById('colRno')?.value || last.rno || meta.rno || genRnoFallback(),
     date: document.getElementById('colDate')?.value || last.date || meta.date || new Date().toISOString().slice(0,10),
     name: document.getElementById('colName')?.value.trim() || last.name || meta.name || '---',
     amount,
@@ -495,12 +501,13 @@ async function makeVoucherRef(type) {
   if (!tenantId) return makeVoucherRefFallback(type);
   const { data, error } = await sb.rpc('next_voucher_number', { p_tenant_id: tenantId, p_seq_type: prefix });
   if (error || data == null) return makeVoucherRefFallback(type);
-  return `${prefix}-${yr}-${String(data).padStart(4, '0')}`;
+  return `${prefix}-${yr}-${String(data).padStart(8, '0')}`;
 }
-function refreshVoucherRef() {
+
+async function refreshVoucherRef() {
   const type = document.getElementById('vchType')?.value || 'পেমেন্ট';
   const noEl = document.getElementById('vchNo');
-  if (noEl && !noEl.dataset.locked) noEl.value = makeVoucherRef(type);
+  if (noEl && !noEl.dataset.locked) noEl.value = await makeVoucherRef(type);
 }
 
 function setVoucherTab(_tab) { loadVoucherSummary(); }
@@ -514,7 +521,7 @@ async function fetchStatementSource(range) {
     readTenantRows('vouchers', (from) => withDateRange(from.select('id,vch_date,description,amount,vch_type,account_code').order('vch_date'), 'vch_date')),
     readJournalItemsWithContext((from) => from.select('journal_id,account_code,debit,credit').in('account_code', assetCodes))
   ]);
-  const journals = (jRes.data || []).filter(r => isWithinDateRange(r.journals?.journal_date, range));
+  const journals = (jRes.data || []).filter(isPostedJournalRow).filter(r => isWithinDateRange(r.journals?.journal_date, range));
   return { assets, assetCodes, coaMap, collections: colRes.data || [], vouchers: vchRes.data || [], journals };
 }
 
@@ -915,7 +922,7 @@ async function initApp() {
   });
   document.getElementById('jRef').value = await makeVoucherRef('জার্নাল');
   document.getElementById('colRno').value = await genRno();
-  refreshVoucherRef();
+  await refreshVoucherRef();
 
   await getTenantId();
   // Reflect the resolved tenant member role in the sidebar
@@ -1359,16 +1366,6 @@ async function genRno() {
   return 'MR-' + yr + '-' + String(data).padStart(8, '0');
 }
 
-async function makeVoucherRef(type) {
-  const tenantId = await getTenantId();
-  const prefix = getVoucherPrefix(type);
-  const yr = new Date().getFullYear();
-  if (!tenantId) return makeVoucherRefFallback(type);
-  const { data, error } = await sb.rpc('next_voucher_number', { p_tenant_id: tenantId, p_seq_type: prefix });
-  if (error || data == null) return makeVoucherRefFallback(type);
-  return `${prefix}-${yr}-${String(data).padStart(8, '0')}`;
-}
-
 // ══════════════════════════════════════════
 // COLLECTION → GENERAL LEDGER AUTO-POSTING
 // ══════════════════════════════════════════
@@ -1389,7 +1386,7 @@ function resolveIncomeAccountForHead(head) {
 const COLLECTION_MODE_ASSET_MAP = {
   'cash': '1101',
   'bank transfer': '1103',
-  'mobile banking': '1103',   // bKash/Nagad merged under Bank-Operating — see note below
+  'mobile banking': '1103',   // bKash/Nagad merged under Bank-Operating unless colMode dropdown is split
   'cheque': '1103'
 };
 function resolveAssetAccountForMode(mode) {
@@ -1397,20 +1394,25 @@ function resolveAssetAccountForMode(mode) {
   return COLLECTION_MODE_ASSET_MAP[key] || '1101';
 }
 
-// Create or update the journal + journal_items linked to a collection
+// Create or update the journal + journal_items linked to a collection.
+// Collections represent real, completed cash/bank events, so they always post as 'posted' (no draft stage).
 async function postCollectionToLedger(collectionRow, { head, mode }, existingJournalId = null) {
   const tenantId = await getTenantId();
   const debitAccount  = resolveAssetAccountForMode(mode);
   const creditAccount = resolveIncomeAccountForHead(head);
   const amount = Number(collectionRow.amount || 0);
   const narration = `Collection ${collectionRow.receipt_no} — ${collectionRow.payer_name || ''}`.trim();
+  const { data: { session } } = await sb.auth.getSession();
 
   const journalPayload = {
     journal_date: collectionRow.collection_date,
     ref_no: `MR-${collectionRow.receipt_no}`,
     narration,
     total_debit: amount,
-    total_credit: amount
+    total_credit: amount,
+    status: 'posted',
+    posted_by: session?.user?.id || null,
+    posted_at: new Date().toISOString()
   };
   if (tenantId) journalPayload.tenant_id = tenantId;
 
@@ -1453,7 +1455,7 @@ async function saveCollection() {
   const desc = document.getElementById('colDesc').value.trim();
   const head = document.getElementById('colHead').value;
   const mode = document.getElementById('colMode').value;
-  const rno  = document.getElementById('colRno').value || genRno();
+  const rno  = document.getElementById('colRno').value || await genRno();
   const tenantId = await getTenantId();
   if (!requireTenantForWrite()) return;
   if (!name || !amt) { toast('নাম ও পরিমাণ দিন।','warning'); return; }
@@ -1474,7 +1476,7 @@ async function saveCollection() {
       );
   if (error) { toast('সেভ ব্যর্থ: '+error.message,'error'); return; }
 
-  // Auto-post to General Ledger (Dr Cash/Bank/bKash/Nagad — Cr mapped Income head)
+  // Auto-post to General Ledger (Dr Cash/Bank — Cr mapped Income head)
   const ledgerResult = await postCollectionToLedger(data, { head, mode }, existingRow?.journal_id || null);
   if (ledgerResult.error) {
     toast('Ledger posting ব্যর্থ: ' + ledgerResult.error.message, 'error');
@@ -1487,7 +1489,7 @@ async function saveCollection() {
   toast(S.editCollectionId ? 'Collection updated.' : 'Collection saved.','success');
   S.editCollectionId = null;
   document.getElementById('colName').value=''; document.getElementById('colAmt').value=''; document.getElementById('colDesc').value='';
-  document.getElementById('colRno').value = genRno();
+  document.getElementById('colRno').value = await genRno();
   genReceiptPreview();
   await loadCollections();
   await loadDashboard();
@@ -1539,19 +1541,7 @@ async function editCollection(receiptNo) {
 }
 
 async function printCollectionReceipt(receiptNo) {
-  const row = await findCollectionByReceipt(receiptNo);
-  if (!row) { toast(t('receiptMissing'), 'error'); return; }
-  const meta = getReceiptMeta(row.receipt_no);
-  S.lastReceipt = {
-    rno: row.receipt_no,
-    date: row.collection_date,
-    name: row.payer_name,
-    amount: Number(row.amount || 0),
-    desc: row.description,
-    head: meta.head || 'General Collection',
-    mode: meta.mode || 'Cash'
-  };
-  printReceipt();
+  window.open(`money-receipt.html?receipt_no=${encodeURIComponent(receiptNo)}&lang=${S.lang}`, '_blank');
 }
 
 async function deleteCollection(receiptNo) {
@@ -1610,7 +1600,7 @@ async function wipeTenantAccountingData() {
 // ══════════════════════════════════════════
 async function saveVoucher() {
   const type = document.getElementById('vchType').value;
-  const ref  = document.getElementById('vchNo').value || makeVoucherRef(type);
+  const ref  = document.getElementById('vchNo').value || await makeVoucherRef(type);
   const date = document.getElementById('vchDate').value;
   const acc  = document.getElementById('vchAcc').value;
   const amt  = Number(document.getElementById('vchAmt').value);
@@ -1626,12 +1616,12 @@ async function saveVoucher() {
   if (error) { toast('সেভ ব্যর্থ: '+error.message,'error'); return; }
   if (data?.id) persistReceiptMeta(`voucher-${data.id}`, { voucher_no: ref, voucher_type: type });
   toast('ভাউচার সেভ হয়েছে।','success');
-  document.getElementById('vchAmt').value=''; document.getElementById('vchDesc').value=''; refreshVoucherRef();
+  document.getElementById('vchAmt').value=''; document.getElementById('vchDesc').value=''; await refreshVoucherRef();
   loadVoucherSummary();
 }
 
 // ══════════════════════════════════════════
-// JOURNAL — Double Entry
+// JOURNAL — Double Entry — Draft → Posted → Cancelled workflow
 // ══════════════════════════════════════════
 function buildAccOpts() {
   return S.coa.map(a => `<option value="${a.account_code}">${a.account_code} — ${a.account_name}</option>`).join('');
@@ -1667,9 +1657,9 @@ function updateJTotals() {
   document.getElementById('jBalMsg').textContent = ok ? '✓ ব্যালেন্সড' : '✗ আনব্যালেন্সড';
 }
 
-function resetJournalForm() {
+async function resetJournalForm() {
   document.getElementById('jNar').value = '';
-  document.getElementById('jRef').value = makeVoucherRef('জার্নাল');
+  document.getElementById('jRef').value = await makeVoucherRef('জার্নাল');
   document.querySelectorAll('#jLines .entry-line:not(.entry-line-hdr)').forEach(el => el.remove());
   S.jlc = 0;
   S.editJournalId = null;
@@ -1695,15 +1685,18 @@ async function saveJournal() {
     if (accCode && (debit||credit)) lines.push({ account_code:accCode, debit, credit });
   });
 
-  const ref = document.getElementById('jRef').value || makeVoucherRef('জার্নাল');
+  const ref = document.getElementById('jRef').value || await makeVoucherRef('জার্নাল');
   const payload = {
-  journal_date: document.getElementById('jDate').value,
-  ref_no: ref,
-  narration: document.getElementById('jNar').value,
-  total_debit: dr, total_credit: cr
+    journal_date: document.getElementById('jDate').value,
+    ref_no: ref,
+    narration: document.getElementById('jNar').value,
+    total_debit: dr, total_credit: cr
   };
   if (tenantId) payload.tenant_id = tenantId;
+  // New manual journal vouchers start as Draft and require an explicit "Post" action.
+  // Editing an existing journal preserves its current status (posted journals cannot reach this path — see editJournal()).
   if (!S.editJournalId) payload.status = 'draft';
+
   let jData, jErr;
   if (S.editJournalId) {
     if (!canEditVoucher()) { toast('Edit করার অনুমতি নেই।', 'error'); return; }
@@ -1732,8 +1725,75 @@ async function saveJournal() {
   );
   if (iErr) { toast('জার্নাল আইটেম সেভ ব্যর্থ: '+iErr.message,'error'); return; }
 
-  toast(S.editJournalId ? 'জার্নাল আপডেট হয়েছে।' : 'জার্নাল সেভ হয়েছে।','success');
-  resetJournalForm();
+  toast(S.editJournalId ? 'জার্নাল আপডেট হয়েছে।' : 'জার্নাল Draft হিসেবে সেভ হয়েছে — Post করুন Reports-এ যোগ করতে।','success');
+  await resetJournalForm();
+  await loadVoucherSummary();
+  await loadDashboard();
+}
+
+async function postJournal(id) {
+  if (!canEditVoucher()) { toast('Post করার অনুমতি নেই।', 'error'); return; }
+  const { data: { session } } = await sb.auth.getSession();
+  const { error } = await sb.from('journals')
+    .update({ status: 'posted', posted_by: session?.user?.id || null, posted_at: new Date().toISOString() })
+    .eq('id', id).eq('status', 'draft');
+  if (error) { toast('Post ব্যর্থ: ' + error.message, 'error'); return; }
+  toast('জার্নাল Post হয়েছে — এখন লক করা এবং Reports-এ যুক্ত হয়েছে।', 'success');
+  await loadVoucherSummary();
+  await loadDashboard();
+}
+
+async function cancelJournal(id) {
+  if (!canDeleteData()) { toast('শুধু Superuser cancel করতে পারবে।', 'error'); return; }
+  if (!window.confirm('এই posted জার্নাল cancel করতে চান? এটি ডিলিট হবে না, শুধু Reports থেকে বাদ যাবে।')) return;
+  const { data: { session } } = await sb.auth.getSession();
+  const { error } = await sb.from('journals')
+    .update({ status: 'cancelled', cancelled_by: session?.user?.id || null, cancelled_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) { toast('Cancel ব্যর্থ: ' + error.message, 'error'); return; }
+  toast('জার্নাল Cancelled।', 'success');
+  await loadVoucherSummary();
+  await loadDashboard();
+}
+
+async function editJournal(id) {
+  if (!canEditVoucher()) { toast('Admin/Superuser edit করতে পারবে।', 'error'); return; }
+  const { data: journalRows, error } = await readTenantRows('journals', (from) => from.select('*').eq('id', id).limit(1));
+  const journal = journalRows?.[0];
+  if (error || !journal) { toast('জার্নাল লোড ব্যর্থ।', 'error'); return; }
+  if ((journal.status || 'posted') !== 'draft') { toast('শুধু Draft journal edit করা যাবে — posted journal Cancel করে notun journal দিন।', 'error'); return; }
+  const { data: items, error: iErr } = await readTenantRows('journal_items', (from) => from.select('*').eq('journal_id', id));
+  if (iErr) { toast('জার্নাল আইটেম লোড ব্যর্থ।', 'error'); return; }
+  S.editJournalId = id;
+  document.getElementById('jDate').value = journal.journal_date || '';
+  document.getElementById('jRef').value = journal.ref_no || '';
+  document.getElementById('jNar').value = journal.narration || '';
+  document.querySelectorAll('#jLines .entry-line:not(.entry-line-hdr)').forEach(el => el.remove());
+  S.jlc = 0;
+  (items || []).forEach(item => {
+    addJLine();
+    const row = document.getElementById(`jl-${S.jlc}`);
+    row.querySelector('select').value = item.account_code || '';
+    row.querySelector('.jDr').value = Number(item.debit || 0) || '';
+    row.querySelector('.jCr').value = Number(item.credit || 0) || '';
+  });
+  if (!(items || []).length) { addJLine(); addJLine(); }
+  updateJTotals();
+  const btn = document.getElementById('saveJournalBtn');
+  if (btn) btn.textContent = 'জার্নাল আপডেট করুন';
+  document.getElementById('jDate')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+async function deleteJournal(id) {
+  if (!canDeleteData()) { toast(t('deleteDenied'), 'error'); return; }
+  const { data: rows } = await readTenantRows('journals', (from) => from.select('status').eq('id', id).limit(1));
+  if (rows?.[0]?.status === 'posted') { toast('Posted journal ডিলিট করা যাবে না — Cancel করুন।', 'error'); return; }
+  if (!window.confirm('এই জার্নাল ভাউচার মুছে ফেলতে চান?')) return;
+  const { error: iErr } = await sb.from('journal_items').delete().eq('journal_id', id);
+  if (iErr) { toast('জার্নাল আইটেম ডিলিট ব্যর্থ: '+iErr.message, 'error'); return; }
+  const { error } = await sb.from('journals').delete().eq('id', id);
+  if (error) { toast('জার্নাল ডিলিট ব্যর্থ: '+error.message, 'error'); return; }
+  toast('জার্নাল ভাউচার ডিলিট হয়েছে।', 'success');
   await loadVoucherSummary();
   await loadDashboard();
 }
@@ -1775,46 +1835,6 @@ async function loadVoucherSummary() {
   }).join('') || '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">কোনো জার্নাল ভাউচার নেই</td></tr>';
 }
 
-async function editJournal(id) {
-  if (!canEditVoucher()) { toast('Admin/Superuser edit করতে পারবে।', 'error'); return; }
-  const { data: journalRows, error } = await readTenantRows('journals', (from) => from.select('*').eq('id', id).limit(1));
-  const journal = journalRows?.[0];
-  if (error || !journal) { toast('জার্নাল লোড ব্যর্থ।', 'error'); return; }
-  const { data: items, error: iErr } = await readTenantRows('journal_items', (from) => from.select('*').eq('journal_id', id));
-  if (iErr) { toast('জার্নাল আইটেম লোড ব্যর্থ।', 'error'); return; }
-  S.editJournalId = id;
-  document.getElementById('jDate').value = journal.journal_date || '';
-  document.getElementById('jRef').value = journal.ref_no || '';
-  document.getElementById('jNar').value = journal.narration || '';
-  document.querySelectorAll('#jLines .entry-line:not(.entry-line-hdr)').forEach(el => el.remove());
-  S.jlc = 0;
-  (items || []).forEach(item => {
-    addJLine();
-    const row = document.getElementById(`jl-${S.jlc}`);
-    row.querySelector('select').value = item.account_code || '';
-    row.querySelector('.jDr').value = Number(item.debit || 0) || '';
-    row.querySelector('.jCr').value = Number(item.credit || 0) || '';
-  });
-  if (!(items || []).length) { addJLine(); addJLine(); }
-  updateJTotals();
-  const btn = document.getElementById('saveJournalBtn');
-  if (btn) btn.textContent = 'জার্নাল আপডেট করুন';
-  document.getElementById('jDate')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
-async function deleteJournal(id) {
-  if (!canDeleteData()) { toast(t('deleteDenied'), 'error'); return; }
-  const { data: rows } = await readTenantRows('journals', (from) => from.select('status').eq('id', id).limit(1));
-  if (rows?.[0]?.status === 'posted') { toast('Posted journal ডিলিট করা যাবে না — Cancel করুন।', 'error'); return; }
-  if (!window.confirm('এই জার্নাল ভাউচার মুছে ফেলতে চান?')) return;
-  const { error: iErr } = await sb.from('journal_items').delete().eq('journal_id', id);
-  if (iErr) { toast('জার্নাল আইটেম ডিলিট ব্যর্থ: '+iErr.message, 'error'); return; }
-  const { error } = await sb.from('journals').delete().eq('id', id);
-  if (error) { toast('জার্নাল ডিলিট ব্যর্থ: '+error.message, 'error'); return; }
-  toast('জার্নাল ভাউচার ডিলিট হয়েছে।', 'success');
-  await loadVoucherSummary();
-  await loadDashboard();
-}
 // ══════════════════════════════════════════
 // RECONCILIATION
 // ══════════════════════════════════════════
@@ -1823,30 +1843,6 @@ function getReconciledJournals() {
 }
 function saveReconciledJournals(set) {
   localStorage.setItem('aura_reconciled', JSON.stringify([...set]));
-}
-async function postJournal(id) {
-  if (!canEditVoucher()) { toast('Post করার অনুমতি নেই।', 'error'); return; }
-  const { data: { session } } = await sb.auth.getSession();
-  const { error } = await sb.from('journals')
-    .update({ status: 'posted', posted_by: session?.user?.id || null, posted_at: new Date().toISOString() })
-    .eq('id', id).eq('status', 'draft');
-  if (error) { toast('Post ব্যর্থ: ' + error.message, 'error'); return; }
-  toast('জার্নাল Post হয়েছে — এখন লক করা।', 'success');
-  await loadVoucherSummary();
-  await loadDashboard();
-}
-
-async function cancelJournal(id) {
-  if (!canDeleteData()) { toast('শুধু Superuser cancel করতে পারবে।', 'error'); return; }
-  if (!window.confirm('এই posted জার্নাল cancel করতে চান? এটি ডিলিট হবে না, শুধু Reports থেকে বাদ যাবে।')) return;
-  const { data: { session } } = await sb.auth.getSession();
-  const { error } = await sb.from('journals')
-    .update({ status: 'cancelled', cancelled_by: session?.user?.id || null, cancelled_at: new Date().toISOString() })
-    .eq('id', id);
-  if (error) { toast('Cancel ব্যর্থ: ' + error.message, 'error'); return; }
-  toast('জার্নাল Cancelled।', 'success');
-  await loadVoucherSummary();
-  await loadDashboard();
 }
 function toggleReconcile(id) {
   const set = getReconciledJournals();
@@ -1995,7 +1991,7 @@ async function loadDaybook() {
   const [colRes, vchRes, jRes] = await Promise.all([
     readTenantRows('collections', (from) => from.select('collection_date,description,amount,receipt_no').order('collection_date')),
     readTenantRows('vouchers', (from) => from.select('vch_date,description,amount,vch_type,account_code').order('vch_date')),
-    readTenantRows('journals', (from) => from.select('journal_date,narration,ref_no,total_debit,total_credit').order('journal_date'))
+    readTenantRows('journals', (from) => from.select('journal_date,narration,ref_no,total_debit,total_credit,status').order('journal_date'))
   ]);
 
   const rows = [];
@@ -2004,7 +2000,7 @@ async function loadDaybook() {
     const isPayment = String(r.vch_type||'').toLowerCase().includes('পেমেন্ট');
     rows.push({ date:r.vch_date, desc:r.description||r.vch_type, dr:isPayment?0:r.amount, cr:isPayment?r.amount:0, acc:r.account_code, ref:'' });
   });
-  (jRes.data||[]).forEach(r => rows.push({ date:r.journal_date, desc:r.narration||'Journal', dr:r.total_debit, cr:r.total_credit, acc:'Journal', ref:r.ref_no }));
+  (jRes.data||[]).filter(r => (r.status||'posted')==='posted').forEach(r => rows.push({ date:r.journal_date, desc:r.narration||'Journal', dr:r.total_debit, cr:r.total_credit, acc:'Journal', ref:r.ref_no }));
 
   rows.sort((a,b) => new Date(b.date)-new Date(a.date));
 
@@ -2032,12 +2028,12 @@ async function loadLedger() {
   const tb = document.getElementById('ledBody');
   tb.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
 
-  const { data, error } = await readJournalItemsWithContext((from) => from
+  const { data: rawData, error } = await readJournalItemsWithContext((from) => from
     .select('journal_id,debit,credit,account_code')
     .eq('account_code', accCode)
     .order('journal_id'));
 
-  const rows = (data || []).filter(row => {
+  const rows = (rawData || []).filter(isPostedJournalRow).filter(row => {
     const d = String(row.journals?.journal_date || '').slice(0, 10);
     if (!d) return false;
     if (fromDate && d < fromDate) return false;
@@ -2081,16 +2077,15 @@ function clearLedgerRange() {
 async function loadTrialBalance() {
   const tb = document.getElementById('tbBody');
   tb.innerHTML = '<tr><td colspan="4" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
-  const { data: rawData, error } = await readJournalItemsWithContext((from) => from.select('journal_id,account_code,debit,credit'));
-  if (error) { tb.innerHTML='<tr><td colspan="4" class="td-m" style="text-align:center">এরর: '+error.message+'</td></tr>'; return; }
-  const data = rawData.filter(isPostedJournalRow);
-  const { data, error } = await readJournalItemsWithContext((from) => from
+
+  const { data: rawData, error } = await readJournalItemsWithContext((from) => from
     .select('journal_id,account_code,debit,credit'));
 
   if (error) { tb.innerHTML='<tr><td colspan="4" class="td-m" style="text-align:center">এরর: '+error.message+'</td></tr>'; return; }
+  const data = (rawData || []).filter(isPostedJournalRow);
 
   const accs = {};
-  (data||[]).forEach(r => {
+  data.forEach(r => {
     if (!accs[r.account_code]) accs[r.account_code] = { name:(r.coa?.account_name||r.account_code), group:(r.coa?.account_group||''), dr:0, cr:0 };
     accs[r.account_code].dr += Number(r.debit||0);
     accs[r.account_code].cr += Number(r.credit||0);
@@ -2127,9 +2122,10 @@ async function loadTrialBalance() {
 // BALANCE SHEET
 // ══════════════════════════════════════════
 async function loadBalanceSheet() {
-  const { data } = await readJournalItemsWithContext((from) => from.select('journal_id,account_code,debit,credit'));
+  const { data: rawData } = await readJournalItemsWithContext((from) => from.select('journal_id,account_code,debit,credit'));
+  const data = (rawData || []).filter(isPostedJournalRow);
   const accs = {};
-  (data||[]).forEach(r => {
+  data.forEach(r => {
     if (!accs[r.account_code]) accs[r.account_code] = { group:(r.coa?.account_group||''), net:0 };
     accs[r.account_code].net += Number(r.debit||0) - Number(r.credit||0);
   });
@@ -2142,11 +2138,6 @@ async function loadBalanceSheet() {
   document.getElementById('bsL').textContent = fmt(liab);
   document.getElementById('bsF').textContent = fmt(assets - liab);
 }
-
-// ══════════════════════════════════════════
-// REPORTS (basic)
-// ══════════════════════════════════════════
-
 
 // ══════════════════════════════════════════
 // REPORTS ENGINE
@@ -2309,12 +2300,12 @@ async function buildDaybookReport() {
   const [colRes,vchRes,jRes]=await Promise.all([
     readTenantRows('collections', (from) => withDateRange(from.select('collection_date,description,amount,receipt_no').order('collection_date'), 'collection_date')),
     readTenantRows('vouchers', (from) => withDateRange(from.select('vch_date,description,amount,vch_type,account_code').order('vch_date'), 'vch_date')),
-    readTenantRows('journals', (from) => withDateRange(from.select('journal_date,narration,ref_no,total_debit,total_credit').order('journal_date'), 'journal_date')),
+    readTenantRows('journals', (from) => withDateRange(from.select('journal_date,narration,ref_no,total_debit,total_credit,status').order('journal_date'), 'journal_date')),
   ]);
   const all=[];
   (colRes.data||[]).forEach(r=>all.push({date:r.collection_date,desc:'Collection: '+(r.description||r.receipt_no||''),dr:Number(r.amount||0),cr:0,acc:'Cash in Hand',ref:r.receipt_no}));
   (vchRes.data||[]).forEach(r=>{ const ip=String(r.vch_type||'').includes('পেমেন্ট')||String(r.vch_type||'').toLowerCase().includes('payment'); all.push({date:r.vch_date,desc:(r.vch_type||'')+': '+(r.description||''),dr:ip?0:Number(r.amount||0),cr:ip?Number(r.amount||0):0,acc:r.account_code||'',ref:''}); });
-  (jRes.data||[]).forEach(r=>all.push({date:r.journal_date,desc:r.narration||'Journal Voucher',dr:Number(r.total_debit||0),cr:Number(r.total_credit||0),acc:'Journal Voucher',ref:r.ref_no}));
+  (jRes.data||[]).filter(r => (r.status||'posted')==='posted').forEach(r=>all.push({date:r.journal_date,desc:r.narration||'Journal Voucher',dr:Number(r.total_debit||0),cr:Number(r.total_credit||0),acc:'Journal Voucher',ref:r.ref_no}));
   all.sort((a,b)=>new Date(a.date)-new Date(b.date));
   let tDr=0,tCr=0;
   const rows=(all.length?all:[{date:'',ref:'',desc:'No transaction posted yet',acc:'—',dr:0,cr:0}]).map(r=>{ tDr+=r.dr; tCr+=r.cr; return {cells:[{val:r.date||rptDash()},{val:r.ref||'',color:'#647188'},{val:r.desc||''},{val:r.acc||'',color:'#647188'},{val:r.dr?rptFmt(r.dr):rptDash(),color:r.dr?'#1A7A4A':'#BCC5D4'},{val:r.cr?rptFmt(r.cr):rptDash(),color:r.cr?'#C0392B':'#BCC5D4'}]}; });
@@ -2325,9 +2316,10 @@ async function buildDaybookReport() {
 
 async function buildTrialReport() {
   const range = getReportDateRange();
-  const {data}=await readJournalItemsWithContext((from) => from.select('journal_id,account_code,debit,credit'));
+  const {data: rawData}=await readJournalItemsWithContext((from) => from.select('journal_id,account_code,debit,credit'));
+  const data = (rawData || []).filter(isPostedJournalRow);
   const accs={};
-  (data||[]).filter(r=>isWithinDateRange(r.journals?.journal_date, range)).forEach(r=>{ if(!accs[r.account_code])accs[r.account_code]={name:r.coa?.account_name||r.account_code,group:r.coa?.account_group||'',dr:0,cr:0}; accs[r.account_code].dr+=Number(r.debit||0); accs[r.account_code].cr+=Number(r.credit||0); });
+  data.filter(r=>isWithinDateRange(r.journals?.journal_date, range)).forEach(r=>{ if(!accs[r.account_code])accs[r.account_code]={name:r.coa?.account_name||r.account_code,group:r.coa?.account_group||'',dr:0,cr:0}; accs[r.account_code].dr+=Number(r.debit||0); accs[r.account_code].cr+=Number(r.credit||0); });
   let tDr=0,tCr=0;
   const rows=Object.keys(accs).map(code=>{ const a=accs[code]; const dr=a.dr>a.cr?a.dr-a.cr:0,cr=a.cr>a.dr?a.cr-a.dr:0; tDr+=dr; tCr+=cr; return {cells:[{val:code,color:'#647188'},{val:a.name},{val:a.group,color:'#647188'},{val:dr?rptFmt(dr):rptDash(),color:dr?'#1A7A4A':'#BCC5D4'},{val:cr?rptFmt(cr):rptDash(),color:cr?'#C0392B':'#BCC5D4'}]}; });
   if(!rows.length) rows.push({cells:[{val:'—',color:'#647188'},{val:'Opening / no activity'},{val:'Asset',color:'#647188'},{val:rptFmt(0),color:'#1A7A4A'},{val:rptFmt(0),color:'#C0392B'}]});
@@ -2340,9 +2332,10 @@ async function buildTrialReport() {
 
 async function buildPLReport() {
   const range = getReportDateRange();
-  const {data}=await readJournalItemsWithContext((from) => from.select('journal_id,account_code,debit,credit'));
+  const {data: rawData}=await readJournalItemsWithContext((from) => from.select('journal_id,account_code,debit,credit'));
+  const data = (rawData || []).filter(isPostedJournalRow);
   const inc={},exp={};
-  (data||[]).filter(r=>isWithinDateRange(r.journals?.journal_date, range)).forEach(r=>{ const g=r.coa?.account_group||''; const net=Number(r.debit||0)-Number(r.credit||0); if(g==='Income')inc[r.coa?.account_name||r.account_code]=(inc[r.coa?.account_name||r.account_code]||0)+(-net); if(g==='Expense')exp[r.coa?.account_name||r.account_code]=(exp[r.coa?.account_name||r.account_code]||0)+net; });
+  data.filter(r=>isWithinDateRange(r.journals?.journal_date, range)).forEach(r=>{ const g=r.coa?.account_group||''; const net=Number(r.debit||0)-Number(r.credit||0); if(g==='Income')inc[r.coa?.account_name||r.account_code]=(inc[r.coa?.account_name||r.account_code]||0)+(-net); if(g==='Expense')exp[r.coa?.account_name||r.account_code]=(exp[r.coa?.account_name||r.account_code]||0)+net; });
   const tI=Object.values(inc).reduce((s,v)=>s+v,0), tE=Object.values(exp).reduce((s,v)=>s+v,0), sur=tI-tE;
   const rows=[];
   rows.push({cells:[{val:'আয় (INCOME)',color:'#0F1F3D'},{val:''}],_section:true,_bold:true});
@@ -2361,9 +2354,10 @@ async function buildPLReport() {
 
 async function buildBSReport() {
   const range = getReportDateRange();
-  const {data}=await readJournalItemsWithContext((from) => from.select('journal_id,account_code,debit,credit'));
+  const {data: rawData}=await readJournalItemsWithContext((from) => from.select('journal_id,account_code,debit,credit'));
+  const data = (rawData || []).filter(isPostedJournalRow);
   const grps={Asset:{},Liability:{},Equity:{},Income:{},Expense:{}};
-  (data||[]).filter(r=>isWithinDateRange(r.journals?.journal_date, range)).forEach(r=>{ const g=r.coa?.account_group||'Other'; const net=Number(r.debit||0)-Number(r.credit||0); if(grps[g])grps[g][r.coa?.account_name||r.account_code]=(grps[g][r.coa?.account_name||r.account_code]||0)+net; });
+  data.filter(r=>isWithinDateRange(r.journals?.journal_date, range)).forEach(r=>{ const g=r.coa?.account_group||'Other'; const net=Number(r.debit||0)-Number(r.credit||0); if(grps[g])grps[g][r.coa?.account_name||r.account_code]=(grps[g][r.coa?.account_name||r.account_code]||0)+net; });
   const sg=g=>Object.values(grps[g]||{}).reduce((s,v)=>s+v,0);
   const tA=sg('Asset'),tL=sg('Liability'),tE=sg('Equity'),sur=sg('Income')-sg('Expense');
   const rows=[];
@@ -2559,10 +2553,6 @@ function printReceipt() {
   const draft = getReceiptDraft();
   const url = `money-receipt.html?receipt_no=${encodeURIComponent(draft.rno)}&payer=${encodeURIComponent(draft.name)}&amount=${draft.amount}&mode=${encodeURIComponent(draft.mode)}&head=${encodeURIComponent(draft.head)}&description=${encodeURIComponent(draft.desc)}&lang=${S.lang}`;
   window.open(url, '_blank');
-}
-
-async function printCollectionReceipt(receiptNo) {
-  window.open(`money-receipt.html?receipt_no=${encodeURIComponent(receiptNo)}&lang=${S.lang}`, '_blank');
 }
 
 // ══════════════════════════════════════════
@@ -2808,8 +2798,11 @@ sb.auth.onAuthStateChange(async (event, session) => {
 // ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   setLang(localStorage.getItem('aura_lang') || 'en');
-  document.getElementById('colRno').value = genRno();
-  genReceiptPreview();
+
+  (async () => {
+    document.getElementById('colRno').value = await genRno();
+    genReceiptPreview();
+  })();
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations()
