@@ -639,151 +639,7 @@ async function closeDay() {
   renderDayControlState();
   toast('Day Close সম্পন্ন হয়েছে।', 'success');
 }
-// ══════════════════════════════════════════
-// MEMBERS / CONTACTS DIRECTORY
-// ══════════════════════════════════════════
-let _memberSearchTimer = null;
-let _selectedMemberId = null;
 
-async function searchMembers(query) {
-  const tenantId = await getTenantId();
-  let q = sb.from('members').select('*').order('full_name');
-  if (tenantId) q = q.eq('tenant_id', tenantId);
-  if (query) q = q.ilike('full_name', `%${query}%`);
-  const { data } = await q.limit(8);
-  return data || [];
-}
-
-async function onColNameInput(value) {
-  _selectedMemberId = null;
-  clearTimeout(_memberSearchTimer);
-  const dropdown = document.getElementById('colNameDropdown');
-  if (!value || value.trim().length < 1) { dropdown.classList.add('hidden'); return; }
-  _memberSearchTimer = setTimeout(async () => {
-    const matches = await searchMembers(value.trim());
-    if (!matches.length) {
-      dropdown.innerHTML = `<div style="padding:8px 12px;cursor:pointer;color:var(--em,#1A7A4A)" onclick="quickCreateMember('${esc(value.trim())}')">+ Create new member "${esc(value.trim())}"</div>`;
-    } else {
-      dropdown.innerHTML = matches.map(m => `
-        <div style="padding:8px 12px;cursor:pointer;border-bottom:1px solid #eee" onclick="selectMember(${m.id}, '${esc(m.full_name)}')">
-          <strong>${esc(m.full_name)}</strong> ${m.designation ? `<span class="td-m">(${esc(m.designation)})</span>` : ''}
-          <div class="td-m" style="font-size:11px">${esc(m.member_code)}</div>
-        </div>`).join('') +
-        `<div style="padding:8px 12px;cursor:pointer;color:var(--em,#1A7A4A)" onclick="quickCreateMember('${esc(value.trim())}')">+ Create new member "${esc(value.trim())}"</div>`;
-    }
-    dropdown.classList.remove('hidden');
-  }, 250);
-}
-
-function selectMember(id, name) {
-  _selectedMemberId = id;
-  document.getElementById('colName').value = name;
-  document.getElementById('colNameDropdown').classList.add('hidden');
-}
-
-async function quickCreateMember(name) {
-  const tenantId = await getTenantId();
-  const seq = await sb.rpc('next_voucher_number', { p_tenant_id: tenantId, p_seq_type: 'member' });
-  const payload = { full_name: name, member_code: 'MEM-' + String(seq.data).padStart(4,'0'), status: 'active' };
-  if (tenantId) payload.tenant_id = tenantId;
-  const { data, error } = await sb.from('members').insert(payload).select().single();
-  if (error) { toast('Member create ব্যর্থ: ' + error.message, 'error'); return; }
-  selectMember(data.id, data.full_name);
-  toast(`Member "${name}" created (${data.member_code})`, 'success');
-}
-
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('#colNameSuggest')) document.getElementById('colNameDropdown')?.classList.add('hidden');
-});
-
-async function loadMembers() {
-  const tb = document.getElementById('membersBody');
-  const { data } = await readTenantRows('members', (from) => from.select('*').order('full_name'));
-  window._allMembers = data || [];
-  renderMembers(window._allMembers);
-}
-
-function renderMembers(rows) {
-  const tb = document.getElementById('membersBody');
-  tb.innerHTML = rows.map(m => `
-    <tr>
-      <td><span class="badge bg-gold">${esc(m.member_code)}</span></td>
-      <td><strong>${esc(m.full_name)}</strong></td>
-      <td class="td-m">${esc(m.designation||'—')}</td>
-      <td class="td-m">${esc(m.phone||'—')}</td>
-      <td><span class="badge ${m.status==='active'?'bg-green':'bg-danger'}">${esc(m.status)}</span></td>
-      <td>
-        <button class="btn btn-ghost btn-sm" onclick="viewMemberDetail(${m.id})">Ledger</button>
-        <button class="btn btn-ghost btn-sm" onclick="openMemberModal(${m.id})">Edit</button>
-      </td>
-    </tr>`).join('') || '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">কোনো member নেই</td></tr>';
-}
-
-function filterMembers(query) {
-  const q = query.trim().toLowerCase();
-  const filtered = (window._allMembers||[]).filter(m =>
-    m.full_name.toLowerCase().includes(q) || (m.member_code||'').toLowerCase().includes(q) || (m.phone||'').includes(q));
-  renderMembers(filtered);
-}
-
-function openMemberModal(id = null) {
-  document.getElementById('memEditId').value = id || '';
-  const m = id ? (window._allMembers||[]).find(x => x.id === id) : null;
-  document.getElementById('memberModalTitle').textContent = id ? 'Edit Member' : 'New Member';
-  document.getElementById('memName').value = m?.full_name || '';
-  document.getElementById('memDesig').value = m?.designation || '';
-  document.getElementById('memPhone').value = m?.phone || '';
-  document.getElementById('memAddr').value = m?.address || '';
-  document.getElementById('memberModal').classList.remove('hidden');
-}
-
-async function saveMember() {
-  const id = document.getElementById('memEditId').value;
-  const tenantId = await getTenantId();
-  const payload = {
-    full_name: document.getElementById('memName').value.trim(),
-    designation: document.getElementById('memDesig').value.trim(),
-    phone: document.getElementById('memPhone').value.trim(),
-    address: document.getElementById('memAddr').value.trim()
-  };
-  if (!payload.full_name) { toast('নাম দিন।', 'warning'); return; }
-  let error;
-  if (id) {
-    ({ error } = await sb.from('members').update(payload).eq('id', id));
-  } else {
-    const seq = await sb.rpc('next_voucher_number', { p_tenant_id: tenantId, p_seq_type: 'member' });
-    payload.member_code = 'MEM-' + String(seq.data).padStart(4,'0');
-    payload.status = 'active';
-    if (tenantId) payload.tenant_id = tenantId;
-    ({ error } = await sb.from('members').insert(payload));
-  }
-  if (error) { toast('সেভ ব্যর্থ: ' + error.message, 'error'); return; }
-  toast('Member সেভ হয়েছে।', 'success');
-  closeModal('memberModal');
-  await loadMembers();
-}
-
-let _currentDetailMemberId = null;
-async function viewMemberDetail(id) {
-  _currentDetailMemberId = id;
-  const m = (window._allMembers||[]).find(x => x.id === id);
-  if (!m) return;
-  document.getElementById('mdName').textContent = `${m.full_name} (${m.member_code})`;
-  document.getElementById('mdContact').innerHTML = `${m.designation ? esc(m.designation)+' · ' : ''}${esc(m.phone||'No phone')} · ${esc(m.address||'No address')}`;
-  const { data } = await sb.from('collections').select('collection_date,receipt_no,description,amount').eq('member_id', id).order('collection_date', { ascending:false });
-  const rows = data || [];
-  const total = rows.reduce((s,r) => s + Number(r.amount||0), 0);
-  document.getElementById('mdLedgerBody').innerHTML = rows.map(r => `
-    <tr><td>${esc(r.collection_date)}</td><td>${esc(r.receipt_no)}</td><td>${esc(r.description||'')}</td><td class="td-g">${fmt(r.amount)}</td></tr>
-  `).join('') || '<tr><td colspan="4" class="td-m" style="text-align:center">কোনো transaction নেই</td></tr>';
-  document.getElementById('mdLedgerTotal').textContent = fmt(total);
-  document.getElementById('memberDetailModal').classList.remove('hidden');
-}
-
-function editMemberFromDetail() {
-  closeModal('memberDetailModal');
-  openMemberModal(_currentDetailMemberId);
-}
 // ══════════════════════════════════════════
 // TOAST
 // ══════════════════════════════════════════
@@ -940,7 +796,6 @@ function openModule(id) {
   document.getElementById('topTitle').textContent = TT[S.lang][id] || id;
   document.getElementById('topSub').textContent = '';
   if (id==='collection') loadCollections();
-  if (id==='contacts') loadMembers();
   if (id==='daybook')    loadDaybook();
   if (id==='trialbalance') loadTrialBalance();
   if (id==='balancesheet') loadBalanceSheet();
@@ -950,6 +805,7 @@ function openModule(id) {
   if (id==='receipt')    { genReceiptPreview(); setTimeout(initSignaturePad, 200); }
   if (id==='dashboard')  loadDashboard();
   if (id==='users')      loadUsers();
+  if (id==='contacts')   loadMembers();
 }
 
 // ══════════════════════════════════════════
@@ -1606,9 +1462,8 @@ async function saveCollection() {
   if (!name || !amt) { toast('নাম ও পরিমাণ দিন।','warning'); return; }
 
   const payload = {
-  receipt_no: rno, collection_date: date, payer_name: name, amount: amt, description: desc,
-  member_id: _selectedMemberId || null
-};
+    receipt_no: rno, collection_date: date, payer_name: name, amount: amt, description: desc, member_id: _selectedMemberId || null
+  };
   if (tenantId) payload.tenant_id = tenantId;
 
   const existingRow = S.editCollectionId ? await findCollectionByReceipt(rno) : null;
@@ -1634,11 +1489,160 @@ async function saveCollection() {
   S.lastReceipt = { rno, date, name, amount: amt, desc, head, mode };
   toast(S.editCollectionId ? 'Collection updated.' : 'Collection saved.','success');
   S.editCollectionId = null;
+  _selectedMemberId = null;
   document.getElementById('colName').value=''; document.getElementById('colAmt').value=''; document.getElementById('colDesc').value='';
   document.getElementById('colRno').value = await genRno();
   genReceiptPreview();
   await loadCollections();
   await loadDashboard();
+}
+
+// ══════════════════════════════════════════
+// MEMBERS / CONTACTS DIRECTORY
+// ══════════════════════════════════════════
+let _memberSearchTimer = null;
+let _selectedMemberId = null;
+
+async function searchMembers(query) {
+  const tenantId = await getTenantId();
+  let q = sb.from('members').select('*').order('full_name');
+  if (tenantId) q = q.eq('tenant_id', tenantId);
+  if (query) q = q.ilike('full_name', `%${query}%`);
+  const { data } = await q.limit(8);
+  return data || [];
+}
+
+async function onColNameInput(value) {
+  _selectedMemberId = null;
+  clearTimeout(_memberSearchTimer);
+  const dropdown = document.getElementById('colNameDropdown');
+  if (!dropdown) return;
+  if (!value || value.trim().length < 1) { dropdown.classList.add('hidden'); return; }
+  _memberSearchTimer = setTimeout(async () => {
+    const matches = await searchMembers(value.trim());
+    const createRow = `<div style="padding:8px 12px;cursor:pointer;color:#1A7A4A" onclick="quickCreateMember('${esc(value.trim())}')">+ Create new member "${esc(value.trim())}"</div>`;
+    if (!matches.length) {
+      dropdown.innerHTML = createRow;
+    } else {
+      dropdown.innerHTML = matches.map(m => `
+        <div style="padding:8px 12px;cursor:pointer;border-bottom:1px solid #eee" onclick="selectMember(${m.id}, '${esc(m.full_name)}')">
+          <strong>${esc(m.full_name)}</strong> ${m.designation ? `<span class="td-m">(${esc(m.designation)})</span>` : ''}
+          <div class="td-m" style="font-size:11px">${esc(m.member_code)}</div>
+        </div>`).join('') + createRow;
+    }
+    dropdown.classList.remove('hidden');
+  }, 250);
+}
+
+function selectMember(id, name) {
+  _selectedMemberId = id;
+  const nameInput = document.getElementById('colName');
+  if (nameInput) nameInput.value = name;
+  document.getElementById('colNameDropdown')?.classList.add('hidden');
+}
+
+async function quickCreateMember(name) {
+  const tenantId = await getTenantId();
+  const seq = await sb.rpc('next_voucher_number', { p_tenant_id: tenantId, p_seq_type: 'member' });
+  const payload = { full_name: name, member_code: 'MEM-' + String(seq.data).padStart(4,'0'), status: 'active' };
+  if (tenantId) payload.tenant_id = tenantId;
+  const { data, error } = await sb.from('members').insert(payload).select().single();
+  if (error) { toast('Member create ব্যর্থ: ' + error.message, 'error'); return; }
+  selectMember(data.id, data.full_name);
+  toast(`Member "${name}" created (${data.member_code})`, 'success');
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#colNameSuggest')) document.getElementById('colNameDropdown')?.classList.add('hidden');
+});
+
+async function loadMembers() {
+  const { data } = await readTenantRows('members', (from) => from.select('*').order('full_name'));
+  window._allMembers = data || [];
+  renderMembers(window._allMembers);
+}
+
+function renderMembers(rows) {
+  const tb = document.getElementById('membersBody');
+  if (!tb) return;
+  tb.innerHTML = rows.map(m => `
+    <tr>
+      <td><span class="badge bg-gold">${esc(m.member_code)}</span></td>
+      <td><strong>${esc(m.full_name)}</strong></td>
+      <td class="td-m">${esc(m.designation||'—')}</td>
+      <td class="td-m">${esc(m.phone||'—')}</td>
+      <td><span class="badge ${m.status==='active'?'bg-green':'bg-danger'}">${esc(m.status)}</span></td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="viewMemberDetail(${m.id})">Ledger</button>
+        <button class="btn btn-ghost btn-sm" onclick="openMemberModal(${m.id})">Edit</button>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">কোনো member নেই</td></tr>';
+}
+
+function filterMembers(query) {
+  const q = query.trim().toLowerCase();
+  const filtered = (window._allMembers||[]).filter(m =>
+    m.full_name.toLowerCase().includes(q) || (m.member_code||'').toLowerCase().includes(q) || (m.phone||'').includes(q));
+  renderMembers(filtered);
+}
+
+function openMemberModal(id = null) {
+  document.getElementById('memEditId').value = id || '';
+  const m = id ? (window._allMembers||[]).find(x => x.id === id) : null;
+  document.getElementById('memberModalTitle').textContent = id ? 'Edit Member' : 'New Member';
+  document.getElementById('memName').value = m?.full_name || '';
+  document.getElementById('memDesig').value = m?.designation || '';
+  document.getElementById('memPhone').value = m?.phone || '';
+  document.getElementById('memAddr').value = m?.address || '';
+  document.getElementById('memberModal').classList.remove('hidden');
+}
+
+async function saveMember() {
+  const id = document.getElementById('memEditId').value;
+  const tenantId = await getTenantId();
+  const payload = {
+    full_name: document.getElementById('memName').value.trim(),
+    designation: document.getElementById('memDesig').value.trim(),
+    phone: document.getElementById('memPhone').value.trim(),
+    address: document.getElementById('memAddr').value.trim()
+  };
+  if (!payload.full_name) { toast('নাম দিন।', 'warning'); return; }
+  let error;
+  if (id) {
+    ({ error } = await sb.from('members').update(payload).eq('id', id));
+  } else {
+    const seq = await sb.rpc('next_voucher_number', { p_tenant_id: tenantId, p_seq_type: 'member' });
+    payload.member_code = 'MEM-' + String(seq.data).padStart(4,'0');
+    payload.status = 'active';
+    if (tenantId) payload.tenant_id = tenantId;
+    ({ error } = await sb.from('members').insert(payload));
+  }
+  if (error) { toast('সেভ ব্যর্থ: ' + error.message, 'error'); return; }
+  toast('Member সেভ হয়েছে।', 'success');
+  closeModal('memberModal');
+  await loadMembers();
+}
+
+let _currentDetailMemberId = null;
+async function viewMemberDetail(id) {
+  _currentDetailMemberId = id;
+  const m = (window._allMembers||[]).find(x => x.id === id);
+  if (!m) return;
+  document.getElementById('mdName').textContent = `${m.full_name} (${m.member_code})`;
+  document.getElementById('mdContact').innerHTML = `${m.designation ? esc(m.designation)+' · ' : ''}${esc(m.phone||'No phone')} · ${esc(m.address||'No address')}`;
+  const { data } = await sb.from('collections').select('collection_date,receipt_no,description,amount').eq('member_id', id).order('collection_date', { ascending:false });
+  const rows = data || [];
+  const total = rows.reduce((s,r) => s + Number(r.amount||0), 0);
+  document.getElementById('mdLedgerBody').innerHTML = rows.map(r => `
+    <tr><td>${esc(r.collection_date)}</td><td>${esc(r.receipt_no)}</td><td>${esc(r.description||'')}</td><td class="td-g">${fmt(r.amount)}</td></tr>
+  `).join('') || '<tr><td colspan="4" class="td-m" style="text-align:center">কোনো transaction নেই</td></tr>';
+  document.getElementById('mdLedgerTotal').textContent = fmt(total);
+  document.getElementById('memberDetailModal').classList.remove('hidden');
+}
+
+function editMemberFromDetail() {
+  closeModal('memberDetailModal');
+  openMemberModal(_currentDetailMemberId);
 }
 
 async function loadCollections() {
@@ -1675,6 +1679,7 @@ async function editCollection(receiptNo) {
   if (!row) { toast(t('collectionMissing'), 'error'); return; }
   const meta = getReceiptMeta(row.receipt_no);
   S.editCollectionId = row.id;
+  _selectedMemberId = row.member_id || null;
   document.getElementById('colDate').value = row.collection_date || '';
   document.getElementById('colRno').value = row.receipt_no || '';
   document.getElementById('colName').value = row.payer_name || '';

@@ -82,6 +82,7 @@
     <div class="nav-item" data-module="collection"><span class="nav-icon">৳</span><span data-bn="মাসিক কালেকশন" data-en="Collections">মাসিক কালেকশন</span></div>
     <div class="nav-item" data-module="voucher"><span class="nav-icon">◈</span><span data-bn="ভাউচার ও জার্নাল" data-en="Voucher & Journal">ভাউচার ও জার্নাল</span></div>
     <div class="nav-item" data-module="receipt"><span class="nav-icon">◻</span><span data-bn="মানি রিসিট" data-en="Money Receipt">মানি রিসিট</span></div>
+    <div class="nav-item" data-module="contacts"><span class="nav-icon">👥</span><span data-bn="যোগাযোগ" data-en="Contacts">যোগাযোগ</span></div>
     <div class="nav-item" data-module="reports"><span class="nav-icon">▤</span><span data-bn="রিপোর্টস" data-en="Reports">রিপোর্টস</span></div>
     <div class="nav-label" data-bn="অ্যাকাউন্টিং" data-en="Accounting">অ্যাকাউন্টিং</div>
     <div class="nav-item" data-module="ledger"><span class="nav-icon">◫</span><span data-bn="লেজার বুক" data-en="Ledger Book">লেজার বুক</span></div>
@@ -92,7 +93,6 @@
     <div class="nav-item" data-module="coa"><span class="nav-icon">≡</span><span data-bn="চার্ট অব অ্যাকাউন্টস" data-en="Chart of Accounts">চার্ট অব অ্যাকাউন্টস</span></div>
     <div class="nav-item" data-module="company"><span class="nav-icon">⚙</span><span data-bn="কোম্পানি তথ্য" data-en="Company Info">কোম্পানি তথ্য</span></div>
     <div class="nav-item" data-module="users"><span class="nav-icon">◉</span><span data-bn="ইউজার" data-en="Users">ইউজার</span></div>
-    <div class="nav-item" data-module="contacts">👥 <span>যোগাযোগ (Contacts)</span></div>
     <div class="sb-footer">
       <button class="btn-logout" onclick="logout()"><span data-bn="লগআউট" data-en="Logout">লগআউট</span></button>
       <div class="sb-powered">&copy; 2026 Aura Stay<br><span>Powered by Aura Stay</span></div>
@@ -156,8 +156,13 @@
             <div class="form-row">
               <div class="form-group"><label class="form-label">তারিখ</label><input type="date" id="colDate" class="form-control"></div>
               <div class="form-group"><label class="form-label">রিসিট নং (অটো)</label><input type="text" id="colRno" class="form-control" readonly placeholder="Auto"></div>
-              <div class="form-group" style="position:relative"> <label class="form-label">সদস্য / দাতার নাম</label> <div id="colNameSuggest" style="position:relative"> <input type="text" id="colName" class="form-control" placeholder="নাম লিখুন" oninput="onColNameInput(this.value)" autocomplete="off"> <div id="colNameDropdown" class="hidden" style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #ccc;z-index:50;max-height:220px;overflow:auto;box-shadow:0 4px 12px rgba(0,0,0,.1)"></div></div>
-            </div>
+              <div class="form-group" style="position:relative">
+                <label class="form-label">সদস্য / দাতার নাম</label>
+                <div id="colNameSuggest" style="position:relative">
+                  <input type="text" id="colName" class="form-control" placeholder="নাম লিখুন" oninput="onColNameInput(this.value)" autocomplete="off">
+                  <div id="colNameDropdown" class="hidden" style="position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #ccc;z-index:50;max-height:220px;overflow:auto;box-shadow:0 4px 12px rgba(0,0,0,.1)"></div>
+                </div>
+              </div>
               <div class="form-group"><label class="form-label">পরিমাণ (টাকা)</label><input type="number" id="colAmt" class="form-control" placeholder="0.00" min="0"></div>
             </div>
             <div class="form-row-2">
@@ -279,54 +284,7 @@
         </div>
       </div>
       </div>
-      <!-- Contact -->
-      <div id="contacts" class="module">
-  <div class="card">
-    <div class="card-header">
-      <div><div class="card-title">যোগাযোগ (Contacts / Members)</div><div class="card-sub">Member directory with partner ledger</div></div>
-      <button class="btn btn-primary btn-sm" onclick="openMemberModal()">+ New Member</button>
-    </div>
-    <input class="form-control" placeholder="Search by name/code/phone..." style="margin:14px 16px;width:calc(100% - 32px)" oninput="filterMembers(this.value)">
-    <table class="table">
-      <thead><tr><th>Code</th><th>Name</th><th>Designation</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
-      <tbody id="membersBody"></tbody>
-    </table>
-  </div>
-</div>
 
-<div id="memberDetailModal" class="modal hidden">
-  <div class="modal-box" style="max-width:640px">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h3 id="mdName">—</h3>
-      <button class="btn btn-ghost btn-sm" onclick="closeModal('memberDetailModal')">✕</button>
-    </div>
-    <div id="mdContact" class="td-m" style="margin-bottom:12px"></div>
-    <div style="display:flex;gap:8px;margin-bottom:10px">
-      <button class="btn btn-ghost btn-sm" onclick="editMemberFromDetail()">✏️ Edit</button>
-    </div>
-    <h4>Partner Ledger</h4>
-    <table class="table">
-      <thead><tr><th>Date</th><th>Receipt No</th><th>Description</th><th>Amount</th></tr></thead>
-      <tbody id="mdLedgerBody"></tbody>
-      <tfoot><tr><td colspan="3" style="font-weight:700">Total</td><td id="mdLedgerTotal" style="font-weight:700"></td></tr></tfoot>
-    </table>
-  </div>
-</div>
-
-<div id="memberModal" class="modal hidden">
-  <div class="modal-box">
-    <h3 id="memberModalTitle">New Member</h3>
-    <input type="hidden" id="memEditId">
-    <div class="form-group"><label>Name</label><input class="form-control" id="memName"></div>
-    <div class="form-group"><label>Designation</label><input class="form-control" id="memDesig"></div>
-    <div class="form-group"><label>Phone</label><input class="form-control" id="memPhone"></div>
-    <div class="form-group"><label>Address</label><input class="form-control" id="memAddr"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn btn-ghost" onclick="closeModal('memberModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveMember()">Save</button>
-    </div>
-  </div>
-</div>
       <!-- RECEIPT -->
 <div id="receipt" class="module">
   <div class="card">
@@ -340,6 +298,20 @@
     <div class="card-body np">
       <iframe id="receiptFrame" style="width:100%;height:80vh;border:none;display:block" title="Money Receipt Preview"></iframe>
     </div>
+  </div>
+</div>
+
+<div id="contacts" class="module">
+  <div class="card">
+    <div class="card-header">
+      <div><div class="card-title">যোগাযোগ (Contacts / Members)</div><div class="card-sub">Member directory with partner ledger</div></div>
+      <button class="btn btn-primary btn-sm" onclick="openMemberModal()">+ New Member</button>
+    </div>
+    <input class="form-control" placeholder="Search by name/code/phone..." style="margin:14px 16px;width:calc(100% - 32px)" oninput="filterMembers(this.value)">
+    <table class="table">
+      <thead><tr><th>Code</th><th>Name</th><th>Designation</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="membersBody"></tbody>
+    </table>
   </div>
 </div>
 
@@ -652,7 +624,50 @@
   </div>
 </div>
 
-  <script src="/assets/js/index.js?v=20260630-polish4"></script>
+<!-- MEMBER DETAIL / PARTNER LEDGER MODAL -->
+<div id="memberDetailModal" class="modal-overlay hidden">
+  <div class="modal-box" style="max-width:640px">
+    <div class="modal-header">
+      <div class="modal-title" id="mdName">—</div>
+      <button class="modal-close" onclick="closeModal('memberDetailModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="mdContact" class="td-m" style="margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button class="btn btn-ghost btn-sm" onclick="editMemberFromDetail()">✏️ Edit</button>
+      </div>
+      <h4>Partner Ledger</h4>
+      <table class="table">
+        <thead><tr><th>Date</th><th>Receipt No</th><th>Description</th><th>Amount</th></tr></thead>
+        <tbody id="mdLedgerBody"></tbody>
+        <tfoot><tr><td colspan="3" style="font-weight:700">Total</td><td id="mdLedgerTotal" style="font-weight:700"></td></tr></tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MEMBER ADD/EDIT MODAL -->
+<div id="memberModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="memberModalTitle">New Member</div>
+      <button class="modal-close" onclick="closeModal('memberModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="memEditId">
+      <div class="form-group"><label class="form-label">Name</label><input class="form-control" id="memName"></div>
+      <div class="form-group"><label class="form-label">Designation</label><input class="form-control" id="memDesig"></div>
+      <div class="form-group"><label class="form-label">Phone</label><input class="form-control" id="memPhone"></div>
+      <div class="form-group"><label class="form-label">Address</label><input class="form-control" id="memAddr"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('memberModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="saveMember()">Save</button>
+    </div>
+  </div>
+</div>
+
+  <script src="/assets/js/index.js?v=20260716-members1"></script>
 
 </body>
 </html>
