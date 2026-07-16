@@ -10,14 +10,10 @@
 <style>
 :root{--ink:#13243d;--muted:#64748b;--line:#cbd5e1;--soft:#f8fafc}
 *{box-sizing:border-box}body{margin:0;background:#eef2f6;color:#172033;font-family:Inter,"Noto Sans Bengali",sans-serif}
-.toolbar{max-width:1120px;margin:18px auto 10px;padding:12px 16px;background:#fff;border:1px solid #d9e0e8;border-radius:10px;display:flex;justify-content:space-between;align-items:center}
-.toolbar span{display:block;color:var(--muted);font-size:12px;margin-top:3px}.actions{display:flex;gap:8px}
-button{border:1px solid var(--ink);border-radius:7px;padding:9px 14px;background:var(--ink);color:#fff;font-weight:700;cursor:pointer}
-button.secondary{background:#fff;color:var(--ink)}
-.page{width:210mm;min-height:297mm;margin:0 auto 24px;background:#fff;padding:8mm 9mm;box-shadow:0 8px 30px rgba(15,23,42,.12)}
+.page{width:210mm;min-height:297mm;margin:18px auto 24px;background:#fff;padding:8mm 9mm;box-shadow:0 8px 30px rgba(15,23,42,.12)}
 .copy{height:135mm;display:flex;flex-direction:column}
 .header{display:flex;justify-content:space-between;gap:20px;border-bottom:1.5px solid var(--ink);padding-bottom:7px}
-.brand{display:flex;gap:10px;align-items:center}.logo{width:44px;height:44px;border:2px solid var(--ink);display:grid;place-items:center;font-weight:800}
+.brand{display:flex;gap:10px;align-items:center}.logo{width:44px;height:44px;border:2px solid var(--ink);display:grid;place-items:center;font-weight:800;object-fit:cover;border-radius:4px}
 .company h1{font-size:20px;margin:0;color:var(--ink)}.company p{font-size:10px;margin:3px 0 0;color:var(--muted)}
 .title{text-align:right}.title h2{margin:5px 0 0;font-size:24px;color:var(--ink);letter-spacing:.04em}.badge{display:inline-block;padding:5px 10px;border:1px solid var(--ink);border-radius:4px;font-size:9px;font-weight:800}
 .meta{display:grid;grid-template-columns:1.25fr 1fr 70px;gap:14px;padding:9px 0}
@@ -28,18 +24,21 @@ button.secondary{background:#fff;color:var(--ink)}
 .amount{margin-top:8px;border:1px solid var(--line)}table{border-collapse:collapse;width:100%;font-size:9px}th,td{padding:6px 9px;border-top:1px solid var(--line);text-align:left}th:last-child,td:last-child{text-align:right}tfoot th{font-size:11px;color:var(--ink);background:var(--soft)}
 .words{padding:7px 9px;border-top:1px solid var(--line);font-size:9px}.footer{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding-top:14px}.sign{text-align:center;font-size:8px}.sign i{display:block;height:18px;border-bottom:1px solid #7c8796;margin-bottom:5px}
 .cut{height:10mm;border-top:1px dashed #8793a3;position:relative;margin-top:5mm}.cut span{position:absolute;left:-5mm;top:-10px;background:#fff;padding-right:5px;color:#64748b}
-.status{position:fixed;right:20px;bottom:20px;background:#13243d;color:#fff;padding:9px 13px;border-radius:7px;font-size:12px}
+.status{position:fixed;right:20px;bottom:76px;background:#13243d;color:#fff;padding:9px 13px;border-radius:7px;font-size:12px}
+.fab{position:fixed;right:20px;bottom:20px;display:flex;gap:8px}
+.fab button{border:1px solid var(--ink);border-radius:999px;padding:11px 18px;background:#13243d;color:#fff;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(15,23,42,.25)}
+.fab button.secondary{background:#fff;color:var(--ink)}
 @page{size:A4 portrait;margin:0}
-@media print{body{background:#fff}.toolbar,.status{display:none}.page{margin:0;box-shadow:none;width:210mm;height:297mm;min-height:297mm;page-break-after:avoid}.copy{height:135mm}}
+@media print{body{background:#fff}.fab,.status{display:none}.page{margin:0;box-shadow:none;width:210mm;height:297mm;min-height:297mm;page-break-after:avoid}.copy{height:135mm}}
 </style>
 </head>
 <body>
-<div class="toolbar">
-  <div><strong>Aura Unity Money Receipt</strong><span>Office Copy + Donor/Member Copy on one A4 page</span></div>
-  <div class="actions"><button class="secondary" onclick="location.href='./index.html'">Back</button><button onclick="window.print()">Print / Save PDF</button></div>
-</div>
 <main class="page" id="page"></main>
 <div class="status" id="status">Loading receipt…</div>
+<div class="fab">
+  <button class="secondary" onclick="location.href='./index.html'">Back</button>
+  <button onclick="window.print()">Print / Save PDF</button>
+</div>
 <script>
 const SUPABASE_URL="https://ltcjgbhjkfvlzzvvulhz.supabase.co";
 const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx0Y2pnYmhqa2Z2bHp6dnZ1bGh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NDM2MjYsImV4cCI6MjA5ODExOTYyNn0.nfSI1_x4LSg9xNGQJSeflU8_zWSnpwRmzRBG0_YldUc";
@@ -47,11 +46,43 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const params=new URLSearchParams(location.search);
 const money=n=>Number(n||0).toLocaleString("en-BD",{minimumFractionDigits:2,maximumFractionDigits:2});
 function numberWords(n){const a=["Zero","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"],b=["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];function p(x){if(x===0)return"";if(x<20)return a[x];if(x<100)return b[Math.floor(x/10)]+(x%10?" "+a[x%10]:"");if(x<1000)return a[Math.floor(x/100)]+" Hundred"+(x%100?" "+p(x%100):"");if(x<100000)return p(Math.floor(x/1000))+" Thousand"+(x%1000?" "+p(x%1000):"");if(x<10000000)return p(Math.floor(x/100000))+" Lakh"+(x%100000?" "+p(x%100000):"");return p(Math.floor(x/10000000))+" Crore"+(x%10000000?" "+p(x%10000000):"")}const whole=Math.floor(Number(n)||0);return (whole===0?"Zero":p(whole))+" Taka Only"}
+
+const DEFAULT_TENANT_ID = "00000000-0000-0000-0000-000000000001";
+
+async function resolveTenantId(userId) {
+  try {
+    const { data: rpcRows, error: rpcError } = await sb.rpc('resolve_current_tenant', { requested_slug: null });
+    const rpcTenant = Array.isArray(rpcRows) ? rpcRows[0] : rpcRows;
+    if (!rpcError && rpcTenant?.tenant_id) return rpcTenant.tenant_id;
+  } catch (e) { /* ignore, fall through */ }
+  if (userId) {
+    try {
+      const { data, error } = await sb.from('tenant_members').select('tenant_id').eq('user_id', userId).eq('is_active', true).eq('status', 'active').limit(1).maybeSingle();
+      if (!error && data?.tenant_id) return data.tenant_id;
+    } catch (e) { /* ignore, fall through */ }
+  }
+  return DEFAULT_TENANT_ID;
+}
+
+async function loadCompanyInfo(tenantId) {
+  const fallback = { name: "Aura Unity", sub: "Enterprise Management System", address: "", phone: "", logo: "" };
+  try {
+    const { data, error } = await sb.from('company_info').select('setting_key,setting_value').eq('tenant_id', tenantId);
+    if (error || !data?.length) return fallback;
+    const company = { ...fallback };
+    data.forEach(row => { company[row.setting_key] = row.setting_value; });
+    return company;
+  } catch (e) { return fallback; }
+}
+
 function copyTemplate(label,r){
  const verify=location.origin+location.pathname+"?receipt_no="+encodeURIComponent(r.receipt_no||"");
+ const logoHtml = r.company_logo
+   ? `<img class="logo" src="${r.company_logo}" alt="">`
+   : `<div class="logo">${(r.company_name||"A")[0]}</div>`;
  return `<section class="copy">
- <header class="header"><div class="brand"><div class="logo">AU</div><div class="company"><h1>${r.company_name||"Aura Unity"}</h1><p>${r.company_subtitle||"Enterprise Management System"}</p></div></div><div class="title"><span class="badge">${label}</span><h2>MONEY RECEIPT</h2></div></header>
- <div class="meta"><address class="contact"><strong>${r.legal_name||r.company_name||"Aura Unity"}</strong><span>${r.company_address||"Sreemangal, Moulvibazar, Bangladesh"}</span><span>Phone: ${r.company_phone||"—"}</span><span>Email: ${r.company_email||"—"}</span><span>TIN: ${r.tin||"—"} &nbsp; BIN: ${r.bin||"—"}</span></address>
+ <header class="header"><div class="brand">${logoHtml}<div class="company"><h1>${r.company_name||"Aura Unity"}</h1><p>${r.company_subtitle||"Enterprise Management System"}</p></div></div><div class="title"><span class="badge">${label}</span><h2>MONEY RECEIPT</h2></div></header>
+ <div class="meta"><address class="contact"><strong>${r.legal_name||r.company_name||"Aura Unity"}</strong><span>${r.company_address||""}</span><span>Phone: ${r.company_phone||"—"}</span><span>Email: ${r.company_email||"—"}</span><span>TIN: ${r.tin||"—"} &nbsp; BIN: ${r.bin||"—"}</span></address>
  <dl class="docmeta"><div><dt>Receipt No.</dt><dd>${r.receipt_no||"—"}</dd></div><div><dt>Date</dt><dd>${r.collection_date||"—"}</dd></div><div><dt>Payment Date</dt><dd>${r.collection_date||"—"}</dd></div><div><dt>Branch</dt><dd>${r.branch||"Head Office"}</dd></div><div><dt>Prepared By</dt><dd>${r.prepared_by||"Accounts User"}</dd></div></dl>
  <div class="qr"><canvas data-qr="${verify}"></canvas><div>Scan to verify</div></div></div>
  <div class="grid"><section class="panel"><h3>RECEIVED FROM</h3><dl><div><dt>Member/Donor Name</dt><dd>${r.payer_name||"—"}</dd></div><div><dt>Member/Donor Code</dt><dd>${r.payer_code||"—"}</dd></div><div><dt>Contact No.</dt><dd>${r.payer_phone||"—"}</dd></div><div><dt>Address</dt><dd>${r.payer_address||"—"}</dd></div></dl></section>
@@ -63,11 +94,13 @@ function copyTemplate(label,r){
  </div>
  </section>`;
 }
+
 async function load(){
- let r={receipt_no:params.get("receipt_no")||"MR-2026-000001",collection_date:new Date().toISOString().slice(0,10),payer_name:params.get("payer")||"Member / Donor Name",amount:Number(params.get("amount")||0),description:params.get("description")||"Member/Donor contribution",payment_mode:params.get("mode")||"Cash"};
+ let r={receipt_no:params.get("receipt_no")||"MR-2026-00000001",collection_date:new Date().toISOString().slice(0,10),payer_name:params.get("payer")||"Member / Donor Name",amount:Number(params.get("amount")||0),description:params.get("description")||"Member/Donor contribution",payment_mode:params.get("mode")||"Cash",receipt_head:params.get("head")||"General Collection"};
  const id=params.get("collection_id"),receiptNo=params.get("receipt_no");
+ let session=null;
  try{
-   const {data:{session}}=await sb.auth.getSession();
+   ({ data:{session} }=await sb.auth.getSession());
    if(session&&(id||receiptNo)){
      let q=sb.from("collections").select("*");
      q=id?q.eq("id",id):q.eq("receipt_no",receiptNo);
@@ -75,6 +108,18 @@ async function load(){
      if(error)throw error;if(data)r={...r,...data,prepared_by:session.user.email||"Accounts User"};
    }
  }catch(e){console.error(e);document.getElementById("status").textContent="Using preview data; database record could not be loaded."}
+
+ // Real tenant-based company branding (name, subtitle, address, phone, logo) — pulled from company_info
+ try{
+   const tenantId = await resolveTenantId(session?.user?.id);
+   const company = await loadCompanyInfo(tenantId);
+   r.company_name = company.name || r.company_name;
+   r.company_subtitle = company.sub || r.company_subtitle;
+   r.company_address = company.address || r.company_address;
+   r.company_phone = company.phone || r.company_phone;
+   r.company_logo = company.logo || "";
+ }catch(e){ console.error("Company info load failed:", e); }
+
  document.getElementById("page").innerHTML=copyTemplate("OFFICE COPY",r)+'<div class="cut"><span>✂</span></div>'+copyTemplate("DONOR / MEMBER COPY",r);
  document.querySelectorAll("[data-qr]").forEach(c=>QRCode.toCanvas(c,c.dataset.qr,{width:82,margin:0,color:{dark:"#13243d",light:"#ffffff"}}));
  document.getElementById("status").textContent="Receipt ready";
