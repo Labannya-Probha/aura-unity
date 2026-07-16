@@ -2174,6 +2174,15 @@ async function printJournalVoucher(id) {
   const safeCoPhone = esc(coPhone);
   const safeBin = esc(bin);
   const safePreparedBy = esc(preparedBy);
+  const printTimestamp = new Date().toLocaleString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  }).replace(',', '');
+  const safePrintTimestamp = esc(printTimestamp);
   const safeJournalRef = esc(journal.ref_no || 'Journal Voucher');
   const safeJournalDate = esc(journal.journal_date || '—');
   const safeNarration = esc(journal.narration || '');
@@ -2198,9 +2207,16 @@ async function printJournalVoucher(id) {
 <html><head><meta charset="UTF-8"><title>${safeJournalRef}</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  @page{margin:0}
-  body{font-family:Arial,sans-serif;color:#0B1629;background:#fff;padding:12mm 14mm}
+  @page{size:A4 portrait;margin:0}
+  html,body{width:210mm;min-height:297mm}
+  body{font-family:Arial,sans-serif;color:#0B1629;background:#fff;padding:12mm 14mm 46mm;position:relative}
   table{width:100%;border-collapse:collapse}
+  .print-footer{position:fixed;left:14mm;right:14mm;bottom:8mm;background:#fff;border-top:1px solid #CBD5E1;border-bottom:1px solid #CBD5E1;padding:10px 0 7px}
+  .signature-row{display:grid;grid-template-columns:repeat(3,1fr);gap:34px;text-align:center}
+  .signature-box{font-size:10.5px}
+  .signature-line{height:24px;border-bottom:1.2px solid #0B1629;margin-bottom:5px}
+  .footer-meta{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;margin-top:12px;padding-top:7px;border-top:1px solid #E2E8F0;font-size:9px;color:#475569}
+  .footer-left{text-align:left}.footer-center{text-align:center;font-weight:700;color:#0B1629}.footer-right{text-align:right;font-weight:600}
 </style>
 </head>
 <body>
@@ -2257,16 +2273,19 @@ async function printJournalVoucher(id) {
   <!-- In Words -->
   <div style="font-size:12.5px;margin-top:10px"><strong>In words:</strong> ${safeInWords}</div>
 
-  <!-- Signatures -->
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:24px;margin-top:36px">
-      <div style="text-align:center"><div style="border-top:1.5px solid #0B1629;padding-top:6px;font-size:11.5px">Prepared by<br><small style="color:#647188">${safePreparedBy}</small></div></div>
-      <div style="text-align:center"><div style="border-top:1.5px solid #0B1629;padding-top:6px;font-size:11.5px">Checked by</div></div>
-      <div style="text-align:center"><div style="border-top:1.5px solid #0B1629;padding-top:6px;font-size:11.5px">Approved by</div></div>
-      <div style="text-align:center"><div style="border-top:1.5px solid #0B1629;padding-top:6px;font-size:11.5px">Receiver's Signature</div></div>
-  </div>
-
-  <!-- Footer -->
-  <div style="margin-top:24px;display:flex;justify-content:space-between;gap:16px;font-size:10.5px;color:#647188;border-top:1px solid #E2E8F4;padding-top:8px">     <span>&copy; 2026 Aura Stay</span><strong style="color:#0B1629">Powered by Aura Stay</strong>   </div>
+  <!-- Fixed Print Footer -->
+  <footer class="print-footer">
+    <div class="signature-row">
+      <div class="signature-box"><div class="signature-line"></div><div>Prepared By</div><small style="color:#647188">${safePreparedBy}</small></div>
+      <div class="signature-box"><div class="signature-line"></div><div>Verified By</div></div>
+      <div class="signature-box"><div class="signature-line"></div><div>Approved By</div></div>
+    </div>
+    <div class="footer-meta">
+      <div class="footer-left">Print: ${safePrintTimestamp}</div>
+      <div class="footer-center">Powered by Aura Stay</div>
+      <div class="footer-right">Page 1 of 1</div>
+    </div>
+  </footer>
 </body></html>`;
 
   const blob = new Blob([html], { type: 'text/html' });
