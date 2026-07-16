@@ -331,3 +331,22 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
   #printArea .qr-section{margin-top:4mm}
   @page{size:A4 portrait;margin:0}
 }
+
+
+/* Journal approval workflow */
+.journal-workflow-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 250px;
+}
+.journal-workflow-actions .btn {
+  min-height: 34px;
+  white-space: nowrap;
+}
+@media (max-width: 900px) {
+  .journal-workflow-actions {
+    min-width: 180px;
+  }
+}

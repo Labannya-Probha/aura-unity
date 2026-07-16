@@ -121,7 +121,23 @@ async function load(){
  }catch(e){ console.error("Company info load failed:", e); }
 
  document.getElementById("page").innerHTML=copyTemplate("OFFICE COPY",r)+'<div class="cut"><span>✂</span></div>'+copyTemplate("DONOR / MEMBER COPY",r);
- document.querySelectorAll("[data-qr]").forEach(c=>QRCode.toCanvas(c,c.dataset.qr,{width:82,margin:0,color:{dark:"#13243d",light:"#ffffff"}}));
+ document.querySelectorAll("[data-qr]").forEach(c => {
+   if (window.QRCode && typeof window.QRCode.toCanvas === "function") {
+     window.QRCode.toCanvas(c, c.dataset.qr, {
+       width: 82,
+       margin: 0,
+       color: { dark: "#13243d", light: "#ffffff" }
+     });
+   } else {
+     const wrap = c.parentElement;
+     c.style.display = "none";
+     const note = document.createElement("div");
+     note.textContent = "Receipt: " + (r.receipt_no || "—");
+     note.style.cssText = "font-size:8px;font-weight:700;color:#13243d;max-width:70px;word-break:break-word";
+     wrap.insertBefore(note, wrap.firstChild);
+     console.warn("QR library unavailable; receipt number fallback rendered.");
+   }
+ });
  document.getElementById("status").textContent="Receipt ready";
  setTimeout(()=>document.getElementById("status").style.display="none",2200);
 }

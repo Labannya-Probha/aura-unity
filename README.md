@@ -1,11 +1,54 @@
-# Aura Unity — Journal Posting Engine v2.1
+# aura-unity
 
-This package adds a non-destructive journal approval and posting workflow to the existing Supabase accounting schema.
+A static HTML web application.
 
-Contents:
-- Supabase migration
-- Browser service for the current static Aura Unity app
-- Smoke test SQL
-- Integration instructions
+## Deployment
 
-Existing posted journals and lines are preserved.
+The main app remains a static site with entry point `index.html` at the repository root.
+
+## Supabase migrations
+
+Database migrations run automatically from GitHub Actions when files under `supabase/migrations/` are pushed to `main`.
+
+Required repository secrets:
+
+- `SUPABASE_ACCESS_TOKEN`: Supabase personal access token.
+- `SUPABASE_DB_PASSWORD`: database password for project `ltcjgbhjkfvlzzvvulhz`.
+
+The workflow can also be run manually from GitHub Actions: **Supabase Migrations**.
+
+## Migration sandbox
+
+The React migration sandbox is served from:
+
+- `/migration/index.html`
+
+This includes:
+
+- `Login.jsx` route
+- Tenant-aware routes (`/login`, `/<tenantSlug>/login`, `/<tenantSlug>/dashboard`, `/<tenantSlug>/reports`)
+- Separate page components in `migration-app/src/pages`
+- Reusable UI primitives in `migration-app/src/components/ui`
+- Vite-based source app in `migration-app`
+
+### Migration app commands
+
+Run from `/migration-app`:
+
+- `npm install`
+- `npm run dev`
+- `npm run build`
+
+`npm run build` outputs the static migration app into `/migration`, so it stays deployable as part of the repository static site.
+
+### Vercel
+
+The `vercel.json` file configures Vercel to deploy as a plain static site:
+- **Build command:** none
+- **Output directory:** `.` (repository root)
+- **Framework preset:** Other / none
+
+If deploying via the Vercel dashboard, ensure:
+- **Framework Preset** is set to **Other**
+- **Build Command** is left **empty**
+- **Output Directory** is set to `.`
