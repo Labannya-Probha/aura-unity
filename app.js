@@ -1407,7 +1407,7 @@ async function postCollectionToLedger(collectionRow, { head, mode }, existingJou
 
   const journalPayload = {
     journal_date: collectionRow.collection_date,
-    ref_no: `MR-${collectionRow.receipt_no}`,
+    ref_no: collectionRow.receipt_no,
     narration,
     total_debit: amount,
     total_credit: amount,
