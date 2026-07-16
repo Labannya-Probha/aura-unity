@@ -1882,29 +1882,104 @@ async function saveJournal() {
   await loadDashboard();
 }
 
-async function postJournal(id) {
-  if (!canEditVoucher()) { toast('Post করার অনুমতি নেই।', 'error'); return; }
-  const { data: { session } } = await sb.auth.getSession();
-  const { error } = await sb.from('journals')
-    .update({ status: 'posted', posted_by: session?.user?.id || null, posted_at: new Date().toISOString() })
-    .eq('id', id).eq('status', 'draft');
-  if (error) { toast('Post ব্যর্থ: ' + error.message, 'error'); return; }
-  toast('জার্নাল Post হয়েছে — এখন লক করা এবং Reports-এ যুক্ত হয়েছে।', 'success');
-  await loadVoucherSummary();
-  await loadDashboard();
+async function submitJournal(id) {
+  const note = window.prompt('Submission note (optional):', 'Ready for approval');
+  if (note === null) return;
+  try {
+    const { error } = await sb.rpc('submit_journal_entry', {
+      p_journal_id: Number(id),
+      p_note: note || null
+    });
+    if (error) throw error;
+    toast('Journal submitted for approval.', 'success');
+    await loadVoucherSummary();
+  } catch (error) {
+    toast('Submit failed: ' + error.message, 'error');
+  }
 }
 
-async function cancelJournal(id) {
-  if (!canDeleteData()) { toast('শুধু Superuser cancel করতে পারবে।', 'error'); return; }
-  if (!window.confirm('এই posted জার্নাল cancel করতে চান? এটি ডিলিট হবে না, শুধু Reports থেকে বাদ যাবে।')) return;
-  const { data: { session } } = await sb.auth.getSession();
-  const { error } = await sb.from('journals')
-    .update({ status: 'cancelled', cancelled_by: session?.user?.id || null, cancelled_at: new Date().toISOString() })
-    .eq('id', id);
-  if (error) { toast('Cancel ব্যর্থ: ' + error.message, 'error'); return; }
-  toast('জার্নাল Cancelled।', 'success');
-  await loadVoucherSummary();
-  await loadDashboard();
+async function approveJournal(id) {
+  const note = window.prompt('Approval note (optional):', 'Checked and approved');
+  if (note === null) return;
+  try {
+    const { error } = await sb.rpc('approve_journal_entry', {
+      p_journal_id: Number(id),
+      p_note: note || null
+    });
+    if (error) throw error;
+    toast('Journal approved.', 'success');
+    await loadVoucherSummary();
+  } catch (error) {
+    toast('Approve failed: ' + error.message, 'error');
+  }
+}
+
+async function rejectJournal(id) {
+  const reason = window.prompt('Rejection reason:');
+  if (reason === null) return;
+  if (!reason.trim()) {
+    toast('Rejection reason is required.', 'warning');
+    return;
+  }
+  try {
+    const { error } = await sb.rpc('reject_journal_entry', {
+      p_journal_id: Number(id),
+      p_reason: reason.trim()
+    });
+    if (error) throw error;
+    toast('Journal rejected and returned for correction.', 'success');
+    await loadVoucherSummary();
+  } catch (error) {
+    toast('Reject failed: ' + error.message, 'error');
+  }
+}
+
+async function postJournal(id) {
+  const reason = window.prompt('Posting note (optional):', 'Approved journal posted');
+  if (reason === null) return;
+  try {
+    const { error } = await sb.rpc('post_journal_entry', {
+      p_journal_id: Number(id),
+      p_reason: reason || null
+    });
+    if (error) throw error;
+    toast('Journal posted to the General Ledger.', 'success');
+    await loadVoucherSummary();
+    await loadDashboard();
+  } catch (error) {
+    toast('Post failed: ' + error.message, 'error');
+  }
+}
+
+async function reverseJournal(id) {
+  const reversalDate = window.prompt(
+    'Reversal date (YYYY-MM-DD):',
+    new Date().toISOString().slice(0, 10)
+  );
+  if (reversalDate === null) return;
+
+  const reason = window.prompt('Reversal reason:');
+  if (reason === null) return;
+  if (!reason.trim()) {
+    toast('Reversal reason is required.', 'warning');
+    return;
+  }
+
+  if (!window.confirm('Create a complete reversing journal? The original entry will remain in the audit trail.')) return;
+
+  try {
+    const { data, error } = await sb.rpc('reverse_journal_entry', {
+      p_journal_id: Number(id),
+      p_reversal_date: reversalDate,
+      p_reason: reason.trim()
+    });
+    if (error) throw error;
+    toast('Journal reversed. Reversal journal #' + data + ' created.', 'success');
+    await loadVoucherSummary();
+    await loadDashboard();
+  } catch (error) {
+    toast('Reverse failed: ' + error.message, 'error');
+  }
 }
 
 async function editJournal(id) {
@@ -1952,43 +2027,115 @@ async function deleteJournal(id) {
 async function loadVoucherSummary() {
   const journalBody = document.getElementById('journalSummaryBody');
   if (!journalBody) return;
-  journalBody.innerHTML = '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">লোড হচ্ছে...</td></tr>';
-  const jRes = await readTenantRows('journals', (from) => from.select('id,journal_date,ref_no,narration,total_debit,total_credit,status').order('journal_date', { ascending:false }).limit(50));
+
+  journalBody.innerHTML =
+    '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">Loading...</td></tr>';
+
+  const jRes = await readTenantRows('journals', (from) =>
+    from
+      .select('id,journal_date,ref_no,narration,total_debit,total_credit,status,submitted_by,approved_by,reversed_by_journal_id')
+      .order('journal_date', { ascending:false })
+      .order('id', { ascending:false })
+      .limit(100)
+  );
+
+  if (jRes.error) {
+    journalBody.innerHTML =
+      `<tr><td colspan="6" class="td-r" style="text-align:center;padding:20px">${esc(jRes.error.message)}</td></tr>`;
+    return;
+  }
+
   const reconciledSet = getReconciledJournals();
   const showReconciledOnly = document.getElementById('showReconciledOnly')?.checked;
   let journals = jRes.data || [];
   if (showReconciledOnly) journals = journals.filter(j => reconciledSet.has(String(j.id)));
-  journalBody.innerHTML = journals.map(j => {
-    const isReconciled = reconciledSet.has(String(j.id));
+
+  function workflowBadge(status) {
+    const map = {
+      draft: ['DRAFT', 'bg-gold'],
+      submitted: ['SUBMITTED', 'bg-info'],
+      approved: ['APPROVED', 'bg-navy'],
+      rejected: ['REJECTED', 'bg-danger'],
+      posted: ['POSTED', 'bg-green'],
+      reversed: ['REVERSED', 'bg-danger'],
+      cancelled: ['CANCELLED', 'bg-danger']
+    };
+    const item = map[status] || [String(status || 'UNKNOWN').toUpperCase(), 'bg-navy'];
+    return `<span class="badge ${item[1]}" style="font-size:9px">${item[0]}</span>`;
+  }
+
+  function workflowActions(j) {
     const status = j.status || 'posted';
-    const statusBadge = status === 'draft'
-      ? '<span class="badge bg-gold" style="font-size:9px">DRAFT</span>'
-      : status === 'cancelled'
-        ? '<span class="badge bg-danger" style="font-size:9px">CANCELLED</span>'
-        : '<span class="badge bg-green" style="font-size:9px">POSTED</span>';
-    const actions = status === 'draft'
-      ? `<button class="btn btn-ghost btn-sm" onclick="editJournal(${j.id})">Edit</button>
-         <button class="btn btn-gold btn-sm" onclick="postJournal(${j.id})">✓ Post</button>
-         ${canDeleteData() ? `<button class="btn btn-danger-lt btn-sm" onclick="deleteJournal(${j.id})">${esc(t('delete'))}</button>` : ''}`
-      : status === 'posted'
-        ? `<button class="btn btn-primary btn-sm" onclick="printJournalVoucher(${j.id})">Print</button>
-           <button class="btn btn-sm" style="background:${isReconciled?'var(--em-lt)':'var(--info-lt)'};border:1px solid ${isReconciled?'var(--em)':'var(--info)'};color:${isReconciled?'var(--em)':'var(--info)'}" onclick="toggleReconcile(${j.id})">${isReconciled ? '✓ Reconciled' : '⇌ Reconcile'}</button>
-           ${canDeleteData() ? `<button class="btn btn-danger-lt btn-sm" onclick="cancelJournal(${j.id})">Cancel</button>` : ''}`
-        : `<button class="btn btn-ghost btn-sm" onclick="printJournalVoucher(${j.id})">Print</button>`;
-    return `<tr>
-      <td><span class="badge bg-navy">${esc(j.ref_no || 'JV')}</span> ${statusBadge}</td>
+
+    if (status === 'draft' || status === 'rejected') {
+      return `
+        <button class="btn btn-ghost btn-sm" onclick="editJournal(${j.id})">Edit</button>
+        <button class="btn btn-primary btn-sm" onclick="submitJournal(${j.id})">Submit</button>
+        ${canDeleteData()
+          ? `<button class="btn btn-danger-lt btn-sm" onclick="deleteJournal(${j.id})">${esc(t('delete'))}</button>`
+          : ''}
+      `;
+    }
+
+    if (status === 'submitted') {
+      return `
+        <button class="btn btn-success btn-sm" onclick="approveJournal(${j.id})">Approve</button>
+        <button class="btn btn-danger-lt btn-sm" onclick="rejectJournal(${j.id})">Reject</button>
+        <button class="btn btn-ghost btn-sm" onclick="printJournalVoucher(${j.id})">View</button>
+      `;
+    }
+
+    if (status === 'approved') {
+      return `
+        <button class="btn btn-gold btn-sm" onclick="postJournal(${j.id})">Post</button>
+        <button class="btn btn-ghost btn-sm" onclick="printJournalVoucher(${j.id})">View</button>
+      `;
+    }
+
+    if (status === 'posted') {
+      const isReconciled = reconciledSet.has(String(j.id));
+      return `
+        <button class="btn btn-primary btn-sm" onclick="printJournalVoucher(${j.id})">Print</button>
+        <button
+          class="btn btn-sm"
+          style="background:${isReconciled?'var(--em-lt)':'var(--info-lt)'};
+                 border:1px solid ${isReconciled?'var(--em)':'var(--info)'};
+                 color:${isReconciled?'var(--em)':'var(--info)'}"
+          onclick="toggleReconcile(${j.id})">
+          ${isReconciled ? '✓ Reconciled' : '⇌ Reconcile'}
+        </button>
+        <button class="btn btn-danger-lt btn-sm" onclick="reverseJournal(${j.id})">Reverse</button>
+      `;
+    }
+
+    return `<button class="btn btn-ghost btn-sm" onclick="printJournalVoucher(${j.id})">View</button>`;
+  }
+
+  journalBody.innerHTML = journals.map(j => `
+    <tr>
+      <td>
+        <span class="badge bg-navy">${esc(j.ref_no || 'JV')}</span>
+        ${workflowBadge(j.status)}
+      </td>
       <td>${esc(j.journal_date || '')}</td>
       <td>${esc(j.narration || '')}</td>
       <td class="td-g">${fmt(j.total_debit || 0)}</td>
       <td class="td-r">${fmt(j.total_credit || 0)}</td>
-      <td><div style="display:flex;gap:6px;flex-wrap:wrap">${actions}</div></td>
-    </tr>`;
-  }).join('') || '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">কোনো জার্নাল ভাউচার নেই</td></tr>';
+      <td>
+        <div class="journal-workflow-actions">
+          ${workflowActions(j)}
+        </div>
+      </td>
+    </tr>
+  `).join('') || `
+    <tr>
+      <td colspan="6" class="td-m" style="text-align:center;padding:28px">
+        No journal voucher found
+      </td>
+    </tr>
+  `;
 }
 
-// ══════════════════════════════════════════
-// RECONCILIATION
-// ══════════════════════════════════════════
 function getReconciledJournals() {
   try { return new Set(JSON.parse(localStorage.getItem('aura_reconciled') || '[]').map(String)); } catch(e) { console.error('Reconciled journals parse error:', e); return new Set(); }
 }
