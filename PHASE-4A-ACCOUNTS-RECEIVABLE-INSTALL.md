@@ -29,3 +29,11 @@
 - Partial payment and advance receipt
 - Aging report and customer statement
 - Journal posting integration
+
+
+## Patch 4A.1
+
+- Fixed `ar_invoices.journal_id` and `ar_receipts.journal_id` to use `integer`, matching the existing `public.journals.id` type.
+- The Money Receipt navigation tab remains removed.
+- Clicking **Print** from Collections now opens the receipt print document and immediately launches the browser print preview.
+- `money-receipt.html` is retained only as an internal print template; it is not an application module/tab.

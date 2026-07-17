@@ -140,6 +140,9 @@ async function load(){
  });
  document.getElementById("status").textContent="Receipt ready";
  setTimeout(()=>document.getElementById("status").style.display="none",2200);
+ if(params.get("autoprint") === "1") {
+   setTimeout(() => { window.focus(); window.print(); }, 350);
+ }
 }
 load();
 </script>

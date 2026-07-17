@@ -36,7 +36,7 @@ create table if not exists public.ar_invoices (
   paid_amount numeric(18,2) not null default 0,
   balance_amount numeric(18,2) generated always as (greatest(total_amount-paid_amount,0)) stored,
   status text not null default 'draft' check (status in ('draft','submitted','approved','posted','partially_paid','paid','cancelled','rejected')),
-  journal_id uuid references public.journals(id),
+  journal_id integer references public.journals(id),
   created_by uuid default auth.uid(),
   submitted_by uuid,
   submitted_at timestamptz,
@@ -73,7 +73,7 @@ create table if not exists public.ar_receipts (
   amount numeric(18,2) not null check (amount > 0),
   unallocated_amount numeric(18,2) not null default 0,
   status text not null default 'posted' check (status in ('draft','posted','cancelled')),
-  journal_id uuid references public.journals(id),
+  journal_id integer references public.journals(id),
   created_by uuid default auth.uid(),
   created_at timestamptz not null default now(),
   unique(tenant_id, receipt_no)

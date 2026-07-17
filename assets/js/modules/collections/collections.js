@@ -340,7 +340,7 @@ async function editCollection(receiptNo) {
 }
 
 async function printCollectionReceipt(receiptNo) {
-  window.open(`money-receipt.html?receipt_no=${encodeURIComponent(receiptNo)}&lang=${S.lang}`, '_blank');
+  window.open(`money-receipt.html?receipt_no=${encodeURIComponent(receiptNo)}&lang=${S.lang}&autoprint=1`, '_blank', 'noopener,noreferrer');
 }
 
 async function deleteCollection(receiptNo) {
