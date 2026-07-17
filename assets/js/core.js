@@ -68,8 +68,8 @@ var S = {
 };
 
 var TT = {
-  bn:{dashboard:'ড্যাশবোর্ড',collection:'মাসিক কালেকশন',voucher:'ভাউচার ও জার্নাল',receipt:'মানি রিসিট',reports:'রিপোর্টস',journal:'ভাউচার ও জার্নাল',ledger:'লেজার বুক',daybook:'ডে বুক',trialbalance:'ট্রায়াল ব্যালেন্স',balancesheet:'ব্যালেন্স শীট',coa:'চার্ট অব অ্যাকাউন্টস',company:'কোম্পানি তথ্য',users:'ইউজার'},
-  en:{dashboard:'Dashboard',collection:'Collections',voucher:'Voucher & Journal',receipt:'Money Receipt',reports:'Reports',journal:'Voucher & Journal',ledger:'Ledger Book',daybook:'Day Book',trialbalance:'Trial Balance',balancesheet:'Balance Sheet',coa:'Chart of Accounts',company:'Company Info',users:'Users'}
+  bn:{dashboard:'ড্যাশবোর্ড',collection:'মাসিক কালেকশন',voucher:'ভাউচার ও জার্নাল',receipt:'মানি রিসিট',reports:'রিপোর্টস',journal:'ভাউচার ও জার্নাল',ledger:'লেজার বুক',daybook:'ডে বুক',trialbalance:'ট্রায়াল ব্যালেন্স',balancesheet:'ব্যালেন্স শীট',coa:'চার্ট অব অ্যাকাউন্টস',periodclose:'পিরিয়ড ক্লোজিং', company:'কোম্পানি তথ্য',users:'ইউজার'},
+  en:{dashboard:'Dashboard',collection:'Collections',voucher:'Voucher & Journal',receipt:'Money Receipt',reports:'Reports',journal:'Voucher & Journal',ledger:'Ledger Book',daybook:'Day Book',trialbalance:'Trial Balance',balancesheet:'Balance Sheet',coa:'Chart of Accounts',periodclose:'Period Closing', company:'Company Info',users:'Users'}
 };
 
 const LOCAL_STATE_KEY = 'aura-unity-local-state-v2';
@@ -806,6 +806,7 @@ function openModule(id) {
   if (id==='dashboard')  loadDashboard();
   if (id==='users')      loadUsers();
   if (id==='contacts')   loadMembers();
+  if (id==='periodclose' && window.PeriodClosingV1) window.PeriodClosingV1.load();
 }
 
 // ══════════════════════════════════════════

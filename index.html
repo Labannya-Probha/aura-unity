@@ -10,9 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="/assets/js/services/journalWorkflowService.js?v=20260716"></script>
-<script src="/assets/js/index.js?v=20260630-polish4"></script>
-  <link rel="stylesheet" href="/assets/css/index.css?v=20260630-polish4">
+  <link rel="stylesheet" href="/assets/css/index.css?v=20260716-print-footer">
 
 </head>
 <body>
@@ -83,7 +81,6 @@
     <div class="nav-item active" data-module="dashboard"><span class="nav-icon">⊞</span><span data-bn="ড্যাশবোর্ড" data-en="Dashboard">ড্যাশবোর্ড</span></div>
     <div class="nav-item" data-module="collection"><span class="nav-icon">৳</span><span data-bn="মাসিক কালেকশন" data-en="Collections">মাসিক কালেকশন</span></div>
     <div class="nav-item" data-module="voucher"><span class="nav-icon">◈</span><span data-bn="ভাউচার ও জার্নাল" data-en="Voucher & Journal">ভাউচার ও জার্নাল</span></div>
-    <div class="nav-item" data-module="receipt"><span class="nav-icon">◻</span><span data-bn="মানি রিসিট" data-en="Money Receipt">মানি রিসিট</span></div>
     <div class="nav-item" data-module="contacts"><span class="nav-icon">👥</span><span data-bn="যোগাযোগ" data-en="Contacts">যোগাযোগ</span></div>
     <div class="nav-item" data-module="reports"><span class="nav-icon">▤</span><span data-bn="রিপোর্টস" data-en="Reports">রিপোর্টস</span></div>
     <div class="nav-label" data-bn="অ্যাকাউন্টিং" data-en="Accounting">অ্যাকাউন্টিং</div>
@@ -92,6 +89,7 @@
     <div class="nav-item" data-module="trialbalance"><span class="nav-icon">⇌</span><span data-bn="ট্রায়াল ব্যালেন্স" data-en="Trial Balance">ট্রায়াল ব্যালেন্স</span></div>
     <div class="nav-item" data-module="balancesheet"><span class="nav-icon">◧</span><span data-bn="ব্যালেন্স শীট" data-en="Balance Sheet">ব্যালেন্স শীট</span></div>
     <div class="nav-label" data-bn="সেটআপ" data-en="Setup">সেটআপ</div>
+    <div class="nav-item" data-module="periodclose"><span class="nav-icon">▣</span><span data-bn="পিরিয়ড ক্লোজিং" data-en="Period Closing">Period Closing</span></div>
     <div class="nav-item" data-module="coa"><span class="nav-icon">≡</span><span data-bn="চার্ট অব অ্যাকাউন্টস" data-en="Chart of Accounts">চার্ট অব অ্যাকাউন্টস</span></div>
     <div class="nav-item" data-module="company"><span class="nav-icon">⚙</span><span data-bn="কোম্পানি তথ্য" data-en="Company Info">কোম্পানি তথ্য</span></div>
     <div class="nav-item" data-module="users"><span class="nav-icon">◉</span><span data-bn="ইউজার" data-en="Users">ইউজার</span></div>
@@ -117,7 +115,6 @@
         <button class="btn btn-ghost btn-sm" onclick="openModule('company')">⚙</button>
         <button class="btn btn-gold btn-sm" onclick="openModule('collection')"><span data-bn="+ কালেকশন" data-en="+ Collection">+ কালেকশন</span></button>
         <button class="btn btn-ghost btn-sm" onclick="openModule('voucher')"><span data-bn="+ ভাউচার / জার্নাল" data-en="+ Voucher / Journal">+ ভাউচার / জার্নাল</span></button>
-        <button class="btn btn-ghost btn-sm" onclick="openModule('receipt')"><span data-bn="মানি রিসিট" data-en="Money Receipt">Money Receipt</span></button>
         <button class="btn btn-ghost btn-sm" onclick="openModule('coa')"><span data-bn="চার্ট অব অ্যাকাউন্টস" data-en="Chart of Accounts">Chart of Accounts</span></button>
       </div>
     </div>
@@ -138,7 +135,6 @@
               <div class="quick-item" onclick="openModule('collection')"><span class="quick-icon">৳</span><span class="quick-label" data-bn="কালেকশন" data-en="Collection">কালেকশন</span></div>
               <div class="quick-item" onclick="openModule('voucher')"><span class="quick-icon">⇄</span><span class="quick-label" data-bn="ভাউচার + জার্নাল" data-en="Voucher + Journal">ভাউচার + জার্নাল</span></div>
               <div class="quick-item" onclick="openModule('voucher')"><span class="quick-icon">◈</span><span class="quick-label" data-bn="কুইক ভাউচার" data-en="Quick Voucher">কুইক ভাউচার</span></div>
-              <div class="quick-item" onclick="openModule('receipt')"><span class="quick-icon">◻</span><span class="quick-label" data-bn="রিসিট" data-en="Receipt">রিসিট</span></div>
               <div class="quick-item" onclick="openModule('ledger')"><span class="quick-icon">◫</span><span class="quick-label" data-bn="লেজার" data-en="Ledger">লেজার</span></div>
               <div class="quick-item" onclick="openModule('reports')"><span class="quick-icon">▤</span><span class="quick-label" data-bn="রিপোর্টস" data-en="Reports">রিপোর্টস</span></div>
             </div>
@@ -174,7 +170,6 @@
             <div class="form-group"><label class="form-label">বিবরণ / Purpose</label><textarea id="colDesc" class="form-control" placeholder="কালেকশনের কারণ..."></textarea></div>
             <div style="display:flex;gap:10px;flex-wrap:wrap">
               <button class="btn btn-gold" onclick="saveCollection()"><span data-bn="সেভ ও রিসিট তৈরি" data-en="Save & Generate Receipt">সেভ ও রিসিট তৈরি</span></button>
-              <button class="btn btn-ghost" onclick="openModule('receipt')"><span data-bn="রিসিট প্রিভিউ" data-en="Receipt Preview">রিসিট প্রিভিউ</span></button>
             </div>
           </div>
         </div>
@@ -287,22 +282,6 @@
       </div>
       </div>
 
-      <!-- RECEIPT -->
-<div id="receipt" class="module">
-  <div class="card">
-    <div class="card-header">
-      <div><div class="card-title">মানি রিসিট</div></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost btn-sm" onclick="genReceiptPreview()">🔄 রিফ্রেশ</button>
-        <button class="btn btn-success btn-sm" onclick="printReceipt()">🖨️ নতুন ট্যাবে প্রিন্ট</button>
-      </div>
-    </div>
-    <div class="card-body np">
-      <iframe id="receiptFrame" style="width:100%;height:80vh;border:none;display:block" title="Money Receipt Preview"></iframe>
-    </div>
-  </div>
-</div>
-
 <div id="contacts" class="module">
   <div class="card">
     <div class="card-header">
@@ -316,6 +295,59 @@
     </table>
   </div>
 </div>
+
+
+      <!-- PERIOD CLOSING & CONTROLS -->
+      <div id="periodclose" class="module">
+        <div class="pc-page">
+          <div class="pc-hero">
+            <div>
+              <div class="pc-eyebrow">ACCOUNTING CONTROL CENTER</div>
+              <h2>Period Closing & Controls</h2>
+              <p>Control fiscal periods, lock back-dated entries, complete month-end tasks and preserve auditable closing history.</p>
+            </div>
+            <button class="btn btn-primary" onclick="PeriodClosingV1.refresh()">↻ Refresh</button>
+          </div>
+
+          <div class="pc-kpis">
+            <div class="pc-kpi"><span>Fiscal Year</span><strong id="pcKpiYear">—</strong><small id="pcKpiYearStatus">Not loaded</small></div>
+            <div class="pc-kpi"><span>Current Period</span><strong id="pcKpiPeriod">—</strong><small id="pcKpiPeriodStatus">Not loaded</small></div>
+            <div class="pc-kpi"><span>Open Periods</span><strong id="pcKpiOpen">0</strong><small>Available for posting</small></div>
+            <div class="pc-kpi"><span>Checklist</span><strong id="pcKpiChecklist">0%</strong><small>Current-period completion</small></div>
+          </div>
+
+          <div class="pc-grid">
+            <section class="card pc-panel">
+              <div class="card-header">
+                <div><div class="card-title">Fiscal Year & Periods</div><div class="card-sub">Soft close, hard close and approval-based reopen</div></div>
+                <select id="pcFiscalYear" class="form-control" style="width:auto;min-width:190px" onchange="PeriodClosingV1.selectYear(this.value)"></select>
+              </div>
+              <div class="pc-table-wrap">
+                <table class="table pc-table">
+                  <thead><tr><th>Period</th><th>Date Range</th><th>Status</th><th>Closed By</th><th>Actions</th></tr></thead>
+                  <tbody id="pcPeriodsBody"><tr><td colspan="5" style="text-align:center;padding:28px">Loading periods...</td></tr></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="card pc-panel">
+              <div class="card-header"><div><div class="card-title">Month-end Checklist</div><div class="card-sub">Complete controls before closing the selected period</div></div><span id="pcChecklistBadge" class="pc-badge neutral">No period</span></div>
+              <div id="pcChecklist" class="pc-checklist"><div class="pc-empty">Select an accounting period.</div></div>
+            </section>
+          </div>
+
+          <div class="pc-grid">
+            <section class="card pc-panel">
+              <div class="card-header"><div><div class="card-title">Closing Validation</div><div class="card-sub">Automated control checks before hard close</div></div><button class="btn btn-ghost btn-sm" onclick="PeriodClosingV1.validateSelected()">Run validation</button></div>
+              <div id="pcValidation" class="pc-validation"><div class="pc-empty">Select a period and run validation.</div></div>
+            </section>
+            <section class="card pc-panel">
+              <div class="card-header"><div><div class="card-title">Close History</div><div class="card-sub">Immutable audit trail of period state changes</div></div></div>
+              <div id="pcHistory" class="pc-history"><div class="pc-empty">No history loaded.</div></div>
+            </section>
+          </div>
+        </div>
+      </div>
 
       <!-- REPORTS -->
       <div id="reports" class="module">
@@ -682,6 +714,7 @@
   <script src="/assets/js/modules/journal/journal-module-v2.js?v=20260717-v2"></script>
   <script src="/assets/js/reports.js?v=20260716-split1"></script>
   <script src="/assets/js/modules/reports/financial-statements-v1.js?v=20260717-fsv1"></script>
+  <script src="/assets/js/modules/accounting/period-closing-v1.js?v=20260717-pcv1"></script>
   <script src="/assets/js/index.js?v=20260716-split1"></script>
 
 </body>
