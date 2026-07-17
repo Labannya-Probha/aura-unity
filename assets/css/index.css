@@ -350,3 +350,16 @@ tbody tr:hover td{background:rgba(246,244,239,.8)}
     min-width: 180px;
   }
 }
+
+
+/* Aura Unity Journal Module v2 */
+.journal-v2-summary{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:10px;margin:0 0 14px}
+.journal-v2-summary>div{border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:12px 14px}
+.journal-v2-summary span{display:block;font-size:22px;font-weight:800;color:var(--navy)}
+.journal-v2-summary small{color:var(--muted);font-size:11px}
+.journal-workflow-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:280px}
+.journal-history-list{display:grid;gap:10px}
+.journal-history-item{border:1px solid var(--border);border-radius:9px;padding:10px 12px;background:var(--surface)}
+.journal-history-item small{color:var(--muted)}
+.journal-history-item p{margin:6px 0 0;color:var(--text)}
+@media(max-width:900px){.journal-v2-summary{grid-template-columns:repeat(2,1fr)}.journal-workflow-actions{min-width:180px}}
