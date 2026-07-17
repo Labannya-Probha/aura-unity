@@ -40,17 +40,17 @@ function genReceiptPreview() {
   const draft = getReceiptDraft();
   const frame = document.getElementById('receiptFrame');
   if (!frame) return;
-  const url = `money-receipt.html?receipt_no=${encodeURIComponent(draft.rno)}&payer=${encodeURIComponent(draft.name)}&amount=${draft.amount}&mode=${encodeURIComponent(draft.mode)}&head=${encodeURIComponent(draft.head)}&description=${encodeURIComponent(draft.desc)}&lang=${S.lang}`;
+  const url = `money-receipt.html?receipt_no=${encodeURIComponent(draft.rno)}&payer=${encodeURIComponent(draft.name)}&amount=${draft.amount}&mode=${encodeURIComponent(draft.mode)}&head=${encodeURIComponent(draft.head)}&description=${encodeURIComponent(draft.desc)}&lang=${S.lang}&autoprint=1`;
   frame.src = url;
 }
 
 function printReceipt() {
   const draft = getReceiptDraft();
-  const url = `money-receipt.html?receipt_no=${encodeURIComponent(draft.rno)}&payer=${encodeURIComponent(draft.name)}&amount=${draft.amount}&mode=${encodeURIComponent(draft.mode)}&head=${encodeURIComponent(draft.head)}&description=${encodeURIComponent(draft.desc)}&lang=${S.lang}`;
+  const url = `money-receipt.html?receipt_no=${encodeURIComponent(draft.rno)}&payer=${encodeURIComponent(draft.name)}&amount=${draft.amount}&mode=${encodeURIComponent(draft.mode)}&head=${encodeURIComponent(draft.head)}&description=${encodeURIComponent(draft.desc)}&lang=${S.lang}&autoprint=1`;
   window.open(url, '_blank');
 }
 
 async function printCollectionReceipt(receiptNo) {
-  window.open(`money-receipt.html?receipt_no=${encodeURIComponent(receiptNo)}&lang=${S.lang}`, '_blank');
+  window.open(`money-receipt.html?receipt_no=${encodeURIComponent(receiptNo)}&lang=${S.lang}&autoprint=1`, '_blank');
 }
 

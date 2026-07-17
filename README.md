@@ -52,3 +52,6 @@ If deploying via the Vercel dashboard, ensure:
 - **Framework Preset** is set to **Other**
 - **Build Command** is left **empty**
 - **Output Directory** is set to `.`
+
+## Phase 4B Accounts Receivable
+The project now includes invoice maker-checker workflow, receipt allocation, customer advances, aging, receipt register and direct print preview. See `PHASE-4B-AR-WORKFLOW-INSTALL.md`.
