@@ -36,22 +36,77 @@ function applySignature() {
   });
 }
 
-function genReceiptPreview() {
+function buildReceiptUrl(receiptNo = null) {
   const draft = getReceiptDraft();
+
+  const params = new URLSearchParams({
+    receipt_no: receiptNo || draft.rno || '',
+    payer: draft.name || '',
+    amount: String(draft.amount || 0),
+    mode: draft.mode || '',
+    head: draft.head || '',
+    description: draft.desc || '',
+    lang: S.lang || 'en',
+    autoprint: '0'
+  });
+
+  if (S.tenantId) {
+    params.set('tenant_id', S.tenantId);
+  }
+
+  if (S.tenantSlug) {
+    params.set('tenant_slug', S.tenantSlug);
+  }
+
+  return `${window.location.origin}/money-receipt.html?${params.toString()}`;
+}
+
+function printReceiptFromIframe(url) {
+  let iframe = document.getElementById('receiptPrintFrame');
+
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.id = 'receiptPrintFrame';
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '1px';
+    iframe.style.height = '1px';
+    iframe.style.border = '0';
+    iframe.style.opacity = '0';
+    iframe.style.pointerEvents = 'none';
+
+    document.body.appendChild(iframe);
+  }
+
+  iframe.onload = function () {
+    setTimeout(function () {
+      try {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+      } catch (error) {
+        console.error('Receipt print failed:', error);
+      }
+    }, 700);
+  };
+
+  iframe.src = url;
+}
+
+function genReceiptPreview() {
   const frame = document.getElementById('receiptFrame');
+
   if (!frame) return;
-  const url = `${window.location.origin}/money-receipt.html?receipt_no=${encodeURIComponent(draft.rno)}&payer=${encodeURIComponent(draft.name)}&amount=${draft.amount}&mode=${encodeURIComponent(draft.mode)}&head=${encodeURIComponent(draft.head)}&description=${encodeURIComponent(draft.desc)}&lang=${S.lang}&autoprint=1`;
-  frame.src = url;
+
+  frame.src = buildReceiptUrl();
 }
 
 function printReceipt() {
-  const draft = getReceiptDraft();
-  const url = `${window.location.origin}/money-receipt.html?receipt_no=${encodeURIComponent(draft.rno)}&payer=${encodeURIComponent(draft.name)}&amount=${draft.amount}&mode=${encodeURIComponent(draft.mode)}&head=${encodeURIComponent(draft.head)}&description=${encodeURIComponent(draft.desc)}&lang=${S.lang}&autoprint=1`;
-  window.open(url, '_blank');
+  printReceiptFromIframe(buildReceiptUrl());
 }
 
 async function printCollectionReceipt(receiptNo) {
-  window.open(`${window.location.origin}/money-receipt.html?receipt_no=${encodeURIComponent(receiptNo)}&lang=${S.lang}&autoprint=1`, '_blank');
+  printReceiptFromIframe(buildReceiptUrl(receiptNo));
 }
 
 
