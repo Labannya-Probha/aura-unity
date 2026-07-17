@@ -164,6 +164,7 @@ function openModule(id) {
   if (id==='dashboard')  loadDashboard();
   if (id==='users')      loadUsers();
   if (id==='contacts')   loadMembers();
+  if (id==='receivables' && window.ReceivablesV1) window.ReceivablesV1.load();
   if (id==='periodclose' && window.PeriodClosingV1) window.PeriodClosingV1.load();
 }
 
