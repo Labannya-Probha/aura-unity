@@ -105,14 +105,7 @@ async function load(){
      let q=sb.from("collections").select("*");
      q=id?q.eq("id",id):q.eq("receipt_no",receiptNo);
      const {data,error}=await q.limit(1).maybeSingle();
-     if(error)throw error;
-     if(data){
-       r={...r,...data,prepared_by:session.user.email||"Accounts User"};
-     } else if(receiptNo){
-       const {data:arReceipt,error:arError}=await sb.from("ar_receipt_register").select("*").eq("receipt_no",receiptNo).limit(1).maybeSingle();
-       if(arError) throw arError;
-       if(arReceipt) r={...r,...arReceipt,payer_name:arReceipt.customer_name,collection_date:arReceipt.receipt_date,description:"Accounts receivable payment",payment_mode:arReceipt.payment_mode,prepared_by:session.user.email||"Accounts User"};
-     }
+     if(error)throw error;if(data)r={...r,...data,prepared_by:session.user.email||"Accounts User"};
    }
  }catch(e){console.error(e);document.getElementById("status").textContent="Using preview data; database record could not be loaded."}
 
@@ -128,28 +121,9 @@ async function load(){
  }catch(e){ console.error("Company info load failed:", e); }
 
  document.getElementById("page").innerHTML=copyTemplate("OFFICE COPY",r)+'<div class="cut"><span>✂</span></div>'+copyTemplate("DONOR / MEMBER COPY",r);
- document.querySelectorAll("[data-qr]").forEach(c => {
-   if (window.QRCode && typeof window.QRCode.toCanvas === "function") {
-     window.QRCode.toCanvas(c, c.dataset.qr, {
-       width: 82,
-       margin: 0,
-       color: { dark: "#13243d", light: "#ffffff" }
-     });
-   } else {
-     const wrap = c.parentElement;
-     c.style.display = "none";
-     const note = document.createElement("div");
-     note.textContent = "Receipt: " + (r.receipt_no || "—");
-     note.style.cssText = "font-size:8px;font-weight:700;color:#13243d;max-width:70px;word-break:break-word";
-     wrap.insertBefore(note, wrap.firstChild);
-     console.warn("QR library unavailable; receipt number fallback rendered.");
-   }
- });
+ document.querySelectorAll("[data-qr]").forEach(c=>QRCode.toCanvas(c,c.dataset.qr,{width:82,margin:0,color:{dark:"#13243d",light:"#ffffff"}}));
  document.getElementById("status").textContent="Receipt ready";
  setTimeout(()=>document.getElementById("status").style.display="none",2200);
- if(params.get("autoprint") === "1") {
-   setTimeout(() => { window.focus(); window.print(); }, 350);
- }
 }
 load();
 </script>

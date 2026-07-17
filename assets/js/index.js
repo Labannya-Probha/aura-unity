@@ -1,6 +1,6 @@
-// ══════════════════════════════════════════
+﻿// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // RECEIPT
-// ══════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 var sigState = { drawing:false, dataUrl:null };
 
 function initSignaturePad() {
@@ -40,45 +40,45 @@ function genReceiptPreview() {
   const draft = getReceiptDraft();
   const frame = document.getElementById('receiptFrame');
   if (!frame) return;
-  const url = `money-receipt.html?receipt_no=${encodeURIComponent(draft.rno)}&payer=${encodeURIComponent(draft.name)}&amount=${draft.amount}&mode=${encodeURIComponent(draft.mode)}&head=${encodeURIComponent(draft.head)}&description=${encodeURIComponent(draft.desc)}&lang=${S.lang}`;
+  const url = `${window.location.origin}/money-receipt.html?receipt_no=${encodeURIComponent(draft.rno)}&payer=${encodeURIComponent(draft.name)}&amount=${draft.amount}&mode=${encodeURIComponent(draft.mode)}&head=${encodeURIComponent(draft.head)}&description=${encodeURIComponent(draft.desc)}&lang=${S.lang}`;
   frame.src = url;
 }
 
 function printReceipt() {
   const draft = getReceiptDraft();
-  const url = `money-receipt.html?receipt_no=${encodeURIComponent(draft.rno)}&payer=${encodeURIComponent(draft.name)}&amount=${draft.amount}&mode=${encodeURIComponent(draft.mode)}&head=${encodeURIComponent(draft.head)}&description=${encodeURIComponent(draft.desc)}&lang=${S.lang}`;
+  const url = `${window.location.origin}/money-receipt.html?receipt_no=${encodeURIComponent(draft.rno)}&payer=${encodeURIComponent(draft.name)}&amount=${draft.amount}&mode=${encodeURIComponent(draft.mode)}&head=${encodeURIComponent(draft.head)}&description=${encodeURIComponent(draft.desc)}&lang=${S.lang}`;
   window.open(url, '_blank');
 }
 
 async function printCollectionReceipt(receiptNo) {
-  window.open(`money-receipt.html?receipt_no=${encodeURIComponent(receiptNo)}&lang=${S.lang}`, '_blank');
+  window.open(`${window.location.origin}/money-receipt.html?receipt_no=${encodeURIComponent(receiptNo)}&lang=${S.lang}`, '_blank');
 }
 
-// ══════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // CHARTS
-// ══════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 var charts={};
 function initDashChart() {
   const ctx=document.getElementById('dashChart'); if(!ctx)return;
   if(charts.d) charts.d.destroy();
-  charts.d=new Chart(ctx,{type:'bar',data:{labels:['কালেকশন','ভাউচার','জার্নাল','ব্যালেন্স'],datasets:[{data:[0,0,0,0],backgroundColor:['rgba(212,160,23,.85)','rgba(26,122,74,.85)','rgba(21,88,176,.85)','rgba(192,57,43,.75)'],borderRadius:8,borderSkipped:false}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>'৳'+Number(v).toLocaleString()},grid:{color:'rgba(0,0,0,.04)'}},x:{grid:{display:false}}}}});
+  charts.d=new Chart(ctx,{type:'bar',data:{labels:['à¦•à¦¾à¦²à§‡à¦•à¦¶à¦¨','à¦­à¦¾à¦‰à¦šà¦¾à¦°','à¦œà¦¾à¦°à§à¦¨à¦¾à¦²','à¦¬à§à¦¯à¦¾à¦²à§‡à¦¨à§à¦¸'],datasets:[{data:[0,0,0,0],backgroundColor:['rgba(212,160,23,.85)','rgba(26,122,74,.85)','rgba(21,88,176,.85)','rgba(192,57,43,.75)'],borderRadius:8,borderSkipped:false}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>'à§³'+Number(v).toLocaleString()},grid:{color:'rgba(0,0,0,.04)'}},x:{grid:{display:false}}}}});
 }
 
-// ══════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // HELPERS
-// ══════════════════════════════════════════
-function fmt(n) { return '৳ '+Number(n||0).toLocaleString('en-IN'); }
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+function fmt(n) { return 'à§³ '+Number(n||0).toLocaleString('en-IN'); }
 
-// ══════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // USER MANAGEMENT
-// ══════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 // Password visibility toggle
 function togglePassVis() {
   const inp = document.getElementById('nuPass');
   const btn = document.getElementById('passToggle');
-  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
-  else { inp.type = 'password'; btn.textContent = '👁'; }
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'ðŸ™ˆ'; }
+  else { inp.type = 'password'; btn.textContent = 'ðŸ‘'; }
 }
 
 // Password strength checker
@@ -93,11 +93,11 @@ function checkPassStrength(val) {
   if (/[0-9]/.test(val)) score++;
   if (/[^A-Za-z0-9]/.test(val)) score++;
   const levels = [
-    { pct:'20%', color:'#C0392B', text:'খুব দুর্বল' },
-    { pct:'40%', color:'#E67E22', text:'দুর্বল' },
-    { pct:'60%', color:'#F1C40F', text:'মাঝারি' },
-    { pct:'80%', color:'#27AE60', text:'শক্তিশালী' },
-    { pct:'100%',color:'#1A7A4A', text:'খুব শক্তিশালী ✅' },
+    { pct:'20%', color:'#C0392B', text:'à¦–à§à¦¬ à¦¦à§à¦°à§à¦¬à¦²' },
+    { pct:'40%', color:'#E67E22', text:'à¦¦à§à¦°à§à¦¬à¦²' },
+    { pct:'60%', color:'#F1C40F', text:'à¦®à¦¾à¦à¦¾à¦°à¦¿' },
+    { pct:'80%', color:'#27AE60', text:'à¦¶à¦•à§à¦¤à¦¿à¦¶à¦¾à¦²à§€' },
+    { pct:'100%',color:'#1A7A4A', text:'à¦–à§à¦¬ à¦¶à¦•à§à¦¤à¦¿à¦¶à¦¾à¦²à§€ âœ…' },
   ];
   const l = levels[Math.min(score, 4)];
   bar.style.width  = l.pct;
@@ -125,10 +125,10 @@ async function addUser() {
 
   errEl.classList.add('hidden'); okEl.classList.add('hidden');
 
-  if (!username) { errEl.textContent='ইউজারনেম দিন।'; errEl.classList.remove('hidden'); return; }
-  if (password.length < 8) { errEl.textContent='পাসওয়ার্ড কমপক্ষে ৮ অক্ষর হতে হবে।'; errEl.classList.remove('hidden'); return; }
+  if (!username) { errEl.textContent='à¦‡à¦‰à¦œà¦¾à¦°à¦¨à§‡à¦® à¦¦à¦¿à¦¨à¥¤'; errEl.classList.remove('hidden'); return; }
+  if (password.length < 8) { errEl.textContent='à¦ªà¦¾à¦¸à¦“à¦¯à¦¼à¦¾à¦°à§à¦¡ à¦•à¦®à¦ªà¦•à§à¦·à§‡ à§® à¦…à¦•à§à¦·à¦° à¦¹à¦¤à§‡ à¦¹à¦¬à§‡à¥¤'; errEl.classList.remove('hidden'); return; }
 
-  btn.disabled = true; btn.textContent = '⏳ যোগ হচ্ছে...';
+  btn.disabled = true; btn.textContent = 'â³ à¦¯à§‹à¦— à¦¹à¦šà§à¦›à§‡...';
 
   try {
     // Get current session token
@@ -147,10 +147,10 @@ async function addUser() {
 
     const data = await res.json();
     btn.disabled = false;
-    btn.innerHTML = '＋ <span>ইউজার যোগ করুন</span>';
+    btn.innerHTML = 'ï¼‹ <span>à¦‡à¦‰à¦œà¦¾à¦° à¦¯à§‹à¦— à¦•à¦°à§à¦¨</span>';
 
     if (!data.ok) {
-      errEl.textContent = data.message || 'ইউজার যোগ ব্যর্থ।';
+      errEl.textContent = data.message || 'à¦‡à¦‰à¦œà¦¾à¦° à¦¯à§‹à¦— à¦¬à§à¦¯à¦°à§à¦¥à¥¤';
       errEl.classList.remove('hidden');
       return;
     }
@@ -170,7 +170,7 @@ async function addUser() {
       }
     }
 
-    okEl.textContent = `✅ "${username}" সফলভাবে যোগ হয়েছে! Email: ${data.user.email}`;
+    okEl.textContent = `âœ… "${username}" à¦¸à¦«à¦²à¦­à¦¾à¦¬à§‡ à¦¯à§‹à¦— à¦¹à¦¯à¦¼à§‡à¦›à§‡! Email: ${data.user.email}`;
     okEl.classList.remove('hidden');
 
     // Reset form
@@ -181,17 +181,17 @@ async function addUser() {
     document.getElementById('passStrengthBar').style.width = '0%';
     document.getElementById('passStrengthLabel').textContent = '';
 
-    toast(`ইউজার "${username}" যোগ হয়েছে।`, 'success');
+    toast(`à¦‡à¦‰à¦œà¦¾à¦° "${username}" à¦¯à§‹à¦— à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤`, 'success');
     await loadUsers();
 
   } catch (e) {
     btn.disabled = false;
-    btn.innerHTML = '＋ <span>ইউজার যোগ করুন</span>';
-    errEl.textContent = 'সংযোগ ব্যর্থ: ' + e.message;
+    btn.innerHTML = 'ï¼‹ <span>à¦‡à¦‰à¦œà¦¾à¦° à¦¯à§‹à¦— à¦•à¦°à§à¦¨</span>';
+    errEl.textContent = 'à¦¸à¦‚à¦¯à§‹à¦— à¦¬à§à¦¯à¦°à§à¦¥: ' + e.message;
     errEl.classList.remove('hidden');
   }
 }
-// Load user list — tenant-scoped when tenant is resolved, falls back to public.users
+// Load user list â€” tenant-scoped when tenant is resolved, falls back to public.users
 async function loadUsers() {
   const tb = document.getElementById('userTable');
   tb.innerHTML = `<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">${esc(t('loading'))}</td></tr>`;
@@ -219,12 +219,12 @@ async function loadUsers() {
       return acc;
     }, {});
     tb.innerHTML = data.map(u => {
-      const uname     = u.username || u.email?.split('@')[0] || '—';
+      const uname     = u.username || u.email?.split('@')[0] || 'â€”';
       const member    = memberByUserId[u.id] || {};
       const roleValue = normalizeRole(member.role || (uname.toLowerCase() === 'superuser' ? 'owner' : 'user'));
       const roleLabel = roleText(roleValue);
       const badgeCls  = roleBadge(roleValue);
-      const date      = u.created_at ? u.created_at.slice(0,10) : '—';
+      const date      = u.created_at ? u.created_at.slice(0,10) : 'â€”';
       const roleControl = canManageUsers()
         ? `<select class="form-control" style="min-width:130px" onchange="updateUserRole('${esc(u.id)}', this.value)" ${roleValue === 'superuser' && uname.toLowerCase() === 'superuser' ? 'disabled' : ''}>
             ${['superuser','manager','user'].map(role => `<option value="${role}" ${role===roleValue?'selected':''}>${esc(roleText(role))}</option>`).join('')}
@@ -232,7 +232,7 @@ async function loadUsers() {
         : `<span class="badge ${badgeCls}">${esc(roleLabel)}</span>`;
       return `<tr>
         <td><strong>${esc(uname)}</strong></td>
-        <td class="td-m">${esc(u.email || '—')}</td>
+        <td class="td-m">${esc(u.email || 'â€”')}</td>
         <td>${roleControl}</td>
         <td class="td-m">${esc(date)}</td>
         <td><span class="badge bg-green">${esc(t('active'))}</span></td>
@@ -255,13 +255,13 @@ async function loadUsers() {
 
   const roleMap = { 'superuser': 'Super User' };
   tb.innerHTML = data.map(u => {
-    const uname = u.username || u.email?.split('@')[0] || '—';
-    const role  = roleMap[uname.toLowerCase()] || 'ইউজার';
-    const badgeCls = role === 'Super User' ? 'bg-gold' : role === 'ম্যানেজার' ? 'bg-navy' : 'bg-green';
-    const date  = u.created_at ? u.created_at.slice(0,10) : '—';
+    const uname = u.username || u.email?.split('@')[0] || 'â€”';
+    const role  = roleMap[uname.toLowerCase()] || 'à¦‡à¦‰à¦œà¦¾à¦°';
+    const badgeCls = role === 'Super User' ? 'bg-gold' : role === 'à¦®à§à¦¯à¦¾à¦¨à§‡à¦œà¦¾à¦°' ? 'bg-navy' : 'bg-green';
+    const date  = u.created_at ? u.created_at.slice(0,10) : 'â€”';
     return `<tr>
       <td><strong>${esc(uname)}</strong></td>
-      <td class="td-m">${esc(u.email || '—')}</td>
+      <td class="td-m">${esc(u.email || 'â€”')}</td>
       <td><span class="badge ${badgeCls}">${esc(role)}</span></td>
       <td class="td-m">${esc(date)}</td>
       <td><span class="badge bg-green">${esc(t('active'))}</span></td>
@@ -282,9 +282,9 @@ async function updateUserRole(userId, role) {
   await loadUsers();
 }
 
-// ══════════════════════════════════════════
-// AUTH STATE CHANGE — auto-restore session
-// ══════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// AUTH STATE CHANGE â€” auto-restore session
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 sb.auth.onAuthStateChange(async (event, session) => {
   if (event==='SIGNED_IN' && session) {
     S.user=session.user; S.session=session; S.tenantId=null; S.tenantSlug=getRouteTenantSlug(); S.tenantResolved=false; S.welcomeShown=false; S.activeMemberRole=null;
@@ -292,9 +292,9 @@ sb.auth.onAuthStateChange(async (event, session) => {
   }
 });
 
-// ══════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // DOM READY
-// ══════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 document.addEventListener('DOMContentLoaded', () => {
   setLang(localStorage.getItem('aura_lang') || 'en');
 
@@ -316,7 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('loginModal').classList.add('hidden');
       document.getElementById('app').classList.remove('hidden');
       document.getElementById('mobBottomNav').classList.remove('hidden');
-      // Username display only — tenant and role are resolved inside initApp via getTenantId
+      // Username display only â€” tenant and role are resolved inside initApp via getTenantId
       const { data: pub } = await sb.from('users').select('username').eq('email', session.user.email).limit(1).maybeSingle();
       document.getElementById('sbUname').textContent = pub?.username || session.user.email?.split('@')[0] || 'user';
       _resetIdleTimer();
@@ -325,3 +325,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+

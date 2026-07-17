@@ -1,6 +1,6 @@
-// ══════════════════════════════════════════
+﻿// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // COLLECTION
-// ══════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function genRnoFallback() {
   const yr = String(new Date().getFullYear()).slice(-2);
   return 'MR-' + yr + '-' + String(Math.floor(1000+Math.random()*9000));
@@ -15,11 +15,11 @@ async function genRno() {
   return 'MR-' + yr + '-' + String(data).padStart(8, '0');
 }
 
-// ══════════════════════════════════════════
-// COLLECTION → GENERAL LEDGER AUTO-POSTING
-// ══════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// COLLECTION â†’ GENERAL LEDGER AUTO-POSTING
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-// Head → Income account mapping (adjust/extend as needed)
+// Head â†’ Income account mapping (adjust/extend as needed)
 const COLLECTION_HEAD_ACCOUNT_MAP = {
   'general collection': '4102',
   'subscription': '4102',
@@ -50,7 +50,7 @@ async function postCollectionToLedger(collectionRow, { head, mode }, existingJou
   const debitAccount  = resolveAssetAccountForMode(mode);
   const creditAccount = resolveIncomeAccountForHead(head);
   const amount = Number(collectionRow.amount || 0);
-  const narration = `Collection ${collectionRow.receipt_no} — ${collectionRow.payer_name || ''}`.trim();
+  const narration = `Collection ${collectionRow.receipt_no} â€” ${collectionRow.payer_name || ''}`.trim();
   const { data: { session } } = await sb.auth.getSession();
 
   const journalPayload = {
@@ -107,7 +107,7 @@ async function saveCollection() {
   const rno  = document.getElementById('colRno').value || await genRno();
   const tenantId = await getTenantId();
   if (!requireTenantForWrite()) return;
-  if (!name || !amt) { toast('নাম ও পরিমাণ দিন।','warning'); return; }
+  if (!name || !amt) { toast('à¦¨à¦¾à¦® à¦“ à¦ªà¦°à¦¿à¦®à¦¾à¦£ à¦¦à¦¿à¦¨à¥¤','warning'); return; }
 
   const payload = {
     receipt_no: rno, collection_date: date, payer_name: name, amount: amt, description: desc, member_id: _selectedMemberId || null
@@ -123,12 +123,12 @@ async function saveCollection() {
     : await writeWithOptionalTenant('collections', payload, (finalPayload) =>
         sb.from('collections').insert(finalPayload).select().single()
       );
-  if (error) { toast('সেভ ব্যর্থ: '+error.message,'error'); return; }
+  if (error) { toast('à¦¸à§‡à¦­ à¦¬à§à¦¯à¦°à§à¦¥: '+error.message,'error'); return; }
 
-  // Auto-post to General Ledger (Dr Cash/Bank — Cr mapped Income head)
+  // Auto-post to General Ledger (Dr Cash/Bank â€” Cr mapped Income head)
   const ledgerResult = await postCollectionToLedger(data, { head, mode }, existingRow?.journal_id || null);
   if (ledgerResult.error) {
-    toast('Ledger posting ব্যর্থ: ' + ledgerResult.error.message, 'error');
+    toast('Ledger posting à¦¬à§à¦¯à¦°à§à¦¥: ' + ledgerResult.error.message, 'error');
   } else {
     await sb.from('collections').update({ account_code: ledgerResult.account_code, journal_id: ledgerResult.journalId }).eq('id', data.id);
   }
@@ -145,9 +145,9 @@ async function saveCollection() {
   await loadDashboard();
 }
 
-// ══════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // MEMBERS / CONTACTS DIRECTORY
-// ══════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 let _memberSearchTimer = null;
 let _selectedMemberId = null;
 
@@ -195,7 +195,7 @@ async function quickCreateMember(name) {
   const payload = { full_name: name, member_code: 'MEM-' + String(seq.data).padStart(4,'0'), status: 'active' };
   if (tenantId) payload.tenant_id = tenantId;
   const { data, error } = await sb.from('members').insert(payload).select().single();
-  if (error) { toast('Member create ব্যর্থ: ' + error.message, 'error'); return; }
+  if (error) { toast('Member create à¦¬à§à¦¯à¦°à§à¦¥: ' + error.message, 'error'); return; }
   selectMember(data.id, data.full_name);
   toast(`Member "${name}" created (${data.member_code})`, 'success');
 }
@@ -217,14 +217,14 @@ function renderMembers(rows) {
     <tr>
       <td><span class="badge bg-gold">${esc(m.member_code)}</span></td>
       <td><strong>${esc(m.full_name)}</strong></td>
-      <td class="td-m">${esc(m.designation||'—')}</td>
-      <td class="td-m">${esc(m.phone||'—')}</td>
+      <td class="td-m">${esc(m.designation||'â€”')}</td>
+      <td class="td-m">${esc(m.phone||'â€”')}</td>
       <td><span class="badge ${m.status==='active'?'bg-green':'bg-danger'}">${esc(m.status)}</span></td>
       <td>
         <button class="btn btn-ghost btn-sm" onclick="viewMemberDetail(${m.id})">Ledger</button>
         <button class="btn btn-ghost btn-sm" onclick="openMemberModal(${m.id})">Edit</button>
       </td>
-    </tr>`).join('') || '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">কোনো member নেই</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">à¦•à§‹à¦¨à§‹ member à¦¨à§‡à¦‡</td></tr>';
 }
 
 function filterMembers(query) {
@@ -254,7 +254,7 @@ async function saveMember() {
     phone: document.getElementById('memPhone').value.trim(),
     address: document.getElementById('memAddr').value.trim()
   };
-  if (!payload.full_name) { toast('নাম দিন।', 'warning'); return; }
+  if (!payload.full_name) { toast('à¦¨à¦¾à¦® à¦¦à¦¿à¦¨à¥¤', 'warning'); return; }
   let error;
   if (id) {
     ({ error } = await sb.from('members').update(payload).eq('id', id));
@@ -265,8 +265,8 @@ async function saveMember() {
     if (tenantId) payload.tenant_id = tenantId;
     ({ error } = await sb.from('members').insert(payload));
   }
-  if (error) { toast('সেভ ব্যর্থ: ' + error.message, 'error'); return; }
-  toast('Member সেভ হয়েছে।', 'success');
+  if (error) { toast('à¦¸à§‡à¦­ à¦¬à§à¦¯à¦°à§à¦¥: ' + error.message, 'error'); return; }
+  toast('Member à¦¸à§‡à¦­ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤', 'success');
   closeModal('memberModal');
   await loadMembers();
 }
@@ -277,13 +277,13 @@ async function viewMemberDetail(id) {
   const m = (window._allMembers||[]).find(x => x.id === id);
   if (!m) return;
   document.getElementById('mdName').textContent = `${m.full_name} (${m.member_code})`;
-  document.getElementById('mdContact').innerHTML = `${m.designation ? esc(m.designation)+' · ' : ''}${esc(m.phone||'No phone')} · ${esc(m.address||'No address')}`;
+  document.getElementById('mdContact').innerHTML = `${m.designation ? esc(m.designation)+' Â· ' : ''}${esc(m.phone||'No phone')} Â· ${esc(m.address||'No address')}`;
   const { data } = await sb.from('collections').select('collection_date,receipt_no,description,amount').eq('member_id', id).order('collection_date', { ascending:false });
   const rows = data || [];
   const total = rows.reduce((s,r) => s + Number(r.amount||0), 0);
   document.getElementById('mdLedgerBody').innerHTML = rows.map(r => `
     <tr><td>${esc(r.collection_date)}</td><td>${esc(r.receipt_no)}</td><td>${esc(r.description||'')}</td><td class="td-g">${fmt(r.amount)}</td></tr>
-  `).join('') || '<tr><td colspan="4" class="td-m" style="text-align:center">কোনো transaction নেই</td></tr>';
+  `).join('') || '<tr><td colspan="4" class="td-m" style="text-align:center">à¦•à§‹à¦¨à§‹ transaction à¦¨à§‡à¦‡</td></tr>';
   document.getElementById('mdLedgerTotal').textContent = fmt(total);
   document.getElementById('memberDetailModal').classList.remove('hidden');
 }
@@ -300,7 +300,7 @@ async function loadCollections() {
   if (error || !data.length) { tb.innerHTML=`<tr><td colspan="6" class="td-m" style="text-align:center;padding:20px">${esc(t('noCollection'))}</td></tr>`; return; }
   tb.innerHTML = data.map(r => `
     <tr>
-      <td><span class="badge bg-gold">${esc(r.receipt_no||'—')}</span></td>
+      <td><span class="badge bg-gold">${esc(r.receipt_no||'â€”')}</span></td>
       <td>${esc(r.collection_date||'')}</td>
       <td>${esc(r.payer_name||'')}</td>
       <td class="td-g"><strong>${fmt(r.amount)}</strong></td>
@@ -340,7 +340,7 @@ async function editCollection(receiptNo) {
 }
 
 async function printCollectionReceipt(receiptNo) {
-  window.open(`money-receipt.html?receipt_no=${encodeURIComponent(receiptNo)}&lang=${S.lang}&autoprint=1`, '_blank', 'noopener,noreferrer');
+  window.open(`${window.location.origin}/money-receipt.html?receipt_no=${encodeURIComponent(receiptNo)}&lang=${S.lang}&autoprint=1`, '_blank', 'noopener,noreferrer');
 }
 
 async function deleteCollection(receiptNo) {
@@ -393,4 +393,5 @@ async function wipeTenantAccountingData() {
   await loadCollections();
   await loadDashboard();
 }
+
 
